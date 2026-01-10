@@ -6,17 +6,14 @@ import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import DisputeGenerator from './pages/DisputeGenerator';
 import AnalysisEngine from './pages/AnalysisEngine';
-import PredictiveAnalytics from './pages/PredictiveAnalytics';
-import AutomationEngine from './pages/AutomationEngine';
-import CommunicationHub from './pages/CommunicationHub';
-import GamificationCenter from './pages/GamificationCenter';
-import SecurityCenter from './pages/SecurityCenter';
 import Reports from './pages/Reports';
-import Integrations from './pages/Integrations';
-import LearningCenter from './pages/LearningCenter';
+import CommunicationHub from './pages/CommunicationHub';
 import SupportCenter from './pages/SupportCenter';
+import Settings from './pages/Settings';
+import GamificationCenter from './pages/GamificationCenter';
 import { requestNotificationPermission } from './services/mobileService';
 import { ThemeProvider } from './context/ThemeContext';
+import { UserProvider } from './context/UserContext';
 
 const OfflineIndicator = () => (
   <div className="fixed top-0 left-0 right-0 bg-slate-800 text-white text-xs font-bold text-center py-1 z-[100] flex justify-center items-center gap-2">
@@ -86,30 +83,27 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <Router>
-        {isOffline && <OfflineIndicator />}
-        {showInstallPrompt && <InstallPrompt onInstall={handleInstallClick} onClose={() => setShowInstallPrompt(false)} />}
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/clients" element={<Clients />} />
-            <Route path="/disputes" element={<DisputeGenerator />} />
-            <Route path="/analysis" element={<AnalysisEngine />} />
-            <Route path="/analytics" element={<PredictiveAnalytics />} />
-            <Route path="/automation" element={<AutomationEngine />} />
-            <Route path="/communication" element={<CommunicationHub />} />
-            <Route path="/integrations" element={<Integrations />} />
-            <Route path="/learning" element={<LearningCenter />} />
-            <Route path="/support" element={<SupportCenter />} />
-            <Route path="/rewards" element={<GamificationCenter />} />
-            <Route path="/security" element={<SecurityCenter />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/settings" element={<div className="p-10 text-center text-slate-500 dark:text-slate-400">Settings Module Coming Soon</div>} />
-            
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Layout>
-      </Router>
+      <UserProvider>
+        <Router>
+          {isOffline && <OfflineIndicator />}
+          {showInstallPrompt && <InstallPrompt onInstall={handleInstallClick} onClose={() => setShowInstallPrompt(false)} />}
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/clients" element={<Clients />} />
+              <Route path="/disputes" element={<DisputeGenerator />} />
+              <Route path="/analysis" element={<AnalysisEngine />} />
+              <Route path="/analytics" element={<Reports />} />
+              <Route path="/communication" element={<CommunicationHub />} />
+              <Route path="/support" element={<SupportCenter />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/rewards" element={<GamificationCenter />} />
+              
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Layout>
+        </Router>
+      </UserProvider>
     </ThemeProvider>
   );
 };

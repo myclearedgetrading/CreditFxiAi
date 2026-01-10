@@ -69,10 +69,10 @@ export const MOCK_CLIENTS: Client[] = [
 ];
 
 export const MOCK_STATS = {
-  activeClients: 142,
-  disputesSent: 856,
-  itemsDeleted: 324,
-  revenue: 24500
+  activeClients: 3,
+  disputesSent: 12,
+  itemsDeleted: 4,
+  revenue: 2850
 };
 
 export const MOCK_TASKS: Task[] = [

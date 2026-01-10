@@ -1,13 +1,14 @@
 import React, { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, Users, FileText, Settings, LogOut, Menu, X,
-  ShieldCheck, ScanSearch, LineChart, Bot, MessageCircle, Trophy, Lock, Blocks,
-  Sun, Moon, BrainCircuit, LifeBuoy
+  LayoutDashboard, Users, Settings, LogOut, Menu, X,
+  ShieldCheck, ScanSearch, LineChart, MessageCircle, Trophy,
+  Sun, Moon, LifeBuoy, ToggleLeft, ToggleRight
 } from 'lucide-react';
 import MobileNav from './MobileNav';
 import { isMobileDevice } from '../services/mobileService';
 import { useTheme } from '../context/ThemeContext';
+import { useUser } from '../context/UserContext';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,6 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { role, toggleRole, user } = useUser();
 
   useEffect(() => {
     setIsMobile(isMobileDevice());
@@ -25,22 +27,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', () => setIsMobile(isMobileDevice()));
   }, []);
 
-  const navItems = [
+  // Menu Configuration based on Roles
+  const adminNavItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/support', label: 'Support Center', icon: LifeBuoy },
-    { path: '/learning', label: 'AI Learning Center', icon: BrainCircuit },
-    { path: '/analysis', label: 'Analysis Engine', icon: ScanSearch },
-    { path: '/analytics', label: 'Predictive Analytics', icon: LineChart },
-    { path: '/automation', label: 'Automation Engine', icon: Bot },
-    { path: '/communication', label: 'Communication Hub', icon: MessageCircle },
-    { path: '/integrations', label: 'Integrations', icon: Blocks },
-    { path: '/rewards', label: 'Client Rewards', icon: Trophy },
-    { path: '/security', label: 'Security Center', icon: Lock },
     { path: '/clients', label: 'Clients', icon: Users },
-    { path: '/disputes', label: 'AI Dispute Center', icon: ShieldCheck },
-    { path: '/reports', label: 'Reports', icon: FileText },
-    { path: '/settings', label: 'Settings', icon: Settings },
+    { path: '/disputes', label: 'Disputes', icon: ShieldCheck },
+    { path: '/analysis', label: 'Analysis Engine', icon: ScanSearch },
+    { path: '/analytics', label: 'Analytics & Reports', icon: LineChart },
+    { path: '/communication', label: 'Communication', icon: MessageCircle },
+    { path: '/support', label: 'Support Queue', icon: LifeBuoy },
+    { path: '/settings', label: 'Settings & Admin', icon: Settings },
   ];
+
+  const clientNavItems = [
+    { path: '/', label: 'My Dashboard', icon: LayoutDashboard },
+    { path: '/disputes', label: 'My Disputes', icon: ShieldCheck },
+    { path: '/communication', label: 'Messages', icon: MessageCircle },
+    { path: '/rewards', label: 'My Rewards', icon: Trophy }, 
+    { path: '/support', label: 'Help & Support', icon: LifeBuoy },
+    { path: '/settings', label: 'My Profile', icon: Settings },
+  ];
+
+  const navItems = role === 'ADMIN' ? adminNavItems : clientNavItems;
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -73,7 +81,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto pb-24 lg:pb-6">
+        {/* Role Toggle (Demo Feature) */}
+        <div className="px-6 pt-4 pb-2">
+          <div 
+            onClick={toggleRole}
+            className="flex items-center justify-between bg-slate-800 rounded-lg p-3 cursor-pointer hover:bg-slate-700 transition-colors"
+          >
+            <div className="text-xs">
+              <p className="text-slate-400 font-medium">Viewing as:</p>
+              <p className="font-bold text-white">{role === 'ADMIN' ? 'Administrator' : 'Client'}</p>
+            </div>
+            {role === 'ADMIN' ? <ToggleRight className="w-6 h-6 text-indigo-400" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto pb-24 lg:pb-6">
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -92,7 +114,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </nav>
 
         <div className="p-4 border-t border-slate-800 mb-safe lg:mb-0 space-y-2">
-          {/* Theme Toggle in Sidebar for Desktop */}
           <button 
             onClick={toggleTheme}
             className="flex items-center w-full px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
@@ -110,7 +131,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Main Content */}
       <div className="flex flex-col flex-1 overflow-hidden w-full">
-        {/* Header - Hidden on mobile if needed, or simplified */}
+        {/* Header */}
         <header className="flex items-center justify-between h-16 px-6 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0 transition-colors">
           <div className="flex items-center gap-4">
             <button 
@@ -126,11 +147,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           
           <div className="flex items-center ml-auto space-x-4">
             <div className="flex flex-col items-end hidden sm:flex">
-              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Admin User</span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">Credit Specialist</span>
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                {user.name}
+              </span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {role === 'ADMIN' ? 'Credit Specialist' : 'Client Account'}
+              </span>
             </div>
             <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold border-2 border-white dark:border-slate-600 shadow-sm">
-              AU
+              {user.avatar}
             </div>
           </div>
         </header>

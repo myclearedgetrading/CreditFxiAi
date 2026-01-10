@@ -2,9 +2,87 @@ import React, { useState } from 'react';
 import { MOCK_CLIENTS } from '../constants';
 import { Bureau, DisputeStrategy, NegativeItem } from '../types';
 import { generateDisputeLetter } from '../services/geminiService';
-import { Wand2, Send, Download, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Wand2, Send, Download, AlertCircle, CheckCircle2, Loader2, Clock, FileCheck } from 'lucide-react';
+import { useUser } from '../context/UserContext';
+
+const ClientDisputeTracker = () => {
+  const client = MOCK_CLIENTS[0]; // James Robinson
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">My Disputes</h1>
+        <p className="text-slate-500 dark:text-slate-400">Track the status of your ongoing disputes with the bureaus.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {client.negativeItems.map(item => (
+          <div key={item.id} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-750">
+              <span className="font-bold text-slate-700 dark:text-slate-200">{item.creditor}</span>
+              <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase ${
+                item.status === 'Open' ? 'bg-orange-100 text-orange-700' :
+                item.status === 'Disputed' ? 'bg-blue-100 text-blue-700' :
+                'bg-green-100 text-green-700'
+              }`}>
+                {item.status}
+              </span>
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500 dark:text-slate-400">Balance</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">${item.amount}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500 dark:text-slate-400">Account #</span>
+                <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">{item.accountNumber}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500 dark:text-slate-400">Bureaus</span>
+                <div className="flex gap-1">
+                  {item.bureau.map(b => (
+                    <span key={b} className="text-[10px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800">
+                      {b.substring(0, 3)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Status Timeline */}
+              <div className="mt-4 pt-4 border-t border-slate-50 dark:border-slate-700">
+                <h4 className="text-xs font-bold text-slate-400 uppercase mb-3">Timeline</h4>
+                <div className="space-y-3">
+                  <div className="flex gap-3">
+                    <div className="flex flex-col items-center">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      <div className="w-0.5 h-6 bg-slate-200 dark:bg-slate-700"></div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-700 dark:text-slate-300">Round 1 Dispute Sent</p>
+                      <p className="text-[10px] text-slate-400">Oct 15, 2024</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-2 h-2 rounded-full ${item.status === 'Disputed' ? 'bg-blue-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-700 dark:text-slate-300">Awaiting Bureau Response</p>
+                      <p className="text-[10px] text-slate-400">Est. completion: Nov 15, 2024</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const DisputeGenerator: React.FC = () => {
+  const { role } = useUser();
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedItemId, setSelectedItemId] = useState<string>('');
   const [strategy, setStrategy] = useState<DisputeStrategy>(DisputeStrategy.FACTUAL);
@@ -12,6 +90,10 @@ const DisputeGenerator: React.FC = () => {
   const [generatedLetter, setGeneratedLetter] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (role === 'CLIENT') {
+    return <ClientDisputeTracker />;
+  }
 
   const selectedClient = MOCK_CLIENTS.find(c => c.id === selectedClientId);
   const selectedItem = selectedClient?.negativeItems.find(i => i.id === selectedItemId);
