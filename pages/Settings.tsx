@@ -13,7 +13,8 @@ import { useUser } from '../context/UserContext';
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile');
-  const { role } = useUser();
+  const { user } = useUser();
+  const role = user.role;
 
   const adminTabs = [
     { id: 'profile', label: 'Company Profile', icon: User },

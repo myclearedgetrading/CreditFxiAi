@@ -24,7 +24,8 @@ const MOCK_HEALTH: ClientHealthMetric[] = [
 const SupportCenter: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'tickets' | 'health' | 'chat'>('tickets');
   const [tickets, setTickets] = useState<SupportTicket[]>(MOCK_TICKETS);
-  const { role } = useUser();
+  const { user } = useUser();
+  const role = user.role;
   
   // Ticket Creation
   const [showCreateModal, setShowCreateModal] = useState(false);

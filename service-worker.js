@@ -1,4 +1,5 @@
-const CACHE_NAME = 'creditfix-v1';
+
+const CACHE_NAME = 'creditfix-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -6,9 +7,29 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+  // Force the waiting service worker to become the active service worker.
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE);
+    })
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  // Claim clients immediately so the new service worker takes control
+  event.waitUntil(self.clients.claim());
+  
+  // Remove old caches
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
     })
   );
 });
