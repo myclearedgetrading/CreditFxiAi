@@ -29,14 +29,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', () => setIsMobile(isMobileDevice()));
   }, []);
 
+  // Reordered Navigation Items: Credit Repair -> Business Funding
   const navItems = [
     { path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { path: '/analysis', label: 'Credit Audit', icon: ScanSearch },
     { path: '/disputes', label: 'Dispute Center', icon: ShieldCheck },
-    { path: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
-    { path: '/funding', label: 'Business Funding', icon: Building2 },
-    { path: '/learning', label: 'Education Hub', icon: GraduationCap },
     { path: '/analytics', label: 'Progress Tracker', icon: LineChart },
+    { path: '/learning', label: 'Education Hub', icon: GraduationCap },
+    { path: '/funding', label: 'Business Funding', icon: Building2 },
+    { path: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
     { path: '/rewards', label: 'Rewards', icon: Trophy },
     { path: '/settings', label: 'Settings', icon: Settings },
   ];

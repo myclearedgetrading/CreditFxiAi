@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { 
   ShieldCheck, TrendingUp, DollarSign, Building2, 
   CheckCircle2, ArrowRight, AlertTriangle, Briefcase, 
-  Lock, CreditCard
+  Lock, CreditCard, User, Download, FileSearch, MessageSquare
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer 
@@ -68,11 +69,16 @@ const FundingReadinessCard = ({ percentage }: { percentage: number }) => (
   </div>
 );
 
-const ActionCard = ({ title, desc, icon: Icon, onClick, cta }: any) => (
+const ActionCard = ({ title, desc, icon: Icon, onClick, cta, step }: any) => (
   <div 
     onClick={onClick}
-    className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-500 transition-all cursor-pointer group"
+    className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-500 transition-all cursor-pointer group relative overflow-hidden"
   >
+    {step && (
+      <div className="absolute top-0 right-0 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+        {step}
+      </div>
+    )}
     <div className="flex justify-between items-start mb-3">
       <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg group-hover:bg-indigo-600 transition-colors">
         <Icon className="w-6 h-6 text-indigo-600 dark:text-indigo-400 group-hover:text-white" />
@@ -106,7 +112,7 @@ const Dashboard: React.FC = () => {
             Hello, {user.firstName}!
           </h1>
           <p className="text-slate-500 dark:text-slate-400">
-            Let's build your personal credit and business funding today.
+            Follow the steps below to repair your credit.
           </p>
         </div>
         <button 
@@ -145,36 +151,43 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <ActionCard 
-          title="Start Dispute" 
-          desc="Challenge negative items on your report." 
-          icon={ShieldCheck} 
-          onClick={() => navigate('/disputes')}
-          cta="Create Letter"
-        />
-        <ActionCard 
-          title="Business Funding" 
-          desc="Apply for Net-30 and credit lines." 
-          icon={Building2} 
-          onClick={() => navigate('/funding')}
-          cta="View Offers"
-        />
-        <ActionCard 
-          title="Credit Audit" 
-          desc="AI analysis of your latest report." 
-          icon={TrendingUp} 
-          onClick={() => navigate('/analysis')}
-          cta="Analyze Now"
-        />
-        <ActionCard 
-          title="Compliance Check" 
-          desc="Ensure your business is fundable." 
-          icon={Briefcase} 
-          onClick={() => navigate('/funding')}
-          cta="Check Status"
-        />
+      {/* Quick Actions / Journey Path */}
+      <div>
+        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Your Repair Journey</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <ActionCard 
+            step="STEP 1"
+            title="Update Profile" 
+            desc="Verify your personal information." 
+            icon={User} 
+            onClick={() => navigate('/settings')}
+            cta="Edit Info"
+          />
+          <ActionCard 
+            step="STEP 2"
+            title="Import Report" 
+            desc="Pull latest data from monitoring." 
+            icon={Download} 
+            onClick={() => navigate('/onboarding')}
+            cta="Connect"
+          />
+          <ActionCard 
+            step="STEP 3"
+            title="Start Dispute" 
+            desc="Challenge negative items found." 
+            icon={MessageSquare} 
+            onClick={() => navigate('/disputes')}
+            cta="Create Letter"
+          />
+          <ActionCard 
+            step="STEP 4"
+            title="Credit Audit" 
+            desc="AI deep analysis of results." 
+            icon={FileSearch} 
+            onClick={() => navigate('/analysis')}
+            cta="View Audit"
+          />
+        </div>
       </div>
 
       {/* Main Content Area */}
