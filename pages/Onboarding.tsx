@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   CheckCircle2, ChevronRight, Upload, Shield, CreditCard, 
   FileText, User, Home, Car, TrendingUp, AlertCircle, 
-  ArrowLeft, Lock, Loader2, Sparkles, Zap, Check, X
+  ArrowLeft, Lock, Loader2, Sparkles, Zap, Check, X, ArrowRight
 } from 'lucide-react';
 import { vibrate, HAPTIC } from '../services/mobileService';
 
@@ -67,6 +67,16 @@ const Onboarding: React.FC = () => {
     } else {
       completeOnboarding();
     }
+  };
+
+  const handleSkip = () => {
+    vibrate(HAPTIC.MEDIUM);
+    setFormData(prev => ({
+      ...prev,
+      reportProvider: 'Skipped',
+      reportFile: null
+    }));
+    handleNext();
   };
 
   const handleBack = () => {
@@ -245,12 +255,14 @@ const Onboarding: React.FC = () => {
             </div>
         </div>
 
-        <button 
-            onClick={handleNext}
-            className="w-full py-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-sm font-medium transition-colors"
-        >
-            I don't have a report yet (Skip)
-        </button>
+        <div className="pt-2">
+            <button 
+                onClick={handleSkip}
+                className="w-full py-3 rounded-xl font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
+            >
+                Skip for now <ArrowRight className="w-4 h-4" />
+            </button>
+        </div>
       </div>
     </div>
   );
