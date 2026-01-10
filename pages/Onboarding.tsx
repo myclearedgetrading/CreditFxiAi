@@ -17,13 +17,13 @@ const Onboarding: React.FC = () => {
   
   const [formData, setFormData] = useState({
     goals: [] as string[],
-    firstName: 'James',
-    lastName: 'Robinson',
-    dob: '1985-04-12',
+    firstName: '',
+    lastName: '',
+    dob: '',
     ssn: '',
-    idFile: null as string | null, // Mock file name
-    utilityFile: null as string | null, // Mock file name
-    reportFile: null as string | null, // Mock file name
+    idFile: null as string | null,
+    utilityFile: null as string | null,
+    reportFile: null as string | null,
     reportProvider: '',
     agreedToTerms: false
   });
@@ -106,10 +106,10 @@ const Onboarding: React.FC = () => {
 
   const simulateUpload = (field: 'idFile' | 'utilityFile' | 'reportFile') => {
     vibrate(HAPTIC.MEDIUM);
-    // Simulate file selection
+    // Simulate file selection with generic names
     const mockNames = {
-      idFile: 'drivers_license.jpg',
-      utilityFile: 'utility_bill_oct.pdf',
+      idFile: 'photo_id.jpg',
+      utilityFile: 'proof_of_address.pdf',
       reportFile: 'credit_report.pdf'
     };
     setFormData(prev => ({ ...prev, [field]: mockNames[field] }));
@@ -168,6 +168,7 @@ const Onboarding: React.FC = () => {
               type="text" 
               value={formData.firstName}
               onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+              placeholder="Enter first name"
               className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white"
             />
           </div>
@@ -177,6 +178,7 @@ const Onboarding: React.FC = () => {
               type="text" 
               value={formData.lastName}
               onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+              placeholder="Enter last name"
               className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white"
             />
           </div>
@@ -375,7 +377,7 @@ const Onboarding: React.FC = () => {
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl h-64 overflow-y-auto text-sm text-slate-600 dark:text-slate-300 leading-relaxed shadow-inner">
         <p className="font-bold mb-2">LIMITED POWER OF ATTORNEY</p>
         <p className="mb-4">
-          I, {formData.firstName} {formData.lastName}, hereby grant CreditFix AI Limited Power of Attorney for the sole purpose of drafting and sending correspondence to credit bureaus (Equifax, Experian, TransUnion), creditors, and collection agencies...
+          I, {formData.firstName || '[First Name]'} {formData.lastName || '[Last Name]'}, hereby grant CreditFix AI Limited Power of Attorney for the sole purpose of drafting and sending correspondence to credit bureaus (Equifax, Experian, TransUnion), creditors, and collection agencies...
         </p>
         <p className="font-bold mb-2">SERVICE TERMS</p>
         <p className="mb-4">

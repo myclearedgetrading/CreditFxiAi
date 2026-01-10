@@ -18,8 +18,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [role, setRole] = useState<UserRole>('ADMIN');
 
   const user = {
-    name: role === 'ADMIN' ? 'Admin User' : 'James Robinson',
-    avatar: role === 'ADMIN' ? 'AU' : 'JR'
+    name: role === 'ADMIN' ? 'Admin User' : 'Client User',
+    avatar: role === 'ADMIN' ? 'AD' : 'CL'
   };
 
   const toggleRole = () => {
