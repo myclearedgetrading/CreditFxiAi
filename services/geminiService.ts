@@ -295,6 +295,24 @@ export const generateEducationalContent = async (topic: string): Promise<string>
   } catch (e) { return "" }
 };
 
+export const generateTutorResponse = async (context: string, question: string): Promise<string> => {
+  const prompt = `
+    Act as an expert Credit Repair & Business Funding Tutor.
+    Context (Current Lesson): "${context}"
+    
+    Student Question: "${question}"
+    
+    Provide a clear, encouraging, and accurate answer in plain English. Keep it under 100 words.
+  `;
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+    });
+    return response.text || "I'm having trouble answering that right now. Try rephrasing?";
+  } catch (e) { return "Error connecting to AI Tutor."; }
+};
+
 export const searchKnowledgeBase = async (query: string): Promise<KnowledgeArticle[]> => {
     const prompt = `Generate 3 knowledge base articles for query: "${query}". Return JSON array.`;
     try {
