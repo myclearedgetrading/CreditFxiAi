@@ -1,33 +1,37 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-type UserRole = 'ADMIN' | 'CLIENT';
+import { User } from '../types';
 
 interface UserContextType {
-  role: UserRole;
-  setRole: (role: UserRole) => void;
-  toggleRole: () => void;
-  user: {
-    name: string;
-    avatar: string;
-  };
+  user: User;
+  updateUser: (data: Partial<User>) => void;
 }
+
+const DEFAULT_USER: User = {
+  id: 'user_1',
+  firstName: 'James',
+  lastName: 'Robinson',
+  email: 'james@example.com',
+  phone: '555-0100',
+  role: 'USER',
+  creditScore: {
+    equifax: 630,
+    experian: 635,
+    transunion: 640
+  },
+  negativeItems: []
+};
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [role, setRole] = useState<UserRole>('ADMIN');
+  const [user, setUser] = useState<User>(DEFAULT_USER);
 
-  const user = {
-    name: role === 'ADMIN' ? 'Admin User' : 'Client User',
-    avatar: role === 'ADMIN' ? 'AD' : 'CL'
-  };
-
-  const toggleRole = () => {
-    setRole(prev => prev === 'ADMIN' ? 'CLIENT' : 'ADMIN');
+  const updateUser = (data: Partial<User>) => {
+    setUser(prev => ({ ...prev, ...data }));
   };
 
   return (
-    <UserContext.Provider value={{ role, setRole, toggleRole, user }}>
+    <UserContext.Provider value={{ user, updateUser }}>
       {children}
     </UserContext.Provider>
   );

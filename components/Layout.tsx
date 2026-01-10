@@ -1,9 +1,9 @@
 import React, { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, Users, Settings, LogOut, Menu, X,
+  LayoutDashboard, Settings, LogOut, Menu, X,
   ShieldCheck, ScanSearch, LineChart, MessageCircle, Trophy,
-  Sun, Moon, LifeBuoy, ToggleLeft, ToggleRight
+  Sun, Moon, Briefcase, GraduationCap, Building2, User
 } from 'lucide-react';
 import MobileNav from './MobileNav';
 import { isMobileDevice } from '../services/mobileService';
@@ -19,7 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
-  const { role, toggleRole, user } = useUser();
+  const { user } = useUser(); // Removed role toggle, single user mode
 
   useEffect(() => {
     setIsMobile(isMobileDevice());
@@ -27,28 +27,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', () => setIsMobile(isMobileDevice()));
   }, []);
 
-  // Menu Configuration based on Roles
-  const adminNavItems = [
-    { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/clients', label: 'Clients', icon: Users },
-    { path: '/disputes', label: 'Disputes', icon: ShieldCheck },
-    { path: '/analysis', label: 'Analysis Engine', icon: ScanSearch },
-    { path: '/analytics', label: 'Analytics & Reports', icon: LineChart },
-    { path: '/communication', label: 'Communication', icon: MessageCircle },
-    { path: '/support', label: 'Support Queue', icon: LifeBuoy },
-    { path: '/settings', label: 'Settings & Admin', icon: Settings },
+  const navItems = [
+    { path: '/', label: 'Overview', icon: LayoutDashboard },
+    { path: '/analysis', label: 'Credit Audit', icon: ScanSearch },
+    { path: '/disputes', label: 'Dispute Center', icon: ShieldCheck },
+    { path: '/funding', label: 'Business Funding', icon: Building2 }, // New
+    { path: '/learning', label: 'Education Hub', icon: GraduationCap },
+    { path: '/analytics', label: 'Progress Tracker', icon: LineChart },
+    { path: '/rewards', label: 'Rewards', icon: Trophy },
+    { path: '/settings', label: 'Settings', icon: Settings },
   ];
-
-  const clientNavItems = [
-    { path: '/', label: 'My Dashboard', icon: LayoutDashboard },
-    { path: '/disputes', label: 'My Disputes', icon: ShieldCheck },
-    { path: '/communication', label: 'Messages', icon: MessageCircle },
-    { path: '/rewards', label: 'My Rewards', icon: Trophy }, 
-    { path: '/support', label: 'Help & Support', icon: LifeBuoy },
-    { path: '/settings', label: 'My Profile', icon: Settings },
-  ];
-
-  const navItems = role === 'ADMIN' ? adminNavItems : clientNavItems;
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -71,7 +59,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex items-center justify-between h-16 px-6 bg-slate-950 dark:bg-black">
           <div className="flex items-center space-x-2">
             <ShieldCheck className="w-8 h-8 text-indigo-500" />
-            <span className="text-xl font-bold tracking-tight">CreditFix AI</span>
+            <span className="text-xl font-bold tracking-tight">CreditFix DIY</span>
           </div>
           <button 
             className="lg:hidden text-slate-400 hover:text-white"
@@ -81,21 +69,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
         </div>
 
-        {/* Role Toggle (Demo Feature) */}
-        <div className="px-6 pt-4 pb-2">
-          <div 
-            onClick={toggleRole}
-            className="flex items-center justify-between bg-slate-800 rounded-lg p-3 cursor-pointer hover:bg-slate-700 transition-colors"
-          >
-            <div className="text-xs">
-              <p className="text-slate-400 font-medium">Viewing as:</p>
-              <p className="font-bold text-white">{role === 'ADMIN' ? 'Administrator' : 'Client'}</p>
-            </div>
-            {role === 'ADMIN' ? <ToggleRight className="w-6 h-6 text-indigo-400" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
-          </div>
+        <div className="px-6 pt-6 pb-2">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">My Journey</p>
         </div>
 
-        <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto pb-24 lg:pb-6">
+        <nav className="flex-1 px-4 space-y-2 overflow-y-auto pb-24 lg:pb-6">
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -114,6 +92,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </nav>
 
         <div className="p-4 border-t border-slate-800 mb-safe lg:mb-0 space-y-2">
+          <div className="flex items-center px-4 py-3 mb-2 bg-slate-800 rounded-lg">
+             <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white mr-3">
+               {user.firstName.charAt(0)}
+             </div>
+             <div className="overflow-hidden">
+               <p className="text-sm font-bold text-white truncate">{user.firstName} {user.lastName}</p>
+               <p className="text-xs text-slate-400 truncate">DIY Member</p>
+             </div>
+          </div>
+
           <button 
             onClick={toggleTheme}
             className="flex items-center w-full px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
@@ -141,22 +129,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Menu size={24} />
             </button>
             <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100 lg:hidden">
-              {navItems.find(i => i.path === location.pathname)?.label || 'CreditFix'}
+              {navItems.find(i => i.path === location.pathname)?.label || 'CreditFix DIY'}
             </h1>
           </div>
           
           <div className="flex items-center ml-auto space-x-4">
-            <div className="flex flex-col items-end hidden sm:flex">
-              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                {user.name}
-              </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                {role === 'ADMIN' ? 'Credit Specialist' : 'Client Account'}
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold border-2 border-white dark:border-slate-600 shadow-sm">
-              {user.avatar}
-            </div>
+             <button className="hidden sm:flex items-center px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-bold dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+               <Briefcase className="w-3 h-3 mr-1.5" />
+               Business Mode: Active
+             </button>
           </div>
         </header>
 

@@ -1,97 +1,15 @@
 import React, { useState } from 'react';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, 
-  AreaChart, Area, PieChart, Pie, Cell
-} from 'recharts';
-import { 
-  Users, FileCheck, TrendingUp, DollarSign, 
-  Clock, CheckCircle, Zap,
-  Activity, MoreHorizontal, ArrowRight, Camera, MessageSquare, Shield, CreditCard, Mic,
-  Inbox
+  ShieldCheck, TrendingUp, DollarSign, Building2, 
+  CheckCircle2, ArrowRight, AlertTriangle, Briefcase, 
+  Lock, CreditCard
 } from 'lucide-react';
-import { MOCK_STATS, MOCK_TASKS, MOCK_ACTIVITIES, MOCK_CLIENTS } from '../constants';
-import { Task, ActivityLog } from '../types';
-import { vibrate, HAPTIC, startVoiceListening } from '../services/mobileService';
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer 
+} from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-
-// Empty Data Placeholders
-const revenueData: any[] = [];
-const disputeData: any[] = [];
-const scoreHistory: any[] = [];
-
-const StatCard = ({ title, value, icon: Icon, color, trend }: { title: string, value: string, icon: any, color: string, trend?: string }) => (
-  <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-between transition-colors">
-    <div className="flex items-center space-x-4">
-      <div className={`p-3 rounded-full ${color} bg-opacity-10 dark:bg-opacity-20`}>
-        <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')} dark:text-white`} />
-      </div>
-      <div>
-        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{title}</p>
-        <h3 className="text-2xl font-bold text-slate-800 dark:text-white">{value}</h3>
-      </div>
-    </div>
-    {trend && (
-      <span className="text-xs font-medium text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 px-2 py-1 rounded-full">
-        {trend}
-      </span>
-    )}
-  </div>
-);
-
-const TaskItem: React.FC<{ task: Task }> = ({ task }) => {
-  const priorityColor = 
-    task.priority === 'HIGH' ? 'text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400' : 
-    task.priority === 'MEDIUM' ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400' : 
-    'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400';
-
-  return (
-    <div className="flex items-center justify-between p-4 border-b border-slate-50 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors active:bg-slate-100 dark:active:bg-slate-700" onClick={() => vibrate(HAPTIC.LIGHT)}>
-      <div className="flex items-start space-x-3">
-        <button className="mt-1 text-slate-300 dark:text-slate-600 hover:text-green-500 dark:hover:text-green-400 transition-colors">
-          <CheckCircle className="w-5 h-5" />
-        </button>
-        <div>
-          <h4 className="text-sm font-medium text-slate-800 dark:text-slate-200">{task.title}</h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{task.clientName} • <span className={task.dueDate === 'Overdue' ? 'text-red-500 dark:text-red-400 font-bold' : ''}>{task.dueDate}</span></p>
-        </div>
-      </div>
-      <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${priorityColor}`}>
-        {task.priority}
-      </span>
-    </div>
-  );
-};
-
-const ActivityItem: React.FC<{ log: ActivityLog }> = ({ log }) => {
-  const Icon = log.type === 'AI' ? Zap : log.type === 'USER' ? Users : Activity;
-  const color = log.type === 'AI' ? 'text-purple-600 bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400' : log.type === 'USER' ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400' : 'text-slate-600 bg-slate-100 dark:bg-slate-700 dark:text-slate-400';
-
-  return (
-    <div className="flex items-start space-x-3 py-3">
-      <div className={`p-2 rounded-lg ${color} mt-1`}>
-        <Icon className="w-4 h-4" />
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{log.action}</p>
-        <p className="text-xs text-slate-500 dark:text-slate-400">{log.description}</p>
-      </div>
-      <span className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">{log.timestamp}</span>
-    </div>
-  );
-};
-
-const QuickActionButton = ({ icon: Icon, label, color, onClick }: any) => (
-  <button 
-    onClick={() => { vibrate(HAPTIC.MEDIUM); onClick(); }}
-    className="flex flex-col items-center justify-center p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 active:scale-95 transition-transform"
-  >
-    <div className={`p-3 rounded-full ${color} bg-opacity-10 dark:bg-opacity-20 mb-2`}>
-      <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')} dark:text-white`} />
-    </div>
-    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{label}</span>
-  </button>
-);
+import { HAPTIC, vibrate } from '../services/mobileService';
 
 const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: number, prevScore: number }) => {
   const diff = score - prevScore;
@@ -101,20 +19,20 @@ const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: numb
   
   return (
     <div className="flex flex-col items-center p-4">
-      <div className="relative w-32 h-32 flex items-center justify-center mb-3">
+      <div className="relative w-28 h-28 lg:w-32 lg:h-32 flex items-center justify-center mb-3">
         <svg className="absolute w-full h-full -rotate-90">
-          <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100 dark:text-slate-700" />
+          <circle cx="50%" cy="50%" r="45%" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100 dark:text-slate-700" />
           <circle 
-            cx="64" cy="64" r="56" 
+            cx="50%" cy="50%" r="45%"
             stroke="currentColor" strokeWidth="8" fill="transparent" 
             className={`${ringColor} transition-all duration-1000 ease-out`}
-            strokeDasharray={`${percentage * 3.51} 351`} 
+            strokeDasharray={`${percentage * 2.8} 280`} 
             strokeLinecap="round" 
           />
         </svg>
         <div className="text-center">
-          <div className={`text-3xl font-bold ${color}`}>{score || '-'}</div>
-          <div className="text-xs text-slate-400 uppercase font-bold">{bureau}</div>
+          <div className={`text-2xl lg:text-3xl font-bold ${color}`}>{score || '-'}</div>
+          <div className="text-[10px] lg:text-xs text-slate-400 uppercase font-bold">{bureau}</div>
         </div>
       </div>
       <div className={`text-sm font-medium ${diff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -124,235 +42,207 @@ const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: numb
   );
 };
 
-const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const [listening, setListening] = useState(false);
-  const { role } = useUser();
-
-  const handleVoiceCommand = () => {
-    setListening(true);
-    vibrate(HAPTIC.MEDIUM);
-    startVoiceListening((text) => {
-      setListening(false);
-      alert(`Voice Command Recognized: "${text}"\n(Simulating Action...)`);
-      if (text.includes('chat') || text.includes('message')) navigate('/communication');
-      if (text.includes('score') || text.includes('report')) navigate('/reports');
-      if (text.includes('scan') || text.includes('upload')) navigate('/analysis');
-    });
-  };
-
-  if (role === 'CLIENT') {
-    return (
-      <div className="space-y-6 animate-fade-in">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Welcome!</h1>
-          <p className="text-slate-500 dark:text-slate-400">Complete your onboarding to see your credit health overview.</p>
+const FundingReadinessCard = ({ percentage }: { percentage: number }) => (
+  <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-xl p-6 text-white relative overflow-hidden">
+    <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+    <div className="relative z-10 flex flex-col h-full justify-between">
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <Briefcase className="w-5 h-5 text-indigo-400" />
+          <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">Funding Readiness</span>
         </div>
-
-        {/* Onboarding Banner Trigger */}
-        <div 
-          onClick={() => navigate('/onboarding')}
-          className="bg-indigo-600 text-white rounded-xl p-6 shadow-lg cursor-pointer transform hover:scale-[1.01] transition-all relative overflow-hidden"
-        >
-          <div className="absolute right-0 top-0 w-32 h-32 bg-white opacity-10 rounded-full translate-x-1/3 -translate-y-1/3 pointer-events-none" />
-          <div className="flex items-start justify-between relative z-10">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="bg-white/20 text-xs font-bold px-2 py-1 rounded">ACTION REQUIRED</span>
-              </div>
-              <h3 className="text-xl font-bold mb-1">Complete Your Setup</h3>
-              <p className="text-indigo-100 text-sm max-w-md">
-                We need a few more details to start challenging negative items. Finish your profile to begin the dispute process.
-              </p>
-            </div>
-            <div className="bg-white text-indigo-600 p-3 rounded-full shadow-sm">
-              <ArrowRight className="w-6 h-6" />
-            </div>
-          </div>
+        <h3 className="text-2xl font-bold mb-1">{percentage}% Compliant</h3>
+        <p className="text-sm text-indigo-200">Your business is almost ready for Tier 2 Funding.</p>
+      </div>
+      
+      <div className="mt-6">
+        <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
+          <div className="bg-indigo-400 h-2 rounded-full transition-all duration-1000" style={{ width: `${percentage}%` }}></div>
         </div>
-
-        {/* Client Score Cards */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
-          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Credit Scores</h3>
-          <div className="flex flex-col md:flex-row justify-around items-center">
-            <ScoreCircle bureau="Equifax" score={0} prevScore={0} />
-            <div className="hidden md:block w-px h-32 bg-slate-100 dark:bg-slate-700"></div>
-            <ScoreCircle bureau="Experian" score={0} prevScore={0} />
-            <div className="hidden md:block w-px h-32 bg-slate-100 dark:bg-slate-700"></div>
-            <ScoreCircle bureau="TransUnion" score={0} prevScore={0} />
-          </div>
-        </div>
-
-        {/* Action Items - Empty State */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Next Steps</h3>
-          <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-            <Inbox className="w-12 h-12 mb-3 opacity-20" />
-            <p className="text-sm">No pending actions. You're all caught up!</p>
-          </div>
+        <div className="flex justify-between text-xs text-slate-400">
+          <span>Tier 1 (Complete)</span>
+          <span>Target: Tier 2</span>
         </div>
       </div>
-    );
-  }
+    </div>
+  </div>
+);
 
-  // ADMIN DASHBOARD (Clean State)
+const ActionCard = ({ title, desc, icon: Icon, onClick, cta }: any) => (
+  <div 
+    onClick={onClick}
+    className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-500 transition-all cursor-pointer group"
+  >
+    <div className="flex justify-between items-start mb-3">
+      <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg group-hover:bg-indigo-600 transition-colors">
+        <Icon className="w-6 h-6 text-indigo-600 dark:text-indigo-400 group-hover:text-white" />
+      </div>
+      <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+    </div>
+    <h4 className="font-bold text-slate-800 dark:text-white mb-1">{title}</h4>
+    <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{desc}</p>
+    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">{cta}</span>
+  </div>
+);
+
+const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useUser();
+
+  // Mock Score History
+  const scoreHistory = [
+    { month: 'Jun', score: 580 }, { month: 'Jul', score: 595 },
+    { month: 'Aug', score: 610 }, { month: 'Sep', score: 605 },
+    { month: 'Oct', score: 625 }, { month: 'Nov', score: 642 },
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in pb-10">
+      
+      {/* Welcome Section */}
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Admin Dashboard</h1>
-          <p className="text-slate-500 dark:text-slate-400">Overview of your credit repair business.</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+            Hello, {user.firstName}!
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400">
+            Let's build your personal credit and business funding today.
+          </p>
         </div>
         <button 
-          onClick={handleVoiceCommand}
-          className={`flex items-center p-3 rounded-full shadow-md transition-all ${listening ? 'bg-red-500 text-white animate-pulse' : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400'}`}
+          onClick={() => navigate('/analysis')}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors text-sm flex items-center"
         >
-          <Mic className="w-5 h-5" />
+          <CreditCard className="w-4 h-4 mr-2" />
+          Update Report
         </button>
       </div>
 
-      {/* Mobile Quick Actions Grid */}
-      <div className="grid grid-cols-4 gap-3 lg:hidden">
-        <QuickActionButton icon={Camera} label="Scan Doc" color="bg-indigo-600" onClick={() => navigate('/analysis')} />
-        <QuickActionButton icon={Shield} label="Dispute" color="bg-green-600" onClick={() => navigate('/disputes')} />
-        <QuickActionButton icon={MessageSquare} label="Chat" color="bg-blue-600" onClick={() => navigate('/communication')} />
-        <QuickActionButton icon={CreditCard} label="Pay" color="bg-orange-600" onClick={() => alert('Opening Payment Gateway')} />
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Active Clients" 
-          value={MOCK_CLIENTS.length.toString()} 
-          icon={Users} 
-          color="bg-blue-600"
-        />
-        <StatCard 
-          title="Disputes Sent" 
-          value={MOCK_STATS.disputesSent.toString()} 
-          icon={FileCheck} 
-          color="bg-indigo-600" 
-        />
-        <StatCard 
-          title="Items Deleted" 
-          value={MOCK_STATS.itemsDeleted.toString()} 
-          icon={TrendingUp} 
-          color="bg-green-600"
-        />
-        <StatCard 
-          title="Est. Revenue" 
-          value={`$${MOCK_STATS.revenue.toLocaleString()}`} 
-          icon={DollarSign} 
-          color="bg-emerald-600"
-        />
-      </div>
-
+      {/* Top Grid: Scores & Readiness */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Chart Area - Revenue */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
+        
+        {/* Personal Credit Scores */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-4">
+          <div className="flex items-center justify-between mb-2 px-2">
+            <h3 className="font-bold text-slate-800 dark:text-white flex items-center">
+              <ShieldCheck className="w-5 h-5 mr-2 text-green-500" />
+              Personal Credit Profile
+            </h3>
+            <span className="text-xs text-slate-400">Last updated: Today</span>
+          </div>
+          <div className="flex flex-col md:flex-row justify-around items-center">
+            <ScoreCircle bureau="Equifax" score={user.creditScore.equifax} prevScore={630} />
+            <div className="hidden md:block w-px h-24 bg-slate-100 dark:bg-slate-700"></div>
+            <ScoreCircle bureau="Experian" score={user.creditScore.experian} prevScore={635} />
+            <div className="hidden md:block w-px h-24 bg-slate-100 dark:bg-slate-700"></div>
+            <ScoreCircle bureau="TransUnion" score={user.creditScore.transunion} prevScore={640} />
+          </div>
+        </div>
+
+        {/* Business Funding Readiness */}
+        <div className="lg:col-span-1">
+          <FundingReadinessCard percentage={65} />
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <ActionCard 
+          title="Start Dispute" 
+          desc="Challenge negative items on your report." 
+          icon={ShieldCheck} 
+          onClick={() => navigate('/disputes')}
+          cta="Create Letter"
+        />
+        <ActionCard 
+          title="Business Funding" 
+          desc="Apply for Net-30 and credit lines." 
+          icon={Building2} 
+          onClick={() => navigate('/funding')}
+          cta="View Offers"
+        />
+        <ActionCard 
+          title="Credit Audit" 
+          desc="AI analysis of your latest report." 
+          icon={TrendingUp} 
+          onClick={() => navigate('/analysis')}
+          cta="Analyze Now"
+        />
+        <ActionCard 
+          title="Compliance Check" 
+          desc="Ensure your business is fundable." 
+          icon={Briefcase} 
+          onClick={() => navigate('/funding')}
+          cta="Check Status"
+        />
+      </div>
+
+      {/* Main Content Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Score History Chart */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Revenue Trend (MRR)</h3>
-            <select className="text-sm border-slate-200 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-300 focus:ring-indigo-500 bg-white dark:bg-slate-700">
-              <option>This Year</option>
+            <h3 className="font-bold text-slate-800 dark:text-white">Credit Score Growth</h3>
+            <select className="text-xs border-slate-200 dark:border-slate-600 rounded-lg p-1 bg-white dark:bg-slate-700 dark:text-white">
+              <option>Last 6 Months</option>
             </select>
           </div>
-          <div className="h-80 flex items-center justify-center">
-            {revenueData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-700" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b'}} tickFormatter={(value) => `$${value/1000}k`} />
-                  <RechartsTooltip />
-                  <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={3} fillOpacity={1} />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="text-slate-400 text-center">
-                <Activity className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                <p>No revenue data available yet.</p>
-              </div>
-            )}
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={scoreHistory}>
+                <defs>
+                  <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-700" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
+                <YAxis domain={['dataMin - 20', 'dataMax + 20']} axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
+                <RechartsTooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', color: '#fff' }} />
+                <Area type="monotone" dataKey="score" stroke="#4f46e5" fillOpacity={1} fill="url(#colorScore)" strokeWidth={3} />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Dispute Outcome Chart */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
-          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Dispute Outcomes</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Results from last 30 days</p>
-          <div className="h-48 flex items-center justify-center">
-            {disputeData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={disputeData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {disputeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="text-slate-400 text-center">
-                <FileCheck className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                <p>No disputes processed yet.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Tasks Widget */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col transition-colors">
-          <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center">
-              <Clock className="w-5 h-5 mr-2 text-slate-400" />
+        {/* Priority Tasks */}
+        <div className="lg:col-span-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col">
+          <div className="p-5 border-b border-slate-100 dark:border-slate-700">
+            <h3 className="font-bold text-slate-800 dark:text-white flex items-center">
+              <AlertTriangle className="w-5 h-5 mr-2 text-orange-500" />
               Action Required
             </h3>
           </div>
-          <div className="flex-1 overflow-auto max-h-[300px] min-h-[150px] flex items-center justify-center">
-            {MOCK_TASKS.length > 0 ? (
-              <div className="w-full">
-                {MOCK_TASKS.map((task) => (
-                  <TaskItem key={task.id} task={task} />
-                ))}
+          <div className="p-4 space-y-3 flex-1 overflow-y-auto">
+            <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-750 rounded-lg border border-slate-100 dark:border-slate-700">
+              <div className="mt-1">
+                <Lock className="w-4 h-4 text-red-500" />
               </div>
-            ) : (
-              <div className="text-slate-400 text-center">
-                <CheckCircle className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                <p>All tasks completed.</p>
+              <div>
+                <p className="text-sm font-bold text-slate-800 dark:text-white">Unfreeze Experian</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Required before applying for Chase Ink.</p>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Activity Feed */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col transition-colors">
-          <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-             <h3 className="text-lg font-bold text-slate-800 dark:text-white">Live Activity</h3>
-          </div>
-          <div className="p-6 flex-1 overflow-auto max-h-[300px] min-h-[150px] flex items-center justify-center">
-             {MOCK_ACTIVITIES.length > 0 ? (
-                <div className="space-y-2 w-full">
-                  {MOCK_ACTIVITIES.map((log) => (
-                    <ActivityItem key={log.id} log={log} />
-                  ))}
-                </div>
-             ) : (
-               <div className="text-slate-400 text-center">
-                 <Activity className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                 <p>No recent activity.</p>
-               </div>
-             )}
+            </div>
+            <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-700">
+              <div className="mt-1">
+                <Building2 className="w-4 h-4 text-indigo-500" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800 dark:text-white">Get DUNS Number</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Step 2 of Business Foundation.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-700">
+              <div className="mt-1">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800 dark:text-white">Dispute Letter Ready</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Review and print for Equifax.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

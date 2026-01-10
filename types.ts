@@ -1,10 +1,3 @@
-export enum ClientStatus {
-  LEAD = 'LEAD',
-  PROSPECT = 'PROSPECT',
-  ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED'
-}
 
 export enum Bureau {
   EQUIFAX = 'Equifax',
@@ -31,6 +24,30 @@ export interface NegativeItem {
   status: 'Open' | 'Disputed' | 'Deleted' | 'Verified';
 }
 
+// User now represents the DIY User / Business Owner
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  creditScore: {
+    equifax: number;
+    experian: number;
+    transunion: number;
+  };
+  negativeItems: NegativeItem[];
+  businessProfile?: BusinessProfile;
+  role: 'USER' | 'ADMIN' | 'CLIENT';
+}
+
+export enum ClientStatus {
+  ACTIVE = 'Active',
+  LEAD = 'Lead',
+  PROSPECT = 'Prospect',
+  CHURNED = 'Churned'
+}
+
 export interface Client {
   id: string;
   firstName: string;
@@ -45,61 +62,88 @@ export interface Client {
   };
   negativeItems: NegativeItem[];
   joinedDate: string;
+  companyId?: string;
 }
 
-export interface User {
-  id: string;
-  name: string;
-  role: 'ADMIN' | 'SPECIALIST';
-  email: string;
+// --- BUSINESS FUNDING TYPES ---
+
+export enum FundingTier {
+  TIER_1 = 'Tier 1 (Net 30)',
+  TIER_2 = 'Tier 2 (Store Credit)',
+  TIER_3 = 'Tier 3 (Cash Credit)',
+  TIER_4 = 'Tier 4 (Business Loans)'
 }
+
+export interface BusinessProfile {
+  businessName: string;
+  ein: string;
+  dunsNumber: string;
+  entityType: 'LLC' | 'Corp' | 'Sole Prop';
+  addressVerified: boolean;
+  phoneVerified: boolean;
+  websiteVerified: boolean;
+  fundingReadinessScore: number; // 0-100
+  currentTier: FundingTier;
+}
+
+export interface FundingOpportunity {
+  id: string;
+  lenderName: string;
+  type: 'Vendor Credit' | 'Business Card' | 'Term Loan' | 'Line of Credit';
+  amount: string;
+  requirements: string[];
+  matchScore: number; // AI calculated
+  logo: string;
+  link: string;
+}
+
+export interface ChecklistItem {
+  id: string;
+  label: string;
+  isCompleted: boolean;
+  category: 'FOUNDATION' | 'CREDIT_BUILDING' | 'FINANCIALS';
+}
+
+// --- SHARED TYPES ---
 
 export interface DashboardStats {
-  activeClients: number;
-  disputesSent: number;
-  itemsDeleted: number;
-  revenue: number;
+  creditScoreAvg: number;
+  negativeItemsRemoved: number;
+  fundingAvailable: number;
+  tasksPending: number;
 }
 
 export interface Task {
   id: string;
   title: string;
-  clientName: string;
   dueDate: string;
   priority: 'HIGH' | 'MEDIUM' | 'LOW';
   completed: boolean;
+  category: 'PERSONAL' | 'BUSINESS';
 }
 
 export interface ActivityLog {
   id: string;
   action: string;
   description: string;
-  timestamp: string;
+  timestamp: any;
   type: 'SYSTEM' | 'USER' | 'AI';
 }
 
-// Analysis Engine Types
-
 export interface Discrepancy {
-  type: 'BALANCE_MISMATCH' | 'DATE_MISMATCH' | 'STATUS_CONFLICT' | 'DUPLICATE_ACCOUNT';
+  type: string;
   description: string;
   severity: 'HIGH' | 'MEDIUM' | 'LOW';
-  itemsInvolved: string[]; // Creditor names
+  itemsInvolved: string[];
 }
 
 export interface StrategyRecommendation {
   itemId: string;
   creditorName: string;
-  recommendedStrategy: DisputeStrategy;
-  confidenceScore: number; // 0-100
+  recommendedStrategy: string;
+  confidenceScore: number;
   reasoning: string;
-  bureauToTarget: Bureau;
-}
-
-export interface ActionPlanStep {
-  phase: 'Day 1-30' | 'Day 31-60' | 'Day 61-90';
-  actions: string[];
-  expectedOutcome: string;
+  bureauToTarget: string;
 }
 
 export interface CreditAnalysisResult {
@@ -117,13 +161,11 @@ export interface CreditAnalysisResult {
   }[];
   discrepancies: Discrepancy[];
   recommendations: StrategyRecommendation[];
-  actionPlan: ActionPlanStep[];
+  actionPlan: { phase: string; actions: string[]; expectedOutcome: string }[];
 }
 
-// Predictive Analytics Types
-
 export interface DisputePrediction {
-  probability: number; // 0-100
+  probability: number;
   confidenceLevel: 'High' | 'Medium' | 'Low';
   keyFactors: string[];
   estimatedDaysToResult: number;
@@ -136,106 +178,72 @@ export interface ScoreForecastPoint {
   worstCase: number;
 }
 
-export interface ChurnRiskProfile {
-  clientId: string;
-  clientName: string;
-  riskScore: number; // 0-100 (100 = leaving)
-  primaryRiskFactor: string;
-  suggestedRetentionAction: string;
-}
-
-// Automation Engine Types
-
-export type AutomationTriggerType = 'SCORE_CHANGE' | 'DISPUTE_STATUS_UPDATE' | 'NO_LOGIN_DETECTED' | 'NEW_DOCUMENT_UPLOAD' | 'PAYMENT_FAILED';
-export type AutomationActionType = 'SEND_EMAIL' | 'CREATE_TASK' | 'SEND_SMS' | 'UPDATE_STATUS' | 'NOTIFY_SLACK';
-
-export interface AutomationCondition {
-  field: string;
-  operator: 'GREATER_THAN' | 'LESS_THAN' | 'EQUALS' | 'CONTAINS';
-  value: string | number;
-}
-
-export interface AutomationAction {
-  type: AutomationActionType;
-  config: Record<string, any>; // e.g., { templateId: 'welcome_email' }
+export interface EmailAnalysisResult {
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  category: string;
+  sentiment: string;
+  suggestedResponse: string;
+  actionItems: string[];
 }
 
 export interface AutomationWorkflow {
   id: string;
   name: string;
   description: string;
-  trigger: AutomationTriggerType;
-  conditions: AutomationCondition[];
-  actions: AutomationAction[];
+  trigger: string;
+  conditions: { field: string; operator: string; value: any }[];
+  actions: { type: string; config: any }[];
   isActive: boolean;
-  stats: {
-    runsLast30Days: number;
-    hoursSaved: number;
-  };
-}
-
-export interface EmailAnalysisResult {
-  category: 'INQUIRY' | 'COMPLAINT' | 'UPDATE' | 'OTHER';
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
-  sentiment: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
-  suggestedResponse: string;
-  actionItems: string[];
+  stats: { runsLast30Days: number; hoursSaved: number };
 }
 
 export interface DocumentClassification {
-  category: 'ID_CARD' | 'PROOF_OF_ADDRESS' | 'CREDIT_REPORT' | 'BUREAU_RESPONSE' | 'OTHER';
+  category: string;
   confidence: number;
-  extractedData: Record<string, any>;
 }
 
 export interface BureauResponseResult {
-  bureau: Bureau;
+  bureau: string;
   date: string;
-  outcomes: {
-    creditor: string;
-    accountNumber: string;
-    outcome: 'DELETED' | 'VERIFIED' | 'UPDATED' | 'REMAINS';
-  }[];
+  outcomes: { creditor: string; accountNumber: string; outcome: 'DELETED' | 'VERIFIED' | 'UPDATED' }[];
 }
 
-// Reporting & BI Types
-
-export interface KPIMetric {
-  label: string;
-  value: string | number;
-  trend: number; // percentage
-  trendDirection: 'UP' | 'DOWN';
-  period: string;
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
 }
 
-export interface DisputeSuccessMetric {
-  bureau: Bureau;
-  successRate: number;
-  totalDisputes: number;
-  avgResponseTimeDays: number;
-}
-
-export interface SpecialistPerformance {
-  specialistName: string;
-  activeClients: number;
-  revenueGenerated: number;
-  disputeSuccessRate: number;
-  clientSatisfactionScore: number; // 1-10
-}
-
-export interface CustomReportConfig {
+export interface KnowledgeArticle {
   id: string;
-  name: string;
-  metrics: string[];
-  dateRange: 'LAST_30_DAYS' | 'LAST_90_DAYS' | 'YTD' | 'ALL_TIME';
-  visualization: 'BAR' | 'LINE' | 'PIE' | 'TABLE';
+  title: string;
+  category: string;
+  content: string;
+  summary: string;
+  tags: string[];
+  lastUpdated: string;
+  confidenceScore: number;
 }
 
-// Communication Hub Types
+export interface TicketAnalysis {
+  priority: TicketPriority;
+  category: string;
+  sentiment: string;
+  tags: string[];
+}
+
+export interface ChurnRiskProfile {
+  clientId: string;
+  clientName: string;
+  riskScore: number;
+  primaryRiskFactor: string;
+  suggestedRetentionAction: string;
+}
 
 export interface ChatMessage {
   id: string;
-  sender: 'user' | 'bot' | 'specialist';
+  sender: 'user' | 'bot';
   text: string;
   timestamp: string;
 }
@@ -243,7 +251,7 @@ export interface ChatMessage {
 export interface EmailCampaign {
   id: string;
   name: string;
-  status: 'Draft' | 'Active' | 'Completed';
+  status: string;
   audience: string;
   openRate: number;
   clickRate: number;
@@ -263,28 +271,36 @@ export interface Appointment {
   id: string;
   clientId: string;
   clientName: string;
-  type: 'Onboarding' | 'Strategy Call' | 'Monthly Review';
-  startTime: string; // ISO string
-  status: 'Confirmed' | 'Pending' | 'Cancelled';
+  type: string;
+  startTime: string;
+  status: string;
 }
 
 export interface EducationArticle {
   id: string;
   title: string;
-  category: 'Credit Basics' | 'Disputes' | 'Budgeting';
-  content: string; // short summary or full text
+  category: string;
+  content: string;
   isAiGenerated: boolean;
 }
 
-// Gamification Types
+export interface GamificationProfile {
+  level: number;
+  currentPoints: number;
+  pointsToNextLevel: number;
+  tier: string;
+  streakDays: number;
+  referralCode: string;
+  totalReferrals: number;
+}
 
 export interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: string; 
+  icon: string;
   unlocked: boolean;
-  progress: number; // 0-100
+  progress: number;
   pointsReward: number;
   unlockedAt?: string;
 }
@@ -293,39 +309,11 @@ export interface Quest {
   id: string;
   title: string;
   description: string;
-  category: 'BASICS' | 'BUILDING' | 'ADVANCED';
+  category: string;
   totalSteps: number;
   completedSteps: number;
   rewardPoints: number;
   status: 'LOCKED' | 'ACTIVE' | 'COMPLETED';
-}
-
-export interface GamificationProfile {
-  level: number;
-  currentPoints: number;
-  pointsToNextLevel: number;
-  tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
-  streakDays: number;
-  referralCode: string;
-  totalReferrals: number;
-}
-
-export interface QuizQuestion {
-  question: string;
-  options: string[];
-  correctIndex: number;
-  explanation: string;
-}
-
-// Security & Compliance Types
-
-export type Role = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'SPECIALIST' | 'AUDITOR';
-
-export interface Permission {
-  id: string;
-  label: string;
-  description: string;
-  category: 'CLIENTS' | 'FINANCE' | 'SETTINGS' | 'SECURITY';
 }
 
 export interface SecurityLog {
@@ -336,14 +324,14 @@ export interface SecurityLog {
   resource: string;
   ipAddress: string;
   timestamp: string;
-  status: 'SUCCESS' | 'FAILURE' | 'BLOCKED';
+  status: 'SUCCESS' | 'FAILURE';
   severity: 'INFO' | 'WARNING' | 'CRITICAL';
-  metadata?: Record<string, any>;
+  metadata?: any;
 }
 
 export interface RBACRole {
-  role: Role;
-  permissions: string[]; // Permission IDs
+  role: string;
+  permissions: string[];
   usersCount: number;
 }
 
@@ -351,24 +339,17 @@ export interface ComplianceRequest {
   id: string;
   clientId: string;
   clientName: string;
-  type: 'EXPORT_DATA' | 'DELETE_DATA' | 'CORRECT_DATA';
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED';
+  type: string;
+  status: 'PENDING' | 'COMPLETED';
   requestDate: string;
-  completionDate?: string;
 }
 
 export interface SecurityScanResult {
-  score: number; // 0-100
-  lastScan: string;
-  vulnerabilities: {
-    severity: 'HIGH' | 'MEDIUM' | 'LOW';
-    issue: string;
-    description: string;
-    remediation: string;
-  }[];
+  severity: string;
+  issue: string;
+  description: string;
+  remediation: string;
 }
-
-// Integration Ecosystem Types
 
 export type IntegrationCategory = 'CREDIT_BUREAU' | 'PAYMENT' | 'COMMUNICATION' | 'MARKETING' | 'DOCUMENT' | 'ACCOUNTING';
 
@@ -377,11 +358,10 @@ export interface Integration {
   name: string;
   category: IntegrationCategory;
   description: string;
-  status: 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'PENDING';
+  status: 'CONNECTED' | 'DISCONNECTED';
+  icon: string;
   lastSync?: string;
-  icon: string; // Lucide icon name mapping
-  config?: Record<string, any>;
-  health: number; // 0-100
+  health: number;
   requiresOAuth: boolean;
 }
 
@@ -394,44 +374,26 @@ export interface WebhookEvent {
   payload: any;
 }
 
-// AI Learning Center Types
-
-export type KnowledgeCategory = 'FCRA' | 'FDCPA' | 'PLAYBOOK' | 'SCRIPTS' | 'CASE_STUDY';
-
-export interface KnowledgeArticle {
-  id: string;
-  title: string;
-  category: KnowledgeCategory;
-  summary: string;
-  content: string;
-  tags: string[];
-  lastUpdated: string;
-  confidenceScore: number;
-}
-
 export interface ModelFeedback {
   id: string;
-  originalInput: string;
-  aiOutput: string;
-  userCorrection: string;
-  rating: 'GOOD' | 'BAD' | 'NEUTRAL';
-  timestamp: string;
+  originalInput?: string;
+  aiOutput?: string;
+  userCorrection?: string;
+  rating?: string;
+  timestamp?: string;
   status: 'PENDING' | 'LEARNED';
 }
 
 export interface StrategyPerformance {
   strategyName: string;
-  bureau: Bureau;
-  successRate: number; // percentage
+  bureau: string;
+  successRate: number;
   usageCount: number;
   trend: 'UP' | 'DOWN' | 'FLAT';
 }
 
-// Customer Success & Support Types
-
 export type TicketPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type TicketStatus = 'OPEN' | 'PENDING' | 'RESOLVED' | 'CLOSED';
-export type TicketCategory = 'BILLING' | 'DISPUTE_UPDATE' | 'TECHNICAL' | 'GENERAL' | 'LEGAL';
 
 export interface SupportTicket {
   id: string;
@@ -440,27 +402,18 @@ export interface SupportTicket {
   subject: string;
   priority: TicketPriority;
   status: TicketStatus;
-  category: TicketCategory;
-  assignedTo?: string; // Specialist Name
+  category: string;
   createdAt: string;
   updatedAt: string;
-  channel: 'EMAIL' | 'CHAT' | 'PHONE' | 'PORTAL';
-  sentiment: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
-  tags: string[];
-}
-
-export interface TicketAnalysis {
-  category: TicketCategory;
-  priority: TicketPriority;
-  sentiment: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
-  suggestedReply: string;
+  channel: string;
+  sentiment: string;
   tags: string[];
 }
 
 export interface ClientHealthMetric {
   clientId: string;
   clientName: string;
-  overallScore: number; // 0-100
+  overallScore: number;
   engagementScore: number;
   paymentHealth: number;
   disputeSuccess: number;
@@ -468,13 +421,4 @@ export interface ClientHealthMetric {
   lastContact: string;
   nextScheduledTouchpoint: string;
   riskFactors: string[];
-}
-
-export interface Feedback {
-  id: string;
-  clientId: string;
-  type: 'NPS' | 'CSAT';
-  score: number;
-  comment?: string;
-  date: string;
 }
