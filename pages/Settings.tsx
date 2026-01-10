@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { 
   Settings as SettingsIcon, Blocks, Bot, ShieldCheck, 
   BrainCircuit, Trophy, User, Bell, CreditCard, Layout,
-  LogOut
+  LogOut, UploadCloud, FileText, CheckCircle2
 } from 'lucide-react';
 import Integrations from './Integrations';
 import AutomationEngine from './AutomationEngine';
@@ -34,6 +35,26 @@ const Settings: React.FC = () => {
 
   const tabs = role === 'ADMIN' ? adminTabs : clientTabs;
 
+  const FileUploadField = ({ label, description, accepted }: { label: string, description: string, accepted?: string }) => (
+    <div className="border border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors group">
+      <div className="flex items-center gap-4">
+        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
+          <UploadCloud className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{label}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>
+        </div>
+      </div>
+      <label className="relative cursor-pointer">
+        <input type="file" className="hidden" accept={accepted} />
+        <span className="px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 transition-colors shadow-sm">
+          Select File
+        </span>
+      </label>
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeTab) {
       case 'integrations': return <Integrations />;
@@ -47,25 +68,28 @@ const Settings: React.FC = () => {
             <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
               {role === 'ADMIN' ? 'Company Profile' : 'Personal Information'}
             </h2>
-            <div className="space-y-4">
+            
+            {/* Basic Info */}
+            <div className="space-y-4 mb-8">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     {role === 'ADMIN' ? 'Company Name' : 'First Name'}
                   </label>
-                  <input type="text" defaultValue={role === 'ADMIN' ? "CreditFix Pro" : "James"} className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white" />
+                  <input type="text" defaultValue={role === 'ADMIN' ? "CreditFix Pro" : "James"} className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     {role === 'ADMIN' ? 'Support Email' : 'Last Name'}
                   </label>
-                  <input type="text" defaultValue={role === 'ADMIN' ? "support@creditfix.com" : "Robinson"} className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white" />
+                  <input type="text" defaultValue={role === 'ADMIN' ? "support@creditfix.com" : "Robinson"} className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
-                <input type="email" defaultValue={role === 'ADMIN' ? "admin@creditfix.com" : "james.r@example.com"} className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white" />
+                <input type="email" defaultValue={role === 'ADMIN' ? "admin@creditfix.com" : "james.r@example.com"} className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               </div>
+              
               {role === 'ADMIN' && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Brand Color</label>
@@ -77,7 +101,38 @@ const Settings: React.FC = () => {
                   </div>
                 </div>
               )}
-              <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 mt-4">Save Changes</button>
+            </div>
+
+            {/* Verification Documents (New Section) */}
+            <div className="border-t border-slate-100 dark:border-slate-700 pt-8 mb-8">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Identity Verification</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                Required for dispute letters to be accepted by bureaus. These are stored in our secure encrypted vault.
+              </p>
+              
+              <div className="space-y-3">
+                <FileUploadField 
+                  label="Government Photo ID" 
+                  description="Driver's License, Passport, or State ID"
+                  accepted="image/*,.pdf"
+                />
+                <FileUploadField 
+                  label="Social Security Card" 
+                  description="Copy of card or W-2 form with full SSN" 
+                  accepted="image/*,.pdf"
+                />
+                <FileUploadField 
+                  label="Proof of Address" 
+                  description="Utility bill, bank statement, or insurance policy (last 60 days)" 
+                  accepted="image/*,.pdf"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end pt-4 border-t border-slate-100 dark:border-slate-700">
+               <button className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium shadow-sm transition-colors">
+                 Save Changes
+               </button>
             </div>
           </div>
         );
