@@ -1,11 +1,12 @@
 
-const CACHE_NAME = 'creditfix-v4';
+const CACHE_NAME = 'creditfix-v5-hard-reset';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json'
 ];
 
+// Install Event: Cache core assets
 self.addEventListener('install', (event) => {
   // Force the waiting service worker to become the active service worker.
   self.skipWaiting();
@@ -16,6 +17,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
+// Activate Event: Clean up old caches
 self.addEventListener('activate', (event) => {
   // Claim clients immediately so the new service worker takes control
   event.waitUntil(self.clients.claim());
@@ -26,6 +28,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -34,12 +37,22 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Fetch Event: Network first for navigation to ensure fresh index.html
 self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('/index.html');
-      })
+      fetch(event.request)
+        .then((response) => {
+          // If network works, update cache and return response
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, response.clone());
+            return response;
+          });
+        })
+        .catch(() => {
+          // If network fails, fall back to cache
+          return caches.match('/index.html');
+        })
     );
     return;
   }
@@ -51,6 +64,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+// Push Notifications
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
   const title = data.title || 'CreditFix Update';
