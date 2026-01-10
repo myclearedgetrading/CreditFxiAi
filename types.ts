@@ -10,7 +10,8 @@ export enum DisputeStrategy {
   VALIDATION = 'Debt Validation',
   GOODWILL = 'Goodwill Adjustment',
   IDENTITY_THEFT = 'Identity Theft',
-  LATE_PAYMENT = 'Late Payment Removal'
+  LATE_PAYMENT = 'Late Payment Removal',
+  METRO2 = 'Metro 2 Compliance Challenge'
 }
 
 export interface NegativeItem {

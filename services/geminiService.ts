@@ -22,6 +22,18 @@ export const generateDisputeLetter = async ({
   strategy,
   targetBureau
 }: GenerateLetterParams): Promise<string> => {
+  
+  let additionalContext = "";
+  if (strategy === DisputeStrategy.METRO2) {
+    additionalContext = `
+      CRITICAL: This is a Metro 2 Compliance Challenge. 
+      1. Explicitly demand an audit of the Metro 2 format data fields, specifically the "Account Status", "Payment History Profile", and "Compliance Condition Code".
+      2. State that the Consumer Data Industry Association (CDIA) Credit Reporting Resource Guide requires 100% accuracy in these fields.
+      3. Assert that standard e-OSCAR automated verification is insufficient proof of Metro 2 compliance.
+      4. Ask for the raw data transmission log associated with this account.
+    `;
+  }
+
   const prompt = `
     You are an expert Credit Repair Coach assisting a user in repairing their own credit.
     
@@ -41,6 +53,7 @@ export const generateDisputeLetter = async ({
     Error/Issue: ${item.type}
     
     Strategy to use: ${strategy}
+    ${additionalContext}
     
     Instructions:
     1. Write in the FIRST PERSON ("I am writing to dispute...").
@@ -95,7 +108,7 @@ export const analyzeCreditReportImage = async (base64Image: string, mimeType: st
         { 
           "itemId": string, 
           "creditorName": string, 
-          "recommendedStrategy": "Factual Dispute" | "Debt Validation" | "Goodwill Adjustment" | "Late Payment Removal", 
+          "recommendedStrategy": "Factual Dispute" | "Debt Validation" | "Goodwill Adjustment" | "Late Payment Removal" | "Metro 2 Compliance Challenge", 
           "confidenceScore": number, 
           "reasoning": string,
           "bureauToTarget": "Equifax" | "Experian" | "TransUnion"

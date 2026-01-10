@@ -11,6 +11,8 @@ import CommunicationHub from './pages/CommunicationHub';
 import SupportCenter from './pages/SupportCenter';
 import Settings from './pages/Settings';
 import GamificationCenter from './pages/GamificationCenter';
+import LearningCenter from './pages/LearningCenter';
+import BusinessFunding from './pages/BusinessFunding';
 import Onboarding from './pages/Onboarding';
 import { requestNotificationPermission } from './services/mobileService';
 import { ThemeProvider } from './context/ThemeContext';
@@ -102,6 +104,8 @@ const App: React.FC = () => {
                   <Route path="/analysis" element={<AnalysisEngine />} />
                   <Route path="/analytics" element={<Reports />} />
                   <Route path="/communication" element={<CommunicationHub />} />
+                  <Route path="/learning" element={<LearningCenter />} />
+                  <Route path="/funding" element={<BusinessFunding />} />
                   <Route path="/support" element={<SupportCenter />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/rewards" element={<GamificationCenter />} />
