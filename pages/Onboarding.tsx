@@ -453,11 +453,19 @@ const Onboarding: React.FC = () => {
       {/* Header Progress */}
       <div className="bg-white dark:bg-slate-800 px-6 py-4 shadow-sm border-b border-slate-100 dark:border-slate-700 flex justify-between items-center sticky top-0 z-50">
         <div className="flex items-center gap-4">
-          {step > 1 && (
-            <button onClick={handleBack} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-          )}
+          <button 
+            onClick={() => {
+              if (step > 1) {
+                handleBack();
+              } else {
+                vibrate(HAPTIC.LIGHT);
+                navigate('/');
+              }
+            }}
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
           <h1 className="font-bold text-lg text-slate-800 dark:text-white">Onboarding</h1>
         </div>
         <div className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">

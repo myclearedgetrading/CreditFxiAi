@@ -10,13 +10,20 @@ import {
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
 
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 text-white font-sans selection:bg-indigo-500 selection:text-white overflow-x-hidden">
       
       {/* --- NAVIGATION --- */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg">
               <Shield className="w-6 h-6 text-white" />
             </div>
@@ -24,10 +31,10 @@ const LandingPage: React.FC = () => {
           </div>
           
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-            <a href="#how-it-works" className="hover:text-white transition-colors">How it Works</a>
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <a href="#reviews" className="hover:text-white transition-colors">Reviews</a>
+            <button onClick={() => scrollToSection('how-it-works')} className="hover:text-white transition-colors">How it Works</button>
+            <button onClick={() => scrollToSection('features')} className="hover:text-white transition-colors">Features</button>
+            <button onClick={() => scrollToSection('pricing')} className="hover:text-white transition-colors">Pricing</button>
+            <button onClick={() => scrollToSection('reviews')} className="hover:text-white transition-colors">Reviews</button>
           </div>
 
           <div className="flex items-center gap-4">
@@ -74,7 +81,10 @@ const LandingPage: React.FC = () => {
               >
                 Start Repairing Now <ArrowRight className="w-5 h-5" />
               </button>
-              <button className="px-8 py-4 rounded-full font-bold text-lg border border-slate-700 hover:bg-slate-800 transition-all flex items-center justify-center gap-2">
+              <button 
+                onClick={() => scrollToSection('how-it-works')}
+                className="px-8 py-4 rounded-full font-bold text-lg border border-slate-700 hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+              >
                 <Zap className="w-5 h-5 text-yellow-400" /> See How It Works
               </button>
             </div>
@@ -359,9 +369,9 @@ const LandingPage: React.FC = () => {
           <div>
             <h4 className="font-bold text-white mb-4">Product</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-indigo-400">Features</a></li>
-              <li><a href="#" className="hover:text-indigo-400">Pricing</a></li>
-              <li><a href="#" className="hover:text-indigo-400">Success Stories</a></li>
+              <li><button onClick={() => scrollToSection('features')} className="hover:text-indigo-400">Features</button></li>
+              <li><button onClick={() => scrollToSection('pricing')} className="hover:text-indigo-400">Pricing</button></li>
+              <li><button onClick={() => scrollToSection('reviews')} className="hover:text-indigo-400">Success Stories</button></li>
             </ul>
           </div>
           <div>
