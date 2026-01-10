@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   CheckCircle2, ChevronRight, Upload, Shield, CreditCard, 
   FileText, User, Home, Car, TrendingUp, AlertCircle, 
-  ArrowLeft, Lock, PenTool, Loader2, X, Check
+  ArrowLeft, Lock, Loader2, Sparkles, Zap, Check, X
 } from 'lucide-react';
 import { vibrate, HAPTIC } from '../services/mobileService';
 
@@ -13,22 +14,27 @@ const Onboarding: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+  
+  // Connect Modal State
+  const [showConnectModal, setShowConnectModal] = useState(false);
+  const [connectLoading, setConnectLoading] = useState(false);
+  const [connectForm, setConnectForm] = useState({
+    provider: 'IdentityIQ',
+    username: '',
+    password: ''
+  });
   
   const [formData, setFormData] = useState({
-    goals: [] as string[],
     firstName: '',
-    lastName: '',
-    dob: '',
-    ssn: '',
-    idFile: null as string | null,
-    utilityFile: null as string | null,
-    reportFile: null as string | null,
+    goal: '', // Simplified to single string for primary goal
     reportProvider: '',
+    reportFile: null as string | null,
     agreedToTerms: false
   });
 
-  // Load state from local storage on mount
+  // Load state
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -42,30 +48,19 @@ const Onboarding: React.FC = () => {
     }
   }, []);
 
-  // Save state to local storage on change
+  // Save state
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, formData }));
   }, [step, formData]);
 
-  const totalSteps = 5;
-
-  const validateStep = () => {
-    switch(step) {
-      case 1: return formData.goals.length > 0;
-      case 2: return formData.firstName && formData.lastName && formData.dob && formData.ssn.length >= 4;
-      case 3: return !!formData.idFile && !!formData.utilityFile;
-      case 4: return !!formData.reportProvider || !!formData.reportFile;
-      case 5: return formData.agreedToTerms;
-      default: return false;
-    }
-  };
+  const totalSteps = 3;
 
   const handleNext = () => {
-    if (!validateStep()) {
+    if (step === 1 && (!formData.firstName.trim() || !formData.goal)) {
       vibrate(HAPTIC.ERROR);
-      alert("Please complete all required fields.");
-      return;
+      return; // Validation handled by UI state usually
     }
+    
     vibrate(HAPTIC.LIGHT);
     if (step < totalSteps) {
       setStep(step + 1);
@@ -79,377 +74,271 @@ const Onboarding: React.FC = () => {
     if (step > 1) setStep(step - 1);
   };
 
+  const handleConnectSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!connectForm.username || !connectForm.password) {
+        vibrate(HAPTIC.ERROR);
+        return;
+    }
+
+    setConnectLoading(true);
+    vibrate(HAPTIC.MEDIUM);
+
+    // Simulate API Connection (Backend Scraper)
+    setTimeout(() => {
+        setConnectLoading(false);
+        setShowConnectModal(false);
+        setFormData(prev => ({
+            ...prev,
+            reportProvider: connectForm.provider,
+            reportFile: null
+        }));
+        vibrate(HAPTIC.SUCCESS);
+        handleNext();
+    }, 2000);
+  };
+
+  const handleManualUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      vibrate(HAPTIC.MEDIUM);
+      const file = e.target.files[0];
+      setFormData(prev => ({
+        ...prev, 
+        reportFile: file.name, 
+        reportProvider: 'Manual Upload'
+      }));
+      handleNext();
+    }
+  };
+
   const completeOnboarding = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      setShowConfetti(true);
       vibrate(HAPTIC.SUCCESS);
-      
-      // Clear storage after success
       localStorage.removeItem(STORAGE_KEY);
-      
-      setTimeout(() => {
-        navigate('/');
-      }, 2500);
-    }, 2000);
+      navigate('/dashboard');
+    }, 1500);
   };
 
-  const toggleGoal = (goal: string) => {
-    setFormData(prev => ({
-      ...prev,
-      goals: prev.goals.includes(goal) 
-        ? prev.goals.filter(g => g !== goal)
-        : [...prev.goals, goal]
-    }));
-  };
-
-  const simulateUpload = (field: 'idFile' | 'utilityFile' | 'reportFile') => {
+  const runAiScan = () => {
+    setAnalyzing(true);
     vibrate(HAPTIC.MEDIUM);
-    // Simulate file selection with generic names
-    const mockNames = {
-      idFile: 'photo_id.jpg',
-      utilityFile: 'proof_of_address.pdf',
-      reportFile: 'credit_report.pdf'
-    };
-    setFormData(prev => ({ ...prev, [field]: mockNames[field] }));
+    // Simulate AI Scan
+    setTimeout(() => {
+        setAnalyzing(false);
+        setAnalysisComplete(true);
+        vibrate(HAPTIC.SUCCESS);
+    }, 2500);
   };
 
-  const renderStep1_Goals = () => (
-    <div className="space-y-6 animate-fade-in">
+  const renderStep1_Personalize = () => (
+    <div className="space-y-8 animate-fade-in">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">What are your financial goals?</h2>
-        <p className="text-slate-500 dark:text-slate-400 mt-2">Select at least one. This helps us prioritize your disputes.</p>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {[
-          { id: 'mortgage', label: 'Buy a House', icon: Home },
-          { id: 'auto', label: 'Buy a Car', icon: Car },
-          { id: 'card', label: 'Get Credit Cards', icon: CreditCard },
-          { id: 'score', label: '700+ Score', icon: TrendingUp },
-          { id: 'clean', label: 'Remove Collections', icon: FileText },
-          { id: 'identity', label: 'Fix Identity Theft', icon: Shield },
-        ].map((item) => (
-          <div 
-            key={item.id}
-            onClick={() => toggleGoal(item.id)}
-            className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center gap-4 ${
-              formData.goals.includes(item.id)
-                ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-500'
-                : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800'
-            }`}
-          >
-            <div className={`p-2 rounded-full ${formData.goals.includes(item.id) ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>
-              <item.icon className="w-5 h-5" />
-            </div>
-            <span className={`font-semibold ${formData.goals.includes(item.id) ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-700 dark:text-slate-300'}`}>
-              {item.label}
-            </span>
-            {formData.goals.includes(item.id) && <CheckCircle2 className="ml-auto w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderStep2_Profile = () => (
-    <div className="space-y-6 animate-fade-in">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Confirm Your Details</h2>
-        <p className="text-slate-500 dark:text-slate-400 mt-2">Ensure this matches your government ID exactly.</p>
+        <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">Let's start your journey.</h2>
+        <p className="text-slate-500 dark:text-slate-400">We'll build a custom dispute strategy for you.</p>
       </div>
 
-      <div className="space-y-4 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">First Name <span className="text-red-500">*</span></label>
+      <div className="space-y-4">
+        <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">What should we call you?</label>
             <input 
               type="text" 
               value={formData.firstName}
               onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-              placeholder="Enter first name"
-              className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white"
+              placeholder="Your First Name"
+              className="w-full p-4 text-lg border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm"
+              autoFocus
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Last Name <span className="text-red-500">*</span></label>
-            <input 
-              type="text" 
-              value={formData.lastName}
-              onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-              placeholder="Enter last name"
-              className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white"
-            />
-          </div>
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date of Birth <span className="text-red-500">*</span></label>
-          <input 
-            type="date" 
-            value={formData.dob}
-            onChange={(e) => setFormData({...formData, dob: e.target.value})}
-            className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Social Security Number <span className="text-red-500">*</span></label>
-          <div className="relative">
-            <input 
-              type="password" 
-              placeholder="XXX-XX-XXXX"
-              value={formData.ssn}
-              onChange={(e) => setFormData({...formData, ssn: e.target.value})}
-              className="w-full p-3 pl-10 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white tracking-widest"
-            />
-            <Lock className="absolute left-3 top-3.5 w-4 h-4 text-slate-400" />
-          </div>
-          <p className="text-xs text-slate-400 mt-1 flex items-center">
-            <Shield className="w-3 h-3 mr-1" /> Encrypted with AES-256
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderStep3_Identity = () => (
-    <div className="space-y-6 animate-fade-in">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Verify Identity</h2>
-        <p className="text-slate-500 dark:text-slate-400 mt-2">Required by the credit bureaus to process disputes.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Photo ID Upload */}
-        <div 
-          onClick={() => simulateUpload('idFile')}
-          className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
-            formData.idFile 
-              ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
-              : 'border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 bg-white dark:bg-slate-800/50'
-          }`}
-        >
-          {formData.idFile ? (
-            <>
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mb-4">
-                <Check className="w-8 h-8" />
-              </div>
-              <h3 className="font-bold text-green-700 dark:text-green-300">ID Uploaded</h3>
-              <p className="text-xs text-green-600 dark:text-green-400 mt-1 mb-4">{formData.idFile}</p>
-              <button 
-                onClick={(e) => { e.stopPropagation(); setFormData({...formData, idFile: null}); }}
-                className="text-xs text-red-500 hover:underline"
-              >
-                Remove
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mb-4">
-                <User className="w-8 h-8" />
-              </div>
-              <h3 className="font-bold text-slate-700 dark:text-slate-200">Photo ID</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4">Driver's License or Passport</p>
-              <button className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg">Upload Photo</button>
-            </>
-          )}
-        </div>
-
-        {/* Proof of Address Upload */}
-        <div 
-          onClick={() => simulateUpload('utilityFile')}
-          className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
-            formData.utilityFile
-              ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
-              : 'border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 bg-white dark:bg-slate-800/50'
-          }`}
-        >
-          {formData.utilityFile ? (
-            <>
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mb-4">
-                <Check className="w-8 h-8" />
-              </div>
-              <h3 className="font-bold text-green-700 dark:text-green-300">Proof Uploaded</h3>
-              <p className="text-xs text-green-600 dark:text-green-400 mt-1 mb-4">{formData.utilityFile}</p>
-              <button 
-                onClick={(e) => { e.stopPropagation(); setFormData({...formData, utilityFile: null}); }}
-                className="text-xs text-red-500 hover:underline"
-              >
-                Remove
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mb-4">
-                <Home className="w-8 h-8" />
-              </div>
-              <h3 className="font-bold text-slate-700 dark:text-slate-200">Proof of Address</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4">Utility Bill or Bank Statement</p>
-              <button className="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50">Upload Photo</button>
-            </>
-          )}
-        </div>
-      </div>
-      
-      <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-yellow-800 dark:text-yellow-200">
-          Make sure all 4 corners of the document are visible and the text is clear. Addresses must match your profile.
-        </p>
-      </div>
-    </div>
-  );
-
-  const renderStep4_CreditReport = () => (
-    <div className="space-y-6 animate-fade-in">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Import Credit Report</h2>
-        <p className="text-slate-500 dark:text-slate-400 mt-2">Connect a monitoring service to automatically import your data.</p>
-      </div>
-
-      <div className="space-y-3">
-        {['IdentityIQ', 'SmartCredit', 'PrivacyGuard', 'MyScoreIQ'].map((provider) => (
-          <div 
-            key={provider}
-            onClick={() => setFormData(prev => ({...prev, reportProvider: provider, reportFile: null}))}
-            className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-              formData.reportProvider === provider 
-                ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-500' 
-                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-indigo-300'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center font-bold text-slate-600 dark:text-slate-300 text-xs">
-                LOGO
-              </div>
-              <span className="font-semibold text-slate-800 dark:text-white">{provider}</span>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">What is your #1 goal?</label>
+            <div className="grid grid-cols-2 gap-3">
+                {[
+                { id: 'score', label: 'Boost Score', icon: TrendingUp },
+                { id: 'clean', label: 'Remove Items', icon: Shield },
+                { id: 'mortgage', label: 'Buy a House', icon: Home },
+                { id: 'auto', label: 'Buy a Car', icon: Car },
+                ].map((item) => (
+                <div 
+                    key={item.id}
+                    onClick={() => {
+                        setFormData({...formData, goal: item.id});
+                        vibrate(HAPTIC.LIGHT);
+                    }}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center gap-2 text-center h-32 ${
+                    formData.goal === item.id
+                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-500 shadow-md transform scale-[1.02]'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800'
+                    }`}
+                >
+                    <div className={`p-2 rounded-full ${formData.goal === item.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>
+                    <item.icon className="w-6 h-6" />
+                    </div>
+                    <span className={`font-bold text-sm ${formData.goal === item.id ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-700 dark:text-slate-300'}`}>
+                    {item.label}
+                    </span>
+                </div>
+                ))}
             </div>
-            {formData.reportProvider === provider ? (
-              <div className="flex items-center text-indigo-600 dark:text-indigo-400 text-sm font-bold">
-                <CheckCircle2 className="w-5 h-5 mr-1" /> Connected
-              </div>
-            ) : (
-              <ChevronRight className="w-5 h-5 text-slate-400" />
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div className="relative py-4">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-slate-50 dark:bg-slate-900 text-slate-500">Or manually upload</span>
         </div>
       </div>
-
-      <button 
-        onClick={() => simulateUpload('reportFile')}
-        className={`w-full py-3 border border-dashed rounded-xl transition-colors flex items-center justify-center gap-2 ${
-          formData.reportFile
-            ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-            : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'
-        }`}
-      >
-        {formData.reportFile ? (
-          <>
-            <CheckCircle2 className="w-5 h-5" />
-            Uploaded: {formData.reportFile}
-          </>
-        ) : (
-          <>
-            <Upload className="w-5 h-5" />
-            Upload PDF Report
-          </>
-        )}
-      </button>
     </div>
   );
 
-  const renderStep5_Agreement = () => (
-    <div className="space-y-6 animate-fade-in">
+  const renderStep2_Connect = () => (
+    <div className="space-y-8 animate-fade-in">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Service Agreement</h2>
-        <p className="text-slate-500 dark:text-slate-400 mt-2">Please review and sign to authorize us to work on your behalf.</p>
+        <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">Connect your report.</h2>
+        <p className="text-slate-500 dark:text-slate-400">We need your credit data to find errors. Securely connect or upload a file.</p>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl h-64 overflow-y-auto text-sm text-slate-600 dark:text-slate-300 leading-relaxed shadow-inner">
-        <p className="font-bold mb-2">LIMITED POWER OF ATTORNEY</p>
-        <p className="mb-4">
-          I, {formData.firstName || '[First Name]'} {formData.lastName || '[Last Name]'}, hereby grant CreditFix AI Limited Power of Attorney for the sole purpose of drafting and sending correspondence to credit bureaus (Equifax, Experian, TransUnion), creditors, and collection agencies...
-        </p>
-        <p className="font-bold mb-2">SERVICE TERMS</p>
-        <p className="mb-4">
-          Services provided are for credit education and document preparation. No specific results are guaranteed as per CROA regulations...
-        </p>
-        <p>[... Full Legal Text ...]</p>
-      </div>
-
-      <div className="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-        <input 
-          type="checkbox" 
-          id="agree"
-          checked={formData.agreedToTerms}
-          onChange={(e) => setFormData({...formData, agreedToTerms: e.target.checked})}
-          className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
-        />
-        <label htmlFor="agree" className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-          I have read and agree to the Service Agreement and grant Limited Power of Attorney.
-        </label>
-      </div>
-
-      <div className="border border-slate-300 dark:border-slate-600 rounded-xl p-4 bg-white dark:bg-slate-800">
-        <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Digital Signature</label>
-        <div className="h-20 flex items-center justify-center text-4xl font-cursive text-indigo-900 dark:text-indigo-300 italic opacity-80 border-b border-dashed border-slate-200">
-          {formData.agreedToTerms ? `${formData.firstName} ${formData.lastName}` : ''}
+      <div className="space-y-4">
+        <div 
+            onClick={() => {
+                vibrate(HAPTIC.LIGHT);
+                setShowConnectModal(true);
+            }}
+            className="group relative overflow-hidden bg-white dark:bg-slate-800 border-2 border-indigo-100 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-2xl p-6 cursor-pointer transition-all shadow-sm hover:shadow-md"
+        >
+            <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                        <Zap className="w-6 h-6 fill-current" />
+                    </div>
+                    <div className="text-left">
+                        <h3 className="font-bold text-lg text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Instant Connect</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">IdentityIQ, SmartCredit, etc.</p>
+                    </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-500" />
+            </div>
         </div>
-        <div className="flex justify-between items-center mt-2 text-xs text-slate-400">
-          <span>Signed: {new Date().toLocaleDateString()}</span>
-          <div className="flex items-center gap-1 text-indigo-600 cursor-pointer">
-            <PenTool className="w-3 h-3" /> Redraw
-          </div>
+
+        <div className="relative py-2">
+            <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold">
+            <span className="px-2 bg-slate-50 dark:bg-slate-900 text-slate-400">OR</span>
+            </div>
         </div>
+
+        <div 
+            onClick={() => document.getElementById('report-upload')?.click()}
+            className="flex items-center gap-4 p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+        >
+            <input 
+              type="file" 
+              id="report-upload" 
+              className="hidden" 
+              accept=".pdf,.html" 
+              onChange={handleManualUpload}
+            />
+            <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center text-slate-500">
+                <Upload className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+                <h3 className="font-bold text-sm text-slate-700 dark:text-slate-300">Upload Manualy (PDF/HTML)</h3>
+                <p className="text-xs text-slate-500">Best for: Right-click "Save As" HTML</p>
+            </div>
+        </div>
+
+        <button 
+            onClick={handleNext}
+            className="w-full py-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-sm font-medium transition-colors"
+        >
+            I don't have a report yet (Skip)
+        </button>
       </div>
     </div>
   );
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-slate-900 animate-fade-in">
-        <Loader2 className="w-16 h-16 text-indigo-600 animate-spin mb-4" />
-        <h2 className="text-xl font-bold text-slate-800 dark:text-white">Setting Up Your Dashboard</h2>
-        <p className="text-slate-500 mt-2">AI is analyzing your credit profile...</p>
-      </div>
-    );
-  }
-
-  if (showConfetti) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-slate-900 animate-fade-in relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-           {/* Simple CSS-only confetti effect simulation */}
-           {[...Array(20)].map((_, i) => (
-             <div key={i} className={`absolute animate-bounce`} style={{
-               left: `${Math.random() * 100}%`,
-               top: `${Math.random() * 50}%`,
-               animationDelay: `${Math.random()}s`,
-               fontSize: '24px'
-             }}>
-               {['🎉', '✨', '🚀', '✅'][i % 4]}
+  const renderStep3_Analyze = () => (
+    <div className="space-y-8 animate-fade-in text-center">
+      {!analysisComplete && !analyzing && (
+          <div className="py-10">
+             <div className="w-24 h-24 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Sparkles className="w-12 h-12 text-indigo-600 dark:text-indigo-400" />
              </div>
-           ))}
-        </div>
-        <CheckCircle2 className="w-24 h-24 text-green-500 mb-6 animate-pulse" />
-        <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">All Set!</h2>
-        <p className="text-slate-500 text-lg">Welcome to CreditFix AI.</p>
-        <p className="text-sm text-slate-400 mt-2">Redirecting to dashboard...</p>
-      </div>
-    );
-  }
+             <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-4">Ready to analyze?</h2>
+             <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-sm mx-auto">
+               Our AI will scan your profile for negative items, errors, and improvement opportunities.
+             </p>
+             <button 
+                onClick={runAiScan}
+                className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg shadow-xl shadow-indigo-200 dark:shadow-none hover:scale-[1.02] transition-transform"
+             >
+                Start AI Scan
+             </button>
+          </div>
+      )}
+
+      {analyzing && (
+          <div className="py-20 flex flex-col items-center">
+             <Loader2 className="w-16 h-16 text-indigo-600 animate-spin mb-6" />
+             <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Analyzing Profile...</h2>
+             <p className="text-slate-500 animate-pulse">Checking for collections...</p>
+          </div>
+      )}
+
+      {analysisComplete && (
+          <div className="animate-fade-in">
+             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold uppercase tracking-wider mb-6">
+                <CheckCircle2 className="w-3 h-3" /> Scan Complete
+             </div>
+             <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-6">We found 5 items to fix!</h2>
+             
+             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-8 text-left">
+                <div className="flex justify-between items-center mb-4 border-b border-slate-100 dark:border-slate-700 pb-4">
+                    <span className="font-bold text-slate-700 dark:text-slate-300">Potential Score Boost</span>
+                    <span className="text-green-600 dark:text-green-400 font-bold text-xl">+40-100 pts</span>
+                </div>
+                <ul className="space-y-3">
+                    <li className="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                        <AlertCircle className="w-4 h-4 text-red-500 mr-2" /> 2 Collections Found
+                    </li>
+                    <li className="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                        <AlertCircle className="w-4 h-4 text-orange-500 mr-2" /> 1 Late Payment Found
+                    </li>
+                    <li className="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                        <AlertCircle className="w-4 h-4 text-yellow-500 mr-2" /> 2 Inquiries to Challenge
+                    </li>
+                </ul>
+             </div>
+
+             <div className="flex items-center gap-3 mb-6 justify-center">
+                <input 
+                type="checkbox" 
+                id="agree"
+                checked={formData.agreedToTerms}
+                onChange={(e) => setFormData({...formData, agreedToTerms: e.target.checked})}
+                className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                />
+                <label htmlFor="agree" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer text-left">
+                I agree to the <span className="underline">Terms</span> and grant Limited Power of Attorney.
+                </label>
+            </div>
+
+             <button 
+                onClick={completeOnboarding}
+                disabled={!formData.agreedToTerms}
+                className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${
+                    formData.agreedToTerms
+                    ? 'bg-green-600 text-white hover:bg-green-700 shadow-green-200 dark:shadow-none'
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed dark:bg-slate-700'
+                }`}
+                >
+                Fix My Credit Now <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+      )}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col relative">
       {/* Header Progress */}
       <div className="bg-white dark:bg-slate-800 px-6 py-4 shadow-sm border-b border-slate-100 dark:border-slate-700 flex justify-between items-center sticky top-0 z-50">
         <div className="flex items-center gap-4">
@@ -466,57 +355,109 @@ const Onboarding: React.FC = () => {
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="font-bold text-lg text-slate-800 dark:text-white">Onboarding</h1>
-        </div>
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400">
-          Step {step} of {totalSteps}
-          <div className="w-24 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-indigo-600 transition-all duration-300"
-              style={{ width: `${(step / totalSteps) * 100}%` }}
-            />
+          
+          {/* Simple Dots Progress */}
+          <div className="flex gap-2">
+            {[1, 2, 3].map(i => (
+                <div key={i} className={`w-2 h-2 rounded-full transition-colors ${step >= i ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'}`} />
+            ))}
           </div>
+        </div>
+        <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+            {step === 1 ? 'Start' : step === 2 ? 'Connect' : 'Analyze'}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 max-w-2xl w-full mx-auto p-6 pb-32">
-        {step === 1 && renderStep1_Goals()}
-        {step === 2 && renderStep2_Profile()}
-        {step === 3 && renderStep3_Identity()}
-        {step === 4 && renderStep4_CreditReport()}
-        {step === 5 && renderStep5_Agreement()}
+      <div className="flex-1 max-w-md w-full mx-auto p-6 pb-32 flex flex-col justify-center">
+        {step === 1 && renderStep1_Personalize()}
+        {step === 2 && renderStep2_Connect()}
+        {step === 3 && renderStep3_Analyze()}
       </div>
 
-      {/* Footer Actions */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 p-6 border-t border-slate-100 dark:border-slate-700 flex justify-center">
-        <div className="max-w-2xl w-full flex gap-4">
-          {step < totalSteps ? (
-            <button 
-              onClick={handleNext}
-              className={`w-full py-4 text-white rounded-xl font-bold text-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${
-                validateStep() 
-                  ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200 dark:shadow-none' 
-                  : 'bg-slate-300 cursor-not-allowed dark:bg-slate-700'
-              }`}
-            >
-              Continue <ChevronRight className="w-5 h-5" />
-            </button>
-          ) : (
-            <button 
-              onClick={completeOnboarding}
-              disabled={!formData.agreedToTerms}
-              className={`w-full py-4 text-white rounded-xl font-bold text-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${
-                formData.agreedToTerms
-                  ? 'bg-green-600 hover:bg-green-700 shadow-green-200 dark:shadow-none'
-                  : 'bg-slate-300 cursor-not-allowed dark:bg-slate-700'
-              }`}
-            >
-              Complete Setup <CheckCircle2 className="w-5 h-5" />
-            </button>
-          )}
+      {/* Footer Actions (Only for Step 1, others have inline buttons) */}
+      {step === 1 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 p-6 border-t border-slate-100 dark:border-slate-700 flex justify-center">
+            <div className="max-w-md w-full">
+                <button 
+                onClick={handleNext}
+                disabled={!formData.firstName || !formData.goal}
+                className={`w-full py-4 text-white rounded-xl font-bold text-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${
+                    formData.firstName && formData.goal
+                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200 dark:shadow-none' 
+                    : 'bg-slate-300 cursor-not-allowed dark:bg-slate-700'
+                }`}
+                >
+                Continue <ChevronRight className="w-5 h-5" />
+                </button>
+            </div>
         </div>
-      </div>
+      )}
+
+      {/* LOGIN MODAL */}
+      {showConnectModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-200 dark:border-slate-700">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                    <h3 className="font-bold text-lg text-slate-800 dark:text-white">Connect Report</h3>
+                    <button onClick={() => setShowConnectModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                <form onSubmit={handleConnectSubmit} className="p-6 space-y-4">
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Provider</label>
+                        <select 
+                            value={connectForm.provider}
+                            onChange={(e) => setConnectForm({...connectForm, provider: e.target.value})}
+                            className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                            <option value="IdentityIQ">IdentityIQ</option>
+                            <option value="SmartCredit">SmartCredit</option>
+                            <option value="PrivacyGuard">PrivacyGuard</option>
+                            <option value="MyScoreIQ">MyScoreIQ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Username / Email</label>
+                        <input 
+                            type="text" 
+                            placeholder="Enter username"
+                            value={connectForm.username}
+                            onChange={(e) => setConnectForm({...connectForm, username: e.target.value})}
+                            className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Password</label>
+                        <div className="relative">
+                            <input 
+                                type="password" 
+                                placeholder="Enter password"
+                                value={connectForm.password}
+                                onChange={(e) => setConnectForm({...connectForm, password: e.target.value})}
+                                className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                            <Lock className="absolute right-3 top-3.5 w-4 h-4 text-slate-400" />
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-center gap-2 text-xs text-green-600 dark:text-green-400 font-medium py-1">
+                        <Lock className="w-3 h-3" /> 256-bit Bank Level Encryption
+                    </div>
+
+                    <button 
+                        type="submit"
+                        disabled={connectLoading || !connectForm.username || !connectForm.password}
+                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                        {connectLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Zap className="w-5 h-5" />}
+                        {connectLoading ? 'Verifying...' : 'Secure Connect'}
+                    </button>
+                </form>
+            </div>
+        </div>
+      )}
     </div>
   );
 };

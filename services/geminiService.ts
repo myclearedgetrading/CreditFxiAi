@@ -81,6 +81,63 @@ export const generateDisputeLetter = async ({
   }
 };
 
+export const analyzeCreditReportHTML = async (htmlContent: string): Promise<CreditAnalysisResult> => {
+  const prompt = `
+    Analyze this raw HTML credit report. You are an expert credit analyst.
+    
+    Data to Extract:
+    1. Identify all negative items (Collections, Late Payments, Charge-offs).
+    2. Compare data across bureaus (Equifax, Experian, TransUnion) to find factual discrepancies (e.g., different open dates, balances, or account status).
+    3. Calculate potential score improvement if these items are removed.
+
+    Return JSON ONLY:
+    {
+      "summary": {
+        "totalNegativeItems": number,
+        "estimatedScoreImprovement": number,
+        "utilizationRate": number
+      },
+      "negativeItems": [
+        { "creditor": string, "accountType": string, "amount": number, "bureau": string, "date": string }
+      ],
+      "discrepancies": [
+        { "type": "BALANCE_MISMATCH" | "DATE_MISMATCH" | "STATUS_CONFLICT", "description": string, "severity": "HIGH" | "MEDIUM", "itemsInvolved": [string] }
+      ],
+      "recommendations": [
+        { 
+          "itemId": string, 
+          "creditorName": string, 
+          "recommendedStrategy": "Factual Dispute" | "Debt Validation" | "Goodwill Adjustment" | "Late Payment Removal" | "Metro 2 Compliance Challenge", 
+          "confidenceScore": number, 
+          "reasoning": string,
+          "bureauToTarget": "Equifax" | "Experian" | "TransUnion"
+        }
+      ],
+      "actionPlan": [
+        { "phase": "Day 1-30", "actions": [string], "expectedOutcome": string }
+      ]
+    }
+  `;
+
+  try {
+    // Truncate HTML if too large for token limit, focusing on body content
+    const truncatedHTML = htmlContent.length > 300000 ? htmlContent.substring(0, 300000) : htmlContent;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview', // Use Pro for complex HTML parsing
+      contents: prompt + "\n\nHTML CONTENT:\n" + truncatedHTML,
+      config: {
+        responseMimeType: "application/json"
+      }
+    });
+
+    return JSON.parse(response.text || "{}");
+  } catch (error) {
+    console.error("Gemini Parsing Error:", error);
+    throw new Error("Failed to analyze HTML report.");
+  }
+};
+
 export const analyzeCreditReportImage = async (base64Image: string, mimeType: string): Promise<CreditAnalysisResult> => {
   const prompt = `
     Analyze this credit report image for the user. Act as their personal FICO score coach.
