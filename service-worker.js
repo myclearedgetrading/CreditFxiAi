@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'creditfix-v2';
+const CACHE_NAME = 'creditfix-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
