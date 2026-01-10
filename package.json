@@ -1,7 +1,7 @@
 {
   "name": "creditfix-ai-crm",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,20 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "@google/genai": "^1.35.0",
-    "lucide-react": "^0.562.0",
-    "recharts": "^3.6.0",
-    "react-router-dom": "^7.12.0",
-    "firebase": "^12.7.0",
-    "next": "^16.1.1",
-    "firebase-admin": "^13.6.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "lucide-react": "^0.292.0",
+    "recharts": "^2.9.0",
+    "firebase": "^10.7.1",
+    "@google/genai": "^0.1.1"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0"
   }
 }
