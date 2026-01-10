@@ -92,17 +92,17 @@ const CommunicationHub: React.FC = () => {
   return (
     <div className="space-y-6 animate-fade-in h-[calc(100vh-100px)] flex flex-col">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
-          <MessageCircle className="text-indigo-600 w-8 h-8" />
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+          <MessageCircle className="text-indigo-600 dark:text-indigo-400 w-8 h-8" />
           Intelligent Communication Hub
         </h1>
-        <p className="text-slate-500 mt-1">
+        <p className="text-slate-500 dark:text-slate-400 mt-1">
           Unified platform for AI chat, campaigns, SMS, and client education.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 space-x-6 overflow-x-auto flex-shrink-0">
+      <div className="flex border-b border-slate-200 dark:border-slate-700 space-x-6 overflow-x-auto flex-shrink-0">
         {[
           { id: 'chatbot', label: 'AI Chatbot Simulator', icon: Bot },
           { id: 'campaigns', label: 'Email Campaigns', icon: Mail },
@@ -116,8 +116,8 @@ const CommunicationHub: React.FC = () => {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center pb-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.id 
-                ? 'border-indigo-600 text-indigo-600' 
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' 
+                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
             }`}
           >
             <tab.icon className="w-4 h-4 mr-2" />
@@ -132,12 +132,12 @@ const CommunicationHub: React.FC = () => {
         {/* CHATBOT SIMULATOR */}
         {activeTab === 'chatbot' && (
           <div className="h-full flex gap-6">
-            <div className="w-full lg:w-2/3 bg-white rounded-xl shadow-sm border border-slate-100 flex flex-col overflow-hidden">
-              <div className="p-4 border-b border-slate-100 bg-indigo-50 flex justify-between items-center">
-                <span className="font-bold text-indigo-900 flex items-center">
+            <div className="w-full lg:w-2/3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col overflow-hidden transition-colors">
+              <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-900/20 flex justify-between items-center">
+                <span className="font-bold text-indigo-900 dark:text-indigo-200 flex items-center">
                   <Bot className="w-5 h-5 mr-2" /> Client Portal Chat Simulator
                 </span>
-                <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-bold">Online</span>
+                <span className="text-xs bg-green-200 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full font-bold">Online</span>
               </div>
               
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -146,7 +146,7 @@ const CommunicationHub: React.FC = () => {
                     <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
                       msg.sender === 'user' 
                         ? 'bg-indigo-600 text-white rounded-br-none' 
-                        : 'bg-slate-100 text-slate-800 rounded-bl-none'
+                        : 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white rounded-bl-none'
                     }`}>
                       {msg.text}
                     </div>
@@ -154,18 +154,18 @@ const CommunicationHub: React.FC = () => {
                 ))}
                 {isTyping && (
                   <div className="flex justify-start">
-                    <div className="bg-slate-100 rounded-2xl rounded-bl-none px-4 py-3 text-xs text-slate-400 italic">
+                    <div className="bg-slate-100 dark:bg-slate-700 rounded-2xl rounded-bl-none px-4 py-3 text-xs text-slate-400 italic">
                       AI is thinking...
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="p-4 border-t border-slate-100">
+              <div className="p-4 border-t border-slate-100 dark:border-slate-700">
                 <div className="flex gap-2">
                   <input 
                     type="text" 
-                    className="flex-1 border border-slate-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="flex-1 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white dark:bg-slate-700 dark:text-white"
                     placeholder="Type a message as a client..."
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
@@ -182,9 +182,9 @@ const CommunicationHub: React.FC = () => {
             </div>
 
             <div className="hidden lg:block w-1/3 space-y-4">
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <h3 className="font-bold text-slate-800 mb-2">Bot Capabilities</h3>
-                <ul className="space-y-2 text-sm text-slate-600">
+              <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <h3 className="font-bold text-slate-800 dark:text-white mb-2">Bot Capabilities</h3>
+                <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
                   <li className="flex items-center"><Check className="w-4 h-4 mr-2 text-green-500" /> Answer FAQs</li>
                   <li className="flex items-center"><Check className="w-4 h-4 mr-2 text-green-500" /> Check Dispute Status</li>
                   <li className="flex items-center"><Check className="w-4 h-4 mr-2 text-green-500" /> Booking Appointments</li>
@@ -203,9 +203,9 @@ const CommunicationHub: React.FC = () => {
                 <Plus className="w-4 h-4 mr-2" /> New Campaign
               </button>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
+                <thead className="bg-slate-50 dark:bg-slate-750 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
                   <tr>
                     <th className="p-4">Campaign Name</th>
                     <th className="p-4">Status</th>
@@ -215,21 +215,21 @@ const CommunicationHub: React.FC = () => {
                     <th className="p-4">Next Scheduled</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                   {MOCK_CAMPAIGNS.map((camp) => (
-                    <tr key={camp.id} className="hover:bg-slate-50">
-                      <td className="p-4 font-medium text-slate-800">{camp.name}</td>
+                    <tr key={camp.id} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+                      <td className="p-4 font-medium text-slate-800 dark:text-white">{camp.name}</td>
                       <td className="p-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                          camp.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600'
+                          camp.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
                         }`}>
                           {camp.status}
                         </span>
                       </td>
-                      <td className="p-4 text-slate-600">{camp.audience}</td>
-                      <td className="p-4">{camp.openRate}%</td>
-                      <td className="p-4">{camp.clickRate}%</td>
-                      <td className="p-4 text-slate-500">{camp.nextScheduled || '-'}</td>
+                      <td className="p-4 text-slate-600 dark:text-slate-400">{camp.audience}</td>
+                      <td className="p-4 text-slate-600 dark:text-slate-300">{camp.openRate}%</td>
+                      <td className="p-4 text-slate-600 dark:text-slate-300">{camp.clickRate}%</td>
+                      <td className="p-4 text-slate-500 dark:text-slate-400">{camp.nextScheduled || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -241,26 +241,26 @@ const CommunicationHub: React.FC = () => {
         {/* SMS CONSOLE */}
         {activeTab === 'sms' && (
           <div className="h-full grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
-              <div className="p-4 border-b border-slate-100">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col">
+              <div className="p-4 border-b border-slate-100 dark:border-slate-700">
                 <div className="relative">
                   <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                  <input type="text" placeholder="Search messages..." className="w-full pl-9 pr-4 py-2 bg-slate-50 rounded-lg text-sm focus:outline-none" />
+                  <input type="text" placeholder="Search messages..." className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-700 rounded-lg text-sm focus:outline-none dark:text-white" />
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto">
                 {MOCK_SMS.map((sms) => (
-                  <div key={sms.id} className={`p-4 border-b border-slate-50 cursor-pointer hover:bg-slate-50 ${sms.unread ? 'bg-indigo-50' : ''}`}>
+                  <div key={sms.id} className={`p-4 border-b border-slate-50 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors ${sms.unread ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''}`}>
                     <div className="flex justify-between mb-1">
-                      <span className="font-bold text-slate-800 text-sm">{sms.clientName}</span>
+                      <span className="font-bold text-slate-800 dark:text-white text-sm">{sms.clientName}</span>
                       <span className="text-xs text-slate-400">{sms.timestamp}</span>
                     </div>
-                    <p className="text-xs text-slate-500 truncate">{sms.lastMessage}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{sms.lastMessage}</p>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center text-slate-400">
+            <div className="md:col-span-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center text-slate-400">
               <div className="text-center">
                 <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-20" />
                 <p>Select a conversation to view details</p>
@@ -273,20 +273,20 @@ const CommunicationHub: React.FC = () => {
         {activeTab === 'calendar' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {MOCK_APPOINTMENTS.map((appt) => (
-              <div key={appt.id} className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 hover:border-indigo-200 transition-colors">
+              <div key={appt.id} className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-500 transition-colors">
                  <div className="flex justify-between items-start mb-4">
-                   <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                   <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
                      <Video className="w-5 h-5" />
                    </div>
                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                     appt.status === 'Confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                     appt.status === 'Confirmed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                    }`}>
                      {appt.status}
                    </span>
                  </div>
-                 <h4 className="font-bold text-slate-800">{appt.type}</h4>
-                 <p className="text-sm text-slate-500 mb-4">with {appt.clientName}</p>
-                 <div className="text-xs text-slate-400 font-mono bg-slate-50 p-2 rounded">
+                 <h4 className="font-bold text-slate-800 dark:text-white">{appt.type}</h4>
+                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">with {appt.clientName}</p>
+                 <div className="text-xs text-slate-400 font-mono bg-slate-50 dark:bg-slate-750 p-2 rounded">
                    {new Date(appt.startTime).toLocaleString()}
                  </div>
               </div>
@@ -301,7 +301,7 @@ const CommunicationHub: React.FC = () => {
                <input 
                  type="text" 
                  placeholder="Enter topic for AI Article (e.g., 'How to improve credit utilization')"
-                 className="flex-1 border border-slate-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                 className="flex-1 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white dark:bg-slate-700 dark:text-white"
                  value={topicInput}
                  onChange={(e) => setTopicInput(e.target.value)}
                />
@@ -316,28 +316,28 @@ const CommunicationHub: React.FC = () => {
 
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pb-10">
                {/* Mock Article */}
-               <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                 <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded mb-3 inline-block">Credit Basics</span>
-                 <h3 className="font-bold text-slate-800 mb-2">Understanding Your FICO Score</h3>
-                 <p className="text-sm text-slate-600 line-clamp-4">
+               <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                 <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded mb-3 inline-block">Credit Basics</span>
+                 <h3 className="font-bold text-slate-800 dark:text-white mb-2">Understanding Your FICO Score</h3>
+                 <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-4">
                    Your FICO score is calculated based on five key factors: payment history, amounts owed, length of credit history, new credit, and credit mix. Improving these areas...
                  </p>
-                 <div className="mt-4 pt-4 border-t border-slate-50 flex justify-between items-center text-xs text-slate-400">
+                 <div className="mt-4 pt-4 border-t border-slate-50 dark:border-slate-700 flex justify-between items-center text-xs text-slate-400">
                    <span>AI Generated</span>
-                   <button className="text-indigo-600 hover:underline">Edit</button>
+                   <button className="text-indigo-600 dark:text-indigo-400 hover:underline">Edit</button>
                  </div>
                </div>
 
                {articles.map((article) => (
-                 <div key={article.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 animate-fade-in">
-                   <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded mb-3 inline-block">{article.category}</span>
-                   <h3 className="font-bold text-slate-800 mb-2">{article.title}</h3>
-                   <div className="text-sm text-slate-600 line-clamp-4 prose prose-sm">
+                 <div key={article.id} className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 animate-fade-in">
+                   <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 px-2 py-1 rounded mb-3 inline-block">{article.category}</span>
+                   <h3 className="font-bold text-slate-800 dark:text-white mb-2">{article.title}</h3>
+                   <div className="text-sm text-slate-600 dark:text-slate-300 line-clamp-4 prose prose-sm dark:prose-invert">
                      {article.content}
                    </div>
-                   <div className="mt-4 pt-4 border-t border-slate-50 flex justify-between items-center text-xs text-slate-400">
+                   <div className="mt-4 pt-4 border-t border-slate-50 dark:border-slate-700 flex justify-between items-center text-xs text-slate-400">
                      <span>Just now</span>
-                     <button className="text-indigo-600 hover:underline">Edit</button>
+                     <button className="text-indigo-600 dark:text-indigo-400 hover:underline">Edit</button>
                    </div>
                  </div>
                ))}
@@ -347,13 +347,13 @@ const CommunicationHub: React.FC = () => {
 
         {/* REVIEWS */}
         {activeTab === 'reviews' && (
-          <div className="bg-white p-10 rounded-xl shadow-sm border border-slate-100 text-center">
+          <div className="bg-white dark:bg-slate-800 p-10 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 text-center">
             <Star className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-slate-800">Review Automation</h3>
-            <p className="text-slate-500 max-w-md mx-auto mb-6">
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white">Review Automation</h3>
+            <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6">
               Configure automated review requests to be sent after key milestones (e.g., first deletion, score increase).
             </p>
-            <button className="px-6 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50">
+            <button className="px-6 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
               Configure Triggers
             </button>
           </div>

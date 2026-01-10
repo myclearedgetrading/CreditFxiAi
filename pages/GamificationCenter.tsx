@@ -96,7 +96,7 @@ const GamificationCenter: React.FC = () => {
                   cx="48" cy="48" r="44" stroke="currentColor" strokeWidth="6" fill="transparent" 
                   className="text-yellow-400" 
                   strokeDasharray={`${progressPercentage * 2.76} 276`}
-                  strokeLinecap="round"
+                  strokeLinecap="round" 
                 />
               </svg>
               <div className="text-center">
@@ -132,22 +132,22 @@ const GamificationCenter: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 space-x-6 overflow-x-auto">
+      <div className="flex border-b border-slate-200 dark:border-slate-700 space-x-6 overflow-x-auto">
         <button 
           onClick={() => setActiveTab('overview')}
-          className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'overview' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'overview' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
         >
           <Award className="w-4 h-4 mr-2" /> Overview & Badges
         </button>
         <button 
           onClick={() => setActiveTab('quests')}
-          className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'quests' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'quests' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
         >
           <Target className="w-4 h-4 mr-2" /> Quests & Learning
         </button>
         <button 
           onClick={() => setActiveTab('referrals')}
-          className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'referrals' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'referrals' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
         >
           <UserPlus className="w-4 h-4 mr-2" /> Referrals
         </button>
@@ -156,8 +156,8 @@ const GamificationCenter: React.FC = () => {
       {/* OVERVIEW CONTENT */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-            <h3 className="font-bold text-slate-800 mb-6 flex items-center">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+            <h3 className="font-bold text-slate-800 dark:text-white mb-6 flex items-center">
               <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
               Recent Achievements
             </h3>
@@ -165,11 +165,11 @@ const GamificationCenter: React.FC = () => {
               {achievements.map((badge) => (
                 <div key={badge.id} className={`p-4 rounded-xl border-2 transition-all ${
                   badge.unlocked 
-                    ? 'border-indigo-100 bg-indigo-50' 
-                    : 'border-slate-100 bg-slate-50 grayscale opacity-70'
+                    ? 'border-indigo-100 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-800' 
+                    : 'border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-800 grayscale opacity-70'
                 }`}>
                   <div className="flex justify-between items-start mb-3">
-                    <div className={`p-2 rounded-lg ${badge.unlocked ? 'bg-white shadow-sm text-indigo-600' : 'bg-slate-200 text-slate-500'}`}>
+                    <div className={`p-2 rounded-lg ${badge.unlocked ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
                       {badge.icon === 'Trophy' ? <Trophy className="w-6 h-6" /> : 
                        badge.icon === 'Star' ? <Star className="w-6 h-6" /> : 
                        badge.icon === 'Flame' ? <Flame className="w-6 h-6" /> : 
@@ -181,17 +181,17 @@ const GamificationCenter: React.FC = () => {
                       <Lock className="w-4 h-4 text-slate-400" />
                     )}
                   </div>
-                  <h4 className="font-bold text-slate-800 text-sm">{badge.title}</h4>
-                  <p className="text-xs text-slate-500 mt-1 mb-3 h-8">{badge.description}</p>
+                  <h4 className="font-bold text-slate-800 dark:text-white text-sm">{badge.title}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-3 h-8">{badge.description}</p>
                   
                   {/* Progress Bar for Locked */}
                   {!badge.unlocked && (
-                    <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div className="h-full bg-indigo-500" style={{ width: `${badge.progress}%` }} />
                     </div>
                   )}
                   {badge.unlocked && (
-                    <div className="text-xs font-bold text-indigo-600 bg-white inline-block px-2 py-1 rounded border border-indigo-100 mt-auto">
+                    <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700 inline-block px-2 py-1 rounded border border-indigo-100 dark:border-indigo-900 mt-auto">
                       +{badge.pointsReward} pts
                     </div>
                   )}
@@ -224,13 +224,13 @@ const GamificationCenter: React.FC = () => {
                 </button>
              </div>
 
-             <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col justify-center items-center text-center">
-                <Share2 className="w-12 h-12 text-indigo-200 mb-3" />
-                <h3 className="font-bold text-slate-800">Share Your Success</h3>
-                <p className="text-sm text-slate-500 mb-4 max-w-xs">
+             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex flex-col justify-center items-center text-center">
+                <Share2 className="w-12 h-12 text-indigo-200 dark:text-indigo-900 mb-3" />
+                <h3 className="font-bold text-slate-800 dark:text-white">Share Your Success</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 max-w-xs">
                    You recently hit a 50pt increase! Share this milestone to inspire others.
                 </p>
-                <button className="px-6 py-2 border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors">
+                <button className="px-6 py-2 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-medium rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                    Create Social Post
                 </button>
              </div>
@@ -242,28 +242,28 @@ const GamificationCenter: React.FC = () => {
       {activeTab === 'quests' && (
         <div className="space-y-4">
           {INITIAL_QUESTS.map((quest) => (
-            <div key={quest.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:border-indigo-200 transition-all group">
+            <div key={quest.id} className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-500 transition-all group">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                  <div>
                     <div className="flex items-center gap-2 mb-1">
                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                          quest.category === 'BASICS' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                          quest.category === 'BASICS' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
                        }`}>
                           {quest.category}
                        </span>
                        {quest.status === 'COMPLETED' && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase bg-green-100 text-green-700 flex items-center">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 flex items-center">
                              <CheckCircle2 className="w-3 h-3 mr-1" /> Completed
                           </span>
                        )}
                     </div>
-                    <h3 className="font-bold text-slate-800 text-lg group-hover:text-indigo-600 transition-colors">{quest.title}</h3>
-                    <p className="text-sm text-slate-500">{quest.description}</p>
+                    <h3 className="font-bold text-slate-800 dark:text-white text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{quest.title}</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{quest.description}</p>
                  </div>
 
                  <div className="flex items-center gap-6">
                     <div className="text-right hidden sm:block">
-                       <div className="text-sm font-bold text-slate-700">{quest.completedSteps} / {quest.totalSteps} Steps</div>
+                       <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{quest.completedSteps} / {quest.totalSteps} Steps</div>
                        <div className="text-xs text-slate-400">{quest.rewardPoints} pts reward</div>
                     </div>
                     <button 
@@ -273,8 +273,8 @@ const GamificationCenter: React.FC = () => {
                          quest.status === 'ACTIVE' 
                             ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:scale-105 transform' 
                             : quest.status === 'COMPLETED' 
-                               ? 'bg-green-100 text-green-600 cursor-default'
-                               : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                               ? 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400 cursor-default'
+                               : 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500 cursor-not-allowed'
                       }`}
                     >
                        {quest.status === 'LOCKED' ? <Lock className="w-6 h-6" /> : 
@@ -291,16 +291,16 @@ const GamificationCenter: React.FC = () => {
       {/* REFERRALS CONTENT */}
       {activeTab === 'referrals' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-           <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-100 text-center">
-              <Gift className="w-16 h-16 text-indigo-600 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-slate-800 mb-2">Invite Friends, Earn Rewards</h3>
-              <p className="text-slate-500 mb-6">
+           <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 text-center">
+              <Gift className="w-16 h-16 text-indigo-600 dark:text-indigo-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Invite Friends, Earn Rewards</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-6">
                  Get 500 points ($50 credit) for every friend who joins. They get 20% off their first month!
               </p>
               
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between max-w-md mx-auto mb-6">
-                 <code className="text-lg font-bold text-slate-700 tracking-wider">{profile.referralCode}</code>
-                 <button onClick={copyReferral} className="p-2 hover:bg-slate-200 rounded-lg transition-colors text-slate-500">
+              <div className="bg-slate-50 dark:bg-slate-700 p-4 rounded-xl border border-slate-200 dark:border-slate-600 flex items-center justify-between max-w-md mx-auto mb-6">
+                 <code className="text-lg font-bold text-slate-700 dark:text-slate-200 tracking-wider">{profile.referralCode}</code>
+                 <button onClick={copyReferral} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors text-slate-500 dark:text-slate-400">
                     <Copy className="w-5 h-5" />
                  </button>
               </div>
@@ -316,16 +316,16 @@ const GamificationCenter: React.FC = () => {
            </div>
 
            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                 <h4 className="font-bold text-slate-800 mb-4">Your Referral Stats</h4>
+              <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                 <h4 className="font-bold text-slate-800 dark:text-white mb-4">Your Referral Stats</h4>
                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-indigo-50 rounded-lg">
-                       <div className="text-2xl font-bold text-indigo-700">{profile.totalReferrals}</div>
-                       <div className="text-xs text-indigo-900 opacity-70 uppercase font-bold">Total Signups</div>
+                    <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                       <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">{profile.totalReferrals}</div>
+                       <div className="text-xs text-indigo-900 dark:text-indigo-300 opacity-70 uppercase font-bold">Total Signups</div>
                     </div>
-                    <div className="p-4 bg-green-50 rounded-lg">
-                       <div className="text-2xl font-bold text-green-700">$100</div>
-                       <div className="text-xs text-green-900 opacity-70 uppercase font-bold">Earned Credit</div>
+                    <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                       <div className="text-2xl font-bold text-green-700 dark:text-green-400">$100</div>
+                       <div className="text-xs text-green-900 dark:text-green-300 opacity-70 uppercase font-bold">Earned Credit</div>
                     </div>
                  </div>
               </div>
@@ -336,12 +336,12 @@ const GamificationCenter: React.FC = () => {
       {/* QUIZ MODAL */}
       {showQuiz && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
+           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in transition-colors">
               {quizLoading ? (
                  <div className="p-10 text-center">
                     <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
-                    <h3 className="font-bold text-slate-800">Generating Challenge...</h3>
-                    <p className="text-slate-500 text-sm">Our AI is crafting a unique question for you.</p>
+                    <h3 className="font-bold text-slate-800 dark:text-white">Generating Challenge...</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Our AI is crafting a unique question for you.</p>
                  </div>
               ) : currentQuiz ? (
                  <>
@@ -362,11 +362,11 @@ const GamificationCenter: React.FC = () => {
                            className={`w-full p-4 text-left rounded-xl border-2 transition-all flex justify-between items-center ${
                               selectedOption === idx 
                                 ? quizResult === 'correct' 
-                                   ? 'border-green-500 bg-green-50 text-green-800' 
-                                   : 'border-red-500 bg-red-50 text-red-800'
+                                   ? 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
+                                   : 'border-red-500 bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                                 : quizResult !== null && idx === currentQuiz.correctIndex
-                                   ? 'border-green-500 bg-green-50 text-green-800'
-                                   : 'border-slate-100 hover:border-indigo-200 text-slate-700'
+                                   ? 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                                   : 'border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-500 text-slate-700 dark:text-slate-200'
                            }`}
                          >
                             <span className="font-medium">{option}</span>
@@ -377,7 +377,7 @@ const GamificationCenter: React.FC = () => {
                       ))}
 
                       {quizResult && (
-                         <div className={`mt-4 p-4 rounded-lg text-sm ${quizResult === 'correct' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                         <div className={`mt-4 p-4 rounded-lg text-sm ${quizResult === 'correct' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
                             <p className="font-bold mb-1">{quizResult === 'correct' ? 'Correct! +50 Points' : 'Incorrect'}</p>
                             <p>{currentQuiz.explanation}</p>
                          </div>
@@ -386,7 +386,7 @@ const GamificationCenter: React.FC = () => {
                       {quizResult && (
                          <button 
                             onClick={() => setShowQuiz(false)}
-                            className="w-full mt-4 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors"
+                            className="w-full mt-4 py-3 bg-slate-900 dark:bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors"
                          >
                             Close Challenge
                          </button>

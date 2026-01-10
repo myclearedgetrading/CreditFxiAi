@@ -86,21 +86,21 @@ const Reports: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
-            <Presentation className="text-indigo-600 w-8 h-8" />
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+            <Presentation className="text-indigo-600 dark:text-indigo-400 w-8 h-8" />
             Enterprise Reporting
           </h1>
-          <p className="text-slate-500 mt-1">
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
             Real-time business intelligence and performance analytics.
           </p>
         </div>
         
         <div className="flex gap-2">
-          <button onClick={handleExport} className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 flex items-center text-sm font-medium shadow-sm">
+          <button onClick={handleExport} className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center text-sm font-medium shadow-sm transition-colors">
             <Download className="w-4 h-4 mr-2" />
             Export PDF
           </button>
-          <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center text-sm font-medium shadow-sm">
+          <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center text-sm font-medium shadow-sm transition-colors">
             <Filter className="w-4 h-4 mr-2" />
             Filter Data
           </button>
@@ -108,7 +108,7 @@ const Reports: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 space-x-6 overflow-x-auto">
+      <div className="flex border-b border-slate-200 dark:border-slate-700 space-x-6 overflow-x-auto">
         {[
           { id: 'executive', label: 'Executive Dashboard', icon: BarChart3 },
           { id: 'disputes', label: 'Dispute Analytics', icon: TrendingUp },
@@ -120,8 +120,8 @@ const Reports: React.FC = () => {
             onClick={() => setActiveTab(tab.id as any)}
             className={`flex items-center pb-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.id 
-                ? 'border-indigo-600 text-indigo-600' 
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' 
+                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
             }`}
           >
             <tab.icon className="w-4 h-4 mr-2" />
@@ -134,49 +134,49 @@ const Reports: React.FC = () => {
       {activeTab === 'executive' && (
         <div className="space-y-6">
           {/* AI Insight */}
-          <div className="bg-gradient-to-r from-indigo-50 to-white p-6 rounded-xl border border-indigo-100 shadow-sm relative overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-50 to-white dark:from-slate-800 dark:to-slate-900 p-6 rounded-xl border border-indigo-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
             <div className="flex items-start gap-4 z-10 relative">
-              <div className="p-3 bg-white rounded-lg shadow-sm">
-                <Sparkles className="w-6 h-6 text-indigo-600" />
+              <div className="p-3 bg-white dark:bg-slate-700 rounded-lg shadow-sm">
+                <Sparkles className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <h3 className="text-indigo-900 font-bold mb-1">AI Executive Summary</h3>
-                <p className="text-indigo-800 text-sm leading-relaxed">
+                <h3 className="text-indigo-900 dark:text-indigo-200 font-bold mb-1">AI Executive Summary</h3>
+                <p className="text-indigo-800 dark:text-slate-300 text-sm leading-relaxed">
                   {loadingSummary ? "Generating insights..." : aiSummary}
                 </p>
               </div>
             </div>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2" />
           </div>
 
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-              <p className="text-sm font-medium text-slate-500">Monthly Recurring Revenue</p>
-              <h3 className="text-3xl font-bold text-slate-800 mt-2">$24,500</h3>
-              <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full mt-2 inline-block">+15% vs last mo</span>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Monthly Recurring Revenue</p>
+              <h3 className="text-3xl font-bold text-slate-800 dark:text-white mt-2">$24,500</h3>
+              <span className="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full mt-2 inline-block">+15% vs last mo</span>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-              <p className="text-sm font-medium text-slate-500">Active Clients</p>
-              <h3 className="text-3xl font-bold text-slate-800 mt-2">142</h3>
-              <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full mt-2 inline-block">+8 Net New</span>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Active Clients</p>
+              <h3 className="text-3xl font-bold text-slate-800 dark:text-white mt-2">142</h3>
+              <span className="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full mt-2 inline-block">+8 Net New</span>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-              <p className="text-sm font-medium text-slate-500">Churn Rate</p>
-              <h3 className="text-3xl font-bold text-slate-800 mt-2">2.1%</h3>
-              <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full mt-2 inline-block">-0.5% Improved</span>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Churn Rate</p>
+              <h3 className="text-3xl font-bold text-slate-800 dark:text-white mt-2">2.1%</h3>
+              <span className="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full mt-2 inline-block">-0.5% Improved</span>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-              <p className="text-sm font-medium text-slate-500">Avg. Lifetime Value</p>
-              <h3 className="text-3xl font-bold text-slate-800 mt-2">$850</h3>
-              <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full mt-2 inline-block">Stable</span>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Avg. Lifetime Value</p>
+              <h3 className="text-3xl font-bold text-slate-800 dark:text-white mt-2">$850</h3>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full mt-2 inline-block">Stable</span>
             </div>
           </div>
 
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-              <h3 className="font-bold text-slate-800 mb-6">Revenue Growth Trajectory</h3>
+            <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+              <h3 className="font-bold text-slate-800 dark:text-white mb-6">Revenue Growth Trajectory</h3>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={MRR_DATA}>
@@ -186,25 +186,25 @@ const Reports: React.FC = () => {
                         <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="month" axisLine={false} tickLine={false} />
-                    <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `$${val/1000}k`} />
-                    <RechartsTooltip />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-700" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
+                    <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `$${val/1000}k`} tick={{fill: '#94a3b8'}} />
+                    <RechartsTooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', color: '#fff' }} />
                     <Area type="monotone" dataKey="mrr" stroke="#6366f1" fillOpacity={1} fill="url(#colorMrr)" strokeWidth={3} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-              <h3 className="font-bold text-slate-800 mb-2">Acquisition vs Churn</h3>
-              <p className="text-sm text-slate-500 mb-6">Net growth analysis</p>
+            <div className="lg:col-span-1 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+              <h3 className="font-bold text-slate-800 dark:text-white mb-2">Acquisition vs Churn</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Net growth analysis</p>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={MRR_DATA}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="month" axisLine={false} tickLine={false} />
-                    <RechartsTooltip cursor={{fill: 'transparent'}} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-700" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
+                    <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ backgroundColor: '#1e293b', border: 'none', color: '#fff' }} />
                     <Bar dataKey="newRevenue" name="New Revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="churn" name="Churn" fill="#ef4444" radius={[4, 4, 0, 0]} />
                     <Legend />
@@ -219,15 +219,15 @@ const Reports: React.FC = () => {
       {/* --- DISPUTE ANALYTICS --- */}
       {activeTab === 'disputes' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-800 mb-6">Success Rate by Bureau</h3>
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+            <h3 className="font-bold text-slate-800 dark:text-white mb-6">Success Rate by Bureau</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={BUREAU_PERFORMANCE} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" horizontal={true} stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="3 3" horizontal={true} stroke="#f1f5f9" className="dark:stroke-slate-700" />
                   <XAxis type="number" hide />
-                  <YAxis dataKey="bureau" type="category" axisLine={false} tickLine={false} width={100} />
-                  <RechartsTooltip cursor={{fill: 'transparent'}} />
+                  <YAxis dataKey="bureau" type="category" axisLine={false} tickLine={false} width={100} tick={{fill: '#94a3b8'}} />
+                  <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ backgroundColor: '#1e293b', border: 'none', color: '#fff' }} />
                   <Legend />
                   <Bar dataKey="deleted" name="Deleted %" stackId="a" fill="#22c55e" barSize={30} />
                   <Bar dataKey="verified" name="Verified %" stackId="a" fill="#ef4444" barSize={30} />
@@ -237,27 +237,27 @@ const Reports: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-800 mb-6">Strategy Performance Matrix</h3>
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+            <h3 className="font-bold text-slate-800 dark:text-white mb-6">Strategy Performance Matrix</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={DISPUTE_STRATEGY_STATS}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="strategy" />
+                  <PolarGrid stroke="#94a3b8" />
+                  <PolarAngleAxis dataKey="strategy" tick={{fill: '#94a3b8', fontSize: 10}} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} />
                   <Radar name="Success Rate" dataKey="success" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
                   <Legend />
-                  <RechartsTooltip />
+                  <RechartsTooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', color: '#fff' }} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-             <h3 className="font-bold text-slate-800 mb-4">Specialist Performance Leaderboard</h3>
+          <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+             <h3 className="font-bold text-slate-800 dark:text-white mb-4">Specialist Performance Leaderboard</h3>
              <div className="overflow-x-auto">
                <table className="w-full text-left text-sm">
-                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
+                 <thead className="bg-slate-50 dark:bg-slate-750 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
                    <tr>
                      <th className="p-4">Specialist</th>
                      <th className="p-4">Disputes Managed</th>
@@ -266,25 +266,25 @@ const Reports: React.FC = () => {
                      <th className="p-4">Performance</th>
                    </tr>
                  </thead>
-                 <tbody className="divide-y divide-slate-100">
+                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                    {SPECIALIST_STATS.map((spec, idx) => (
-                     <tr key={idx}>
-                       <td className="p-4 font-medium">{spec.name}</td>
-                       <td className="p-4">{spec.disputes}</td>
+                     <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+                       <td className="p-4 font-medium text-slate-800 dark:text-white">{spec.name}</td>
+                       <td className="p-4 text-slate-600 dark:text-slate-300">{spec.disputes}</td>
                        <td className="p-4">
-                         <div className="flex items-center gap-2">
-                           <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+                         <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                           <div className="w-16 h-2 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
                              <div className="h-full bg-indigo-500" style={{ width: `${spec.success}%` }} />
                            </div>
                            <span>{spec.success}%</span>
                          </div>
                        </td>
-                       <td className="p-4 font-bold text-slate-700">${spec.revenue.toLocaleString()}</td>
+                       <td className="p-4 font-bold text-slate-700 dark:text-slate-200">${spec.revenue.toLocaleString()}</td>
                        <td className="p-4">
                          {spec.success > 60 ? (
-                           <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Top Performer</span>
+                           <span className="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full text-xs font-bold">Top Performer</span>
                          ) : (
-                           <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">Standard</span>
+                           <span className="px-2 py-1 bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400 rounded-full text-xs font-bold">Standard</span>
                          )}
                        </td>
                      </tr>
@@ -299,8 +299,8 @@ const Reports: React.FC = () => {
       {/* --- FINANCIAL REPORTS --- */}
       {activeTab === 'financial' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-             <h3 className="font-bold text-slate-800 mb-6">Revenue Mix</h3>
+           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+             <h3 className="font-bold text-slate-800 dark:text-white mb-6">Revenue Mix</h3>
              <div className="h-64">
                <ResponsiveContainer width="100%" height="100%">
                  <PieChart>
@@ -317,20 +317,20 @@ const Reports: React.FC = () => {
                        <Cell key={`cell-${index}`} fill={entry.color} />
                      ))}
                    </Pie>
-                   <RechartsTooltip />
+                   <RechartsTooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', color: '#fff' }} />
                    <Legend verticalAlign="bottom" height={36} />
                  </PieChart>
                </ResponsiveContainer>
              </div>
            </div>
 
-           <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+           <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-slate-800">Recent Transactions</h3>
-                <button className="text-indigo-600 text-sm font-medium hover:underline">View All</button>
+                <h3 className="font-bold text-slate-800 dark:text-white">Recent Transactions</h3>
+                <button className="text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:underline">View All</button>
               </div>
               <table className="w-full text-sm">
-                <thead className="text-slate-500 border-b border-slate-200">
+                <thead className="text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                    <tr>
                      <th className="text-left pb-3">Client</th>
                      <th className="text-left pb-3">Date</th>
@@ -339,15 +339,15 @@ const Reports: React.FC = () => {
                      <th className="text-right pb-3">Status</th>
                    </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                    {[1, 2, 3, 4, 5].map((i) => (
-                     <tr key={i} className="group hover:bg-slate-50">
-                       <td className="py-3">Client #{100+i}</td>
-                       <td className="py-3 text-slate-500">Oct {10+i}, 2024</td>
-                       <td className="py-3 text-slate-600">Monthly Subscription</td>
-                       <td className="py-3 text-right font-medium">$99.00</td>
+                     <tr key={i} className="group hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+                       <td className="py-3 text-slate-800 dark:text-white">Client #{100+i}</td>
+                       <td className="py-3 text-slate-500 dark:text-slate-400">Oct {10+i}, 2024</td>
+                       <td className="py-3 text-slate-600 dark:text-slate-300">Monthly Subscription</td>
+                       <td className="py-3 text-right font-medium text-slate-800 dark:text-white">$99.00</td>
                        <td className="py-3 text-right">
-                         <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Paid</span>
+                         <span className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded text-xs font-bold">Paid</span>
                        </td>
                      </tr>
                    ))}
@@ -360,27 +360,27 @@ const Reports: React.FC = () => {
       {/* --- REPORT BUILDER --- */}
       {activeTab === 'builder' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-6">
-              <h3 className="font-bold text-slate-800 flex items-center">
+           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-6">
+              <h3 className="font-bold text-slate-800 dark:text-white flex items-center">
                 <Filter className="w-4 h-4 mr-2" />
                 Report Configuration
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Report Name</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Report Name</label>
                 <input 
                   type="text" 
-                  className="w-full border border-slate-200 rounded-lg p-2 text-sm"
+                  className="w-full border border-slate-200 dark:border-slate-600 rounded-lg p-2 text-sm bg-white dark:bg-slate-700 dark:text-white"
                   value={reportConfig.name}
                   onChange={e => setReportConfig({...reportConfig, name: e.target.value})}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Metrics</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Metrics</label>
                 <div className="space-y-2">
                    {['Revenue', 'Active Clients', 'Dispute Success', 'Churn Rate'].map(m => (
-                     <label key={m} className="flex items-center text-sm text-slate-600">
+                     <label key={m} className="flex items-center text-sm text-slate-600 dark:text-slate-400">
                        <input type="checkbox" className="mr-2 rounded text-indigo-600 focus:ring-indigo-500" defaultChecked />
                        {m}
                      </label>
@@ -389,8 +389,8 @@ const Reports: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Date Range</label>
-                <select className="w-full border border-slate-200 rounded-lg p-2 text-sm">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Date Range</label>
+                <select className="w-full border border-slate-200 dark:border-slate-600 rounded-lg p-2 text-sm bg-white dark:bg-slate-700 dark:text-white">
                   <option>Last 30 Days</option>
                   <option>Last Quarter</option>
                   <option>Year to Date</option>
@@ -399,12 +399,12 @@ const Reports: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Visualization</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Visualization</label>
                 <div className="grid grid-cols-3 gap-2">
                    {['Bar', 'Line', 'Pie'].map(type => (
                      <button 
                         key={type}
-                        className={`py-2 text-xs font-bold rounded border ${reportConfig.visualization.toUpperCase() === type.toUpperCase() ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-slate-200 text-slate-600'}`}
+                        className={`py-2 text-xs font-bold rounded border transition-colors ${reportConfig.visualization.toUpperCase() === type.toUpperCase() ? 'bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-500 dark:text-indigo-300' : 'border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400'}`}
                         onClick={() => setReportConfig({...reportConfig, visualization: type.toUpperCase() as any})}
                      >
                        {type}
@@ -418,13 +418,13 @@ const Reports: React.FC = () => {
               </button>
            </div>
 
-           <div className="lg:col-span-2 bg-white p-8 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center min-h-[400px] bg-slate-50 border-dashed">
+           <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center min-h-[400px] border-dashed">
               <div className="text-center space-y-4">
-                 <div className="bg-white p-4 rounded-full shadow-sm inline-block">
-                    <PieIcon className="w-12 h-12 text-indigo-300" />
+                 <div className="bg-white dark:bg-slate-700 p-4 rounded-full shadow-sm inline-block">
+                    <PieIcon className="w-12 h-12 text-indigo-300 dark:text-indigo-400" />
                  </div>
-                 <h3 className="text-lg font-bold text-slate-700">Report Preview</h3>
-                 <p className="text-slate-500 max-w-md">
+                 <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200">Report Preview</h3>
+                 <p className="text-slate-500 dark:text-slate-400 max-w-md">
                     Configure your report settings on the left to generate a custom visualization of your business data.
                  </p>
               </div>
