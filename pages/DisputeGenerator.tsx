@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { Bureau, DisputeStrategy, NegativeItem } from '../types';
 import { generateDisputeLetter } from '../services/geminiService';
-import { Wand2, Send, Download, AlertCircle, Loader2, FileCheck, Check } from 'lucide-react';
+import { Wand2, Send, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X } from 'lucide-react';
 
 // Mock negative items for the DIY user context
 const MY_NEGATIVE_ITEMS: NegativeItem[] = [
@@ -19,6 +20,12 @@ const DisputeGenerator: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Attachment State
+  const [includeID, setIncludeID] = useState(true);
+  const [includeSSN, setIncludeSSN] = useState(true);
+  const [includeAddress, setIncludeAddress] = useState(true);
+  const [additionalProof, setAdditionalProof] = useState<File | null>(null);
+
   const selectedItem = MY_NEGATIVE_ITEMS.find(i => i.id === selectedItemId);
 
   const handleGenerate = async () => {
@@ -30,7 +37,7 @@ const DisputeGenerator: React.FC = () => {
 
     try {
       const letter = await generateDisputeLetter({
-        client: user as any, // Cast to any to fit types temporarily, or update types.ts to match User perfectly
+        client: user as any, // Cast to any to fit types temporarily
         item: selectedItem,
         strategy,
         targetBureau
@@ -40,6 +47,34 @@ const DisputeGenerator: React.FC = () => {
       setError(err.message || 'An unexpected error occurred.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAdditionalProof(e.target.files[0]);
+    }
+  };
+
+  const calculateTotalPages = () => {
+    let pages = 1; // Letter itself
+    if (includeID) pages++;
+    if (includeSSN) pages++;
+    if (includeAddress) pages++;
+    if (additionalProof) pages++;
+    return pages;
+  };
+
+  const handleDownload = () => {
+    if (!generatedLetter) return;
+    alert(`Downloading PDF package (${calculateTotalPages()} pages). Includes selected identity documents.`);
+  };
+
+  const handleMail = () => {
+    if (!generatedLetter) return;
+    const cost = 2 + (calculateTotalPages() - 1) * 0.5;
+    if(confirm(`Send via USPS Certified Mail?\n\nTotal Pages: ${calculateTotalPages()}\nEstimated Cost: $${cost.toFixed(2)}`)) {
+        alert("Letter queued for mailing!");
     }
   };
 
@@ -59,37 +94,39 @@ const DisputeGenerator: React.FC = () => {
         {/* Configuration Panel */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-5 transition-colors">
-            <h2 className="font-semibold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3">1. Select Item to Dispute</h2>
             
-            {/* Negative Item Selection List */}
-            <div className="space-y-2">
-              {MY_NEGATIVE_ITEMS.map(item => (
-                <div 
-                  key={item.id}
-                  onClick={() => setSelectedItemId(item.id)}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                    selectedItemId === item.id 
-                      ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500' 
-                      : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300'
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-sm text-slate-800 dark:text-white">{item.creditor}</span>
-                    {selectedItemId === item.id && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
-                  </div>
-                  <div className="flex justify-between mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    <span>{item.type}</span>
-                    <span>${item.amount}</span>
-                  </div>
+            {/* Step 1 */}
+            <div>
+                <h2 className="font-semibold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2 mb-3">1. Select Item to Dispute</h2>
+                <div className="space-y-2">
+                {MY_NEGATIVE_ITEMS.map(item => (
+                    <div 
+                    key={item.id}
+                    onClick={() => setSelectedItemId(item.id)}
+                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                        selectedItemId === item.id 
+                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500' 
+                        : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300'
+                    }`}
+                    >
+                    <div className="flex justify-between items-center">
+                        <span className="font-bold text-sm text-slate-800 dark:text-white">{item.creditor}</span>
+                        {selectedItemId === item.id && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+                    </div>
+                    <div className="flex justify-between mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        <span>{item.type}</span>
+                        <span>${item.amount}</span>
+                    </div>
+                    </div>
+                ))}
                 </div>
-              ))}
             </div>
 
-            {/* Strategy Selection */}
+            {/* Step 2 */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">2. Choose Strategy</label>
+              <label className="block text-sm font-semibold text-slate-800 dark:text-white mb-2">2. Choose Strategy</label>
               <select 
-                className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white dark:bg-slate-700 dark:text-white"
+                className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white dark:bg-slate-700 dark:text-white text-sm"
                 value={strategy}
                 onChange={(e) => setStrategy(e.target.value as DisputeStrategy)}
               >
@@ -99,15 +136,15 @@ const DisputeGenerator: React.FC = () => {
               </select>
             </div>
 
-             {/* Bureau Selection */}
+             {/* Step 3 */}
              <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">3. Target Bureau</label>
+              <label className="block text-sm font-semibold text-slate-800 dark:text-white mb-2">3. Target Bureau</label>
               <div className="flex space-x-2">
                 {Object.values(Bureau).map((b) => (
                   <button
                     key={b}
                     onClick={() => setTargetBureau(b)}
-                    className={`flex-1 py-2 text-xs font-medium rounded-lg border ${
+                    className={`flex-1 py-2 text-xs font-medium rounded-lg border transition-colors ${
                       targetBureau === b 
                         ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-300' 
                         : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600'
@@ -117,6 +154,50 @@ const DisputeGenerator: React.FC = () => {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Step 4: Attachments */}
+            <div>
+                <label className="block text-sm font-semibold text-slate-800 dark:text-white mb-2 flex justify-between">
+                    4. Attach Evidence
+                    <span className="text-xs text-slate-400 font-normal">Required for identification</span>
+                </label>
+                <div className="space-y-2 bg-slate-50 dark:bg-slate-750 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
+                    <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                        <input type="checkbox" checked={includeID} onChange={e => setIncludeID(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500" />
+                        <span className="flex-1">Government Photo ID</span>
+                        {includeID && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Attached</span>}
+                    </label>
+                    <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                        <input type="checkbox" checked={includeSSN} onChange={e => setIncludeSSN(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500" />
+                        <span className="flex-1">Social Security Card</span>
+                        {includeSSN && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Attached</span>}
+                    </label>
+                    <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                        <input type="checkbox" checked={includeAddress} onChange={e => setIncludeAddress(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500" />
+                        <span className="flex-1">Proof of Address</span>
+                        {includeAddress && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Attached</span>}
+                    </label>
+                    
+                    <div className="pt-2 border-t border-slate-200 dark:border-slate-600 mt-2">
+                        {additionalProof ? (
+                            <div className="flex items-center justify-between bg-white dark:bg-slate-700 p-2 rounded border border-slate-200 dark:border-slate-600">
+                                <div className="flex items-center gap-2 overflow-hidden">
+                                    <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                    <span className="text-xs text-slate-600 dark:text-slate-300 truncate">{additionalProof.name}</span>
+                                </div>
+                                <button onClick={() => setAdditionalProof(null)} className="text-slate-400 hover:text-red-500">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ) : (
+                            <label className="flex items-center justify-center gap-2 w-full py-2 border border-dashed border-slate-300 dark:border-slate-500 rounded text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors">
+                                <Paperclip className="w-3 h-3" /> Add Additional Proof
+                                <input type="file" className="hidden" onChange={handleFileUpload} />
+                            </label>
+                        )}
+                    </div>
+                </div>
             </div>
 
             <button 
@@ -143,16 +224,30 @@ const DisputeGenerator: React.FC = () => {
         <div className="lg:col-span-2">
            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 h-full flex flex-col transition-colors">
               <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-750 rounded-t-xl">
-                 <h2 className="font-semibold text-slate-700 dark:text-slate-200">Letter Preview</h2>
+                 <div className="flex items-center gap-2">
+                    <h2 className="font-semibold text-slate-700 dark:text-slate-200">Letter Preview</h2>
+                    {generatedLetter && (
+                        <span className="text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">
+                            {calculateTotalPages()} Pages Total
+                        </span>
+                    )}
+                 </div>
+                 
                  {generatedLetter && (
                     <div className="flex space-x-2">
-                       <button className="flex items-center px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-md transition-colors">
+                       <button 
+                         onClick={handleDownload}
+                         className="flex items-center px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-md transition-colors"
+                       >
                           <Download className="w-4 h-4 mr-2" />
                           Download PDF
                        </button>
-                       <button className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white hover:bg-green-700 rounded-md transition-colors shadow-sm">
+                       <button 
+                         onClick={handleMail}
+                         className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white hover:bg-green-700 rounded-md transition-colors shadow-sm"
+                       >
                           <Send className="w-4 h-4 mr-2" />
-                          Mail It For Me ($2)
+                          Mail It For Me
                        </button>
                     </div>
                  )}
