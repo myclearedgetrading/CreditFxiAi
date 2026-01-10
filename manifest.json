@@ -1,0 +1,21 @@
+{
+  "short_name": "CreditFix",
+  "name": "CreditFix AI Platform",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192.png?text=Icon",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://via.placeholder.com/512.png?text=Icon",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#4f46e5",
+  "background_color": "#ffffff",
+  "orientation": "portrait"
+}

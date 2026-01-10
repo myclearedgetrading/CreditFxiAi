@@ -1,0 +1,24 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper to check auth
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // User avatars
+    match /users/{userId}/avatar.jpg {
+      allow read: if true;
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Client Documents (Sensitive)
+    match /companies/{companyId}/clients/{clientId}/documents/{fileName} {
+      allow read: if isAuthenticated(); // In prod, check companyId match
+      allow write: if isAuthenticated() 
+                   && request.resource.size < 10 * 1024 * 1024 // 10MB limit
+                   && request.resource.contentType.matches('application/pdf|image/.*');
+    }
+  }
+}

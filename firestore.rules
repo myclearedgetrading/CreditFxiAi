@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && getUserData().role == role;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isCompanyMember(companyId) {
+      return isAuthenticated() && getUserData().companyId == companyId;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || hasRole('ADMIN'));
+      allow write: if hasRole('SUPER_ADMIN'); // Only super admins can create users directly via client
+    }
+
+    // Companies Collection
+    match /companies/{companyId} {
+      allow read: if isCompanyMember(companyId);
+      allow write: if hasRole('SUPER_ADMIN');
+    }
+
+    // Clients Collection
+    match /clients/{clientId} {
+      allow read: if isAuthenticated() && isCompanyMember(resource.data.companyId);
+      allow write: if isAuthenticated() && isCompanyMember(request.resource.data.companyId) && (hasRole('ADMIN') || hasRole('SPECIALIST'));
+    }
+
+    // Disputes Collection
+    match /disputes/{disputeId} {
+      allow read, write: if isAuthenticated() && isCompanyMember(resource.data.companyId);
+    }
+
+    // Tickets Collection
+    match /tickets/{ticketId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (hasRole('ADMIN') || hasRole('SPECIALIST'));
+    }
+
+    // Activity Logs
+    match /activityLogs/{logId} {
+      allow read: if isAuthenticated() && (hasRole('ADMIN') || hasRole('AUDITOR'));
+      allow create: if isAuthenticated(); // Systems logs created by server
+    }
+  }
+}
