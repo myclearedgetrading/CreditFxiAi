@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   CheckCircle2, ChevronRight, Upload, Shield, CreditCard, 
   FileText, User, Home, Car, TrendingUp, AlertCircle, 
@@ -12,6 +12,7 @@ const STORAGE_KEY = 'creditfix_onboarding_state';
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -37,14 +38,25 @@ const Onboarding: React.FC = () => {
   // Load state
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
+    let savedState = null;
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        setStep(parsed.step || 1);
-        setFormData(parsed.formData || formData);
+        savedState = JSON.parse(saved);
       } catch (e) {
         console.error("Failed to load onboarding state", e);
       }
+    }
+
+    // Check for direct navigation state override
+    if (location.state && (location.state as any).step) {
+      setStep((location.state as any).step);
+      // Preserve saved form data if exists, otherwise keep default
+      if (savedState?.formData) {
+        setFormData(savedState.formData);
+      }
+    } else if (savedState) {
+      setStep(savedState.step || 1);
+      setFormData(savedState.formData || formData);
     }
   }, []);
 
