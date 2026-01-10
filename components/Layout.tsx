@@ -4,7 +4,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Settings, LogOut, Menu, X,
   ShieldCheck, ScanSearch, LineChart, Trophy,
-  Sun, Moon, Briefcase, GraduationCap, Building2, Home
+  Sun, Moon, Briefcase, GraduationCap, Building2, Home,
+  ShoppingBag
 } from 'lucide-react';
 import MobileNav from './MobileNav';
 import { isMobileDevice } from '../services/mobileService';
@@ -32,6 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { path: '/analysis', label: 'Credit Audit', icon: ScanSearch },
     { path: '/disputes', label: 'Dispute Center', icon: ShieldCheck },
+    { path: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
     { path: '/funding', label: 'Business Funding', icon: Building2 },
     { path: '/learning', label: 'Education Hub', icon: GraduationCap },
     { path: '/analytics', label: 'Progress Tracker', icon: LineChart },

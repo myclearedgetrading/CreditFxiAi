@@ -66,6 +66,27 @@ export interface Client {
   companyId?: string;
 }
 
+// --- MARKETPLACE TYPES ---
+export type ProductType = 'SECURED_CARD' | 'UNSECURED_CARD' | 'LOAN' | 'RENT_REPORTING';
+
+export interface CreditProduct {
+  id: string;
+  name: string;
+  issuer: string;
+  type: ProductType;
+  description: string;
+  annualFee: number;
+  apr?: string;
+  minDeposit?: number;
+  creditImpact: 'HIGH' | 'MEDIUM' | 'LOW';
+  approvalOdds: 'EXCELLENT' | 'GOOD' | 'FAIR';
+  features: string[];
+  imageUrl: string;
+  applyLink: string;
+  aiReasoning?: string; // Populated dynamically
+  matchScore?: number; // 0-100
+}
+
 // --- BUSINESS FUNDING TYPES ---
 
 export enum FundingTier {

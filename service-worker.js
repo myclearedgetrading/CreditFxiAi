@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'creditfix-v5-hard-reset';
+const CACHE_NAME = 'creditfix-v7-bundler-fix';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -39,6 +39,7 @@ self.addEventListener('activate', (event) => {
 
 // Fetch Event: Network first for navigation to ensure fresh index.html
 self.addEventListener('fetch', (event) => {
+  // For navigation requests (loading the page), always try network first
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
@@ -50,13 +51,14 @@ self.addEventListener('fetch', (event) => {
           });
         })
         .catch(() => {
-          // If network fails, fall back to cache
+          // If network fails (offline), fall back to cache
           return caches.match('/index.html');
         })
     );
     return;
   }
   
+  // For other assets, try cache first, then network
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request);

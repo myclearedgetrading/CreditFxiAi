@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, MessageCircle, ScanLine, Menu, Zap } from 'lucide-react';
+import { LayoutDashboard, MessageCircle, ScanLine, Menu, ShoppingBag } from 'lucide-react';
 import { vibrate, HAPTIC } from '../services/mobileService';
 
 interface MobileNavProps {
@@ -23,12 +24,12 @@ const MobileNav: React.FC<MobileNavProps> = ({ onMenuClick }) => {
         </NavLink>
 
         <NavLink 
-          to="/communication" 
+          to="/marketplace" 
           onClick={handleClick}
           className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'}`}
         >
-          <MessageCircle className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Chat</span>
+          <ShoppingBag className="w-6 h-6" />
+          <span className="text-[10px] font-medium">Offers</span>
         </NavLink>
 
         {/* Center Floating Action Button Style */}
@@ -45,7 +46,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ onMenuClick }) => {
           onClick={handleClick}
           className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'}`}
         >
-          <Zap className="w-6 h-6" />
+          <MessageCircle className="w-6 h-6" />
           <span className="text-[10px] font-medium">Action</span>
         </NavLink>
 
