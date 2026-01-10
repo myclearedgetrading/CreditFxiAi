@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { WifiOff, Download } from 'lucide-react';
 import Layout from './components/Layout';
+import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import DisputeGenerator from './pages/DisputeGenerator';
@@ -55,10 +57,8 @@ const App: React.FC = () => {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Request notification permission on load (simplified)
     requestNotificationPermission();
 
-    // PWA Install Prompt Listener
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -92,13 +92,17 @@ const App: React.FC = () => {
           {showInstallPrompt && <InstallPrompt onInstall={handleInstallClick} onClose={() => setShowInstallPrompt(false)} />}
           
           <Routes>
-            {/* Onboarding is a standalone page outside the main Layout */}
+            {/* Public Landing Page */}
+            <Route path="/" element={<LandingPage />} />
+            
+            {/* Onboarding Standalone */}
             <Route path="/onboarding" element={<Onboarding />} />
             
+            {/* Authenticated App Routes */}
             <Route path="/*" element={
               <Layout>
                 <Routes>
-                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/clients" element={<Clients />} />
                   <Route path="/disputes" element={<DisputeGenerator />} />
                   <Route path="/analysis" element={<AnalysisEngine />} />
@@ -109,7 +113,8 @@ const App: React.FC = () => {
                   <Route path="/support" element={<SupportCenter />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/rewards" element={<GamificationCenter />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  {/* Redirect legacy / to dashboard if logged in, but for now fallback to landing */}
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </Layout>
             } />

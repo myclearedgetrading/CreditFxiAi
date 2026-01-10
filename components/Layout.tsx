@@ -1,9 +1,10 @@
+
 import React, { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Settings, LogOut, Menu, X,
-  ShieldCheck, ScanSearch, LineChart, MessageCircle, Trophy,
-  Sun, Moon, Briefcase, GraduationCap, Building2, User
+  ShieldCheck, ScanSearch, LineChart, Trophy,
+  Sun, Moon, Briefcase, GraduationCap, Building2, Home
 } from 'lucide-react';
 import MobileNav from './MobileNav';
 import { isMobileDevice } from '../services/mobileService';
@@ -19,7 +20,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
-  const { user } = useUser(); // Removed role toggle, single user mode
+  const { user } = useUser();
 
   useEffect(() => {
     setIsMobile(isMobileDevice());
@@ -28,10 +29,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   }, []);
 
   const navItems = [
-    { path: '/', label: 'Overview', icon: LayoutDashboard },
+    { path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { path: '/analysis', label: 'Credit Audit', icon: ScanSearch },
     { path: '/disputes', label: 'Dispute Center', icon: ShieldCheck },
-    { path: '/funding', label: 'Business Funding', icon: Building2 }, // New
+    { path: '/funding', label: 'Business Funding', icon: Building2 },
     { path: '/learning', label: 'Education Hub', icon: GraduationCap },
     { path: '/analytics', label: 'Progress Tracker', icon: LineChart },
     { path: '/rewards', label: 'Rewards', icon: Trophy },
@@ -110,10 +111,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           </button>
           
-          <button className="flex items-center w-full px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+          <Link to="/" className="flex items-center w-full px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
             <LogOut className="w-5 h-5 mr-3" />
             Sign Out
-          </button>
+          </Link>
         </div>
       </aside>
 
