@@ -361,11 +361,11 @@ const SecurityCenter: React.FC = () => {
                   
                   <div className="space-y-3">
                      <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-750 rounded-lg">
-                        <span className="text-sm font-medium dark:text-slate-300">Inactive Leads (>6 months)</span>
+                        <span className="text-sm font-medium dark:text-slate-300">Inactive Leads (&gt;6 months)</span>
                         <span className="text-xs font-bold text-slate-400">AUTO-ARCHIVE</span>
                      </div>
                      <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-750 rounded-lg">
-                        <span className="text-sm font-medium dark:text-slate-300">Deleted Client Data (>7 years)</span>
+                        <span className="text-sm font-medium dark:text-slate-300">Deleted Client Data (&gt;7 years)</span>
                         <span className="text-xs font-bold text-red-400">PERMANENT DELETE</span>
                      </div>
                   </div>
