@@ -11,6 +11,7 @@ import CommunicationHub from './pages/CommunicationHub';
 import SupportCenter from './pages/SupportCenter';
 import Settings from './pages/Settings';
 import GamificationCenter from './pages/GamificationCenter';
+import Onboarding from './pages/Onboarding';
 import { requestNotificationPermission } from './services/mobileService';
 import { ThemeProvider } from './context/ThemeContext';
 import { UserProvider } from './context/UserContext';
@@ -87,21 +88,28 @@ const App: React.FC = () => {
         <Router>
           {isOffline && <OfflineIndicator />}
           {showInstallPrompt && <InstallPrompt onInstall={handleInstallClick} onClose={() => setShowInstallPrompt(false)} />}
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/clients" element={<Clients />} />
-              <Route path="/disputes" element={<DisputeGenerator />} />
-              <Route path="/analysis" element={<AnalysisEngine />} />
-              <Route path="/analytics" element={<Reports />} />
-              <Route path="/communication" element={<CommunicationHub />} />
-              <Route path="/support" element={<SupportCenter />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/rewards" element={<GamificationCenter />} />
-              
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Layout>
+          
+          <Routes>
+            {/* Onboarding is a standalone page outside the main Layout */}
+            <Route path="/onboarding" element={<Onboarding />} />
+            
+            <Route path="/*" element={
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/clients" element={<Clients />} />
+                  <Route path="/disputes" element={<DisputeGenerator />} />
+                  <Route path="/analysis" element={<AnalysisEngine />} />
+                  <Route path="/analytics" element={<Reports />} />
+                  <Route path="/communication" element={<CommunicationHub />} />
+                  <Route path="/support" element={<SupportCenter />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/rewards" element={<GamificationCenter />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Layout>
+            } />
+          </Routes>
         </Router>
       </UserProvider>
     </ThemeProvider>

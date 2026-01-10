@@ -170,6 +170,28 @@ const Dashboard: React.FC = () => {
           <p className="text-slate-500 dark:text-slate-400">Here is your credit health overview for {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.</p>
         </div>
 
+        {/* Onboarding Banner Trigger */}
+        <div 
+          onClick={() => navigate('/onboarding')}
+          className="bg-indigo-600 text-white rounded-xl p-6 shadow-lg cursor-pointer transform hover:scale-[1.01] transition-all relative overflow-hidden"
+        >
+          <div className="absolute right-0 top-0 w-32 h-32 bg-white opacity-10 rounded-full translate-x-1/3 -translate-y-1/3 pointer-events-none" />
+          <div className="flex items-start justify-between relative z-10">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="bg-white/20 text-xs font-bold px-2 py-1 rounded">ACTION REQUIRED</span>
+              </div>
+              <h3 className="text-xl font-bold mb-1">Complete Your Setup</h3>
+              <p className="text-indigo-100 text-sm max-w-md">
+                We need a few more details to start challenging negative items. Finish your profile to begin the dispute process.
+              </p>
+            </div>
+            <div className="bg-white text-indigo-600 p-3 rounded-full shadow-sm">
+              <ArrowRight className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+
         {/* Client Score Cards */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
           <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Credit Scores</h3>
