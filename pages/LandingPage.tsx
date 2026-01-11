@@ -41,12 +41,12 @@ const LandingPage: React.FC = () => {
       
       {/* --- NAVIGATION --- */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#050505]/80 backdrop-blur-md border-b border-slate-800/50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <div className="bg-gradient-to-br from-orange-500 to-red-600 p-2 rounded-lg group-hover:shadow-[0_0_15px_rgba(249,115,22,0.5)] transition-shadow duration-300">
               <Shield className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight">CreditFix AI</span>
+            <span className="text-xl font-bold tracking-tight hidden sm:block">CreditFix AI</span>
           </div>
           
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
@@ -56,16 +56,16 @@ const LandingPage: React.FC = () => {
             <button onClick={() => scrollToSection('faq')} className="hover:text-orange-400 transition-colors">FAQ</button>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button 
               onClick={() => navigate('/dashboard')}
-              className="text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:block"
+              className="text-sm font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-full transition-all"
             >
               Log In
             </button>
             <button 
               onClick={() => navigate('/onboarding')}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-full text-sm font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(234,88,12,0.3)]"
+              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(234,88,12,0.3)]"
             >
               Start Free
             </button>
