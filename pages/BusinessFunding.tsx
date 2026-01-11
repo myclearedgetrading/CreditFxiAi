@@ -49,6 +49,10 @@ const BusinessFunding: React.FC = () => {
     setLoading(false);
   };
 
+  const handleApply = (sourceName: string) => {
+    alert(`Initiating application process for ${sourceName}... Redirecting to lender.`);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       
@@ -188,7 +192,10 @@ const BusinessFunding: React.FC = () => {
                             </div>
                             <h4 className="font-bold text-slate-800 dark:text-white">{source.name}</h4>
                             <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Est. Limit: {source.limit}</p>
-                            <button className="w-full py-2 bg-slate-900 text-white dark:bg-slate-700 rounded-lg text-sm font-medium group-hover:bg-indigo-600 transition-colors flex items-center justify-center">
+                            <button 
+                                onClick={() => handleApply(source.name)}
+                                className="w-full py-2 bg-slate-900 text-white dark:bg-slate-700 rounded-lg text-sm font-medium group-hover:bg-indigo-600 transition-colors flex items-center justify-center"
+                            >
                                 Apply Now <ChevronRight className="w-4 h-4 ml-1" />
                             </button>
                         </div>

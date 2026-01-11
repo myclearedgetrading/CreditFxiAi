@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Settings as SettingsIcon, Blocks, Bot, ShieldCheck, 
-  BrainCircuit, Trophy, User, CreditCard, UploadCloud
+  BrainCircuit, Trophy, User, CreditCard, UploadCloud, Check
 } from 'lucide-react';
 import Integrations from './Integrations';
 import AutomationEngine from './AutomationEngine';
@@ -13,7 +13,39 @@ import { useUser } from '../context/UserContext';
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile');
-  const { user } = useUser();
+  const { user, updateUser } = useUser();
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Local state for form management
+  const [profileForm, setProfileForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: ''
+  });
+
+  // Sync local state with user context on load
+  useEffect(() => {
+    setProfileForm({
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email || ''
+    });
+  }, [user]);
+
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setProfileForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveProfile = () => {
+    setIsSaving(true);
+    // Simulate API delay
+    setTimeout(() => {
+      updateUser(profileForm);
+      setIsSaving(false);
+      alert("Profile settings saved successfully!");
+    }, 800);
+  };
 
   const clientTabs = [
     { id: 'profile', label: 'My Profile', icon: User },
@@ -33,7 +65,7 @@ const Settings: React.FC = () => {
         </div>
       </div>
       <label className="relative cursor-pointer">
-        <input type="file" className="hidden" accept={accepted} />
+        <input type="file" className="hidden" accept={accepted} onChange={() => alert(`File selected for ${label}`)} />
         <span className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 transition-colors shadow-sm">
           Select File
         </span>
@@ -50,7 +82,7 @@ const Settings: React.FC = () => {
       case 'rewards': return <GamificationCenter />;
       case 'profile': 
         return (
-          <div className="bg-white dark:bg-[#0A0A0A] p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl">
+          <div className="bg-white dark:bg-[#0A0A0A] p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl animate-fade-in">
             <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
               Personal Information
             </h2>
@@ -62,23 +94,44 @@ const Settings: React.FC = () => {
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     First Name
                   </label>
-                  <input type="text" defaultValue={user.firstName} placeholder="Your Name" className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <input 
+                    type="text" 
+                    name="firstName"
+                    value={profileForm.firstName} 
+                    onChange={handleProfileChange}
+                    placeholder="Your Name" 
+                    className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Last Name
                   </label>
-                  <input type="text" defaultValue={user.lastName} placeholder="Surname" className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <input 
+                    type="text" 
+                    name="lastName"
+                    value={profileForm.lastName} 
+                    onChange={handleProfileChange}
+                    placeholder="Surname" 
+                    className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                  />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
-                <input type="email" defaultValue={user.email} placeholder="you@example.com" className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input 
+                  type="email" 
+                  name="email"
+                  value={profileForm.email} 
+                  onChange={handleProfileChange}
+                  placeholder="you@example.com" 
+                  className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                />
               </div>
             </div>
 
             {/* Verification Documents (New Section) */}
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-8 mb-8">
+            <div className="border-t border-slate-100 dark:border-slate-700 pt-8 mb-8">
               <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Identity Verification</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                 Required for dispute letters to be accepted by bureaus. These are stored in our secure encrypted vault.
@@ -104,15 +157,19 @@ const Settings: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
-               <button className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium shadow-sm transition-colors">
-                 Save Changes
+               <button 
+                 onClick={handleSaveProfile}
+                 disabled={isSaving}
+                 className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium shadow-sm transition-colors flex items-center disabled:opacity-70 disabled:cursor-not-allowed"
+               >
+                 {isSaving ? 'Saving...' : 'Save Changes'}
                </button>
             </div>
           </div>
         );
       case 'billing':
         return (
-          <div className="bg-white dark:bg-[#0A0A0A] p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl">
+          <div className="bg-white dark:bg-[#0A0A0A] p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl animate-fade-in">
             <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Subscription Plan</h2>
             <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl flex justify-between items-center mb-6">
               <div>
@@ -127,7 +184,12 @@ const Settings: React.FC = () => {
             <div className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg">
               <div className="w-10 h-6 bg-slate-200 rounded"></div>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">•••• •••• •••• 4242</span>
-              <button className="ml-auto text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Edit</button>
+              <button 
+                onClick={() => alert("Edit Payment functionality coming soon.")}
+                className="ml-auto text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                Edit
+              </button>
             </div>
           </div>
         );

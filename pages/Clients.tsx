@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MOCK_CLIENTS } from '../constants';
 import { Search, Plus, Filter, MoreVertical } from 'lucide-react';
 import { ClientStatus } from '../types';
@@ -14,6 +14,14 @@ const Clients: React.FC = () => {
     }
   };
 
+  const handleAddClient = () => {
+    alert("New Client Modal would open here.");
+  };
+
+  const handleFilter = () => {
+    alert("Advanced filters dialog.");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -21,7 +29,10 @@ const Clients: React.FC = () => {
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Client Management</h1>
           <p className="text-slate-500 dark:text-slate-400">Manage client profiles and track progress.</p>
         </div>
-        <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+        <button 
+          onClick={handleAddClient}
+          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Add Client
         </button>
@@ -37,7 +48,10 @@ const Clients: React.FC = () => {
             className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-[#111] dark:text-white dark:placeholder-slate-400"
           />
         </div>
-        <button className="flex items-center px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300">
+        <button 
+          onClick={handleFilter}
+          className="flex items-center px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+        >
           <Filter className="w-4 h-4 mr-2" />
           Filters
         </button>
