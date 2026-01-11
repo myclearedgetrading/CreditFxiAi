@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, Shield, Zap, TrendingUp, CheckCircle2, 
   Upload, FileText, Loader2, Sparkles, User, Lock, AlertCircle,
-  ChevronRight, Car, Home, X, ExternalLink, CreditCard
+  ChevronRight, Car, Home, X, ExternalLink, CreditCard, Mail, MapPin
 } from 'lucide-react';
 import { vibrate, HAPTIC } from '../services/mobileService';
 import { useUser } from '../context/UserContext';
@@ -14,7 +14,18 @@ const Onboarding: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useUser();
   const [step, setStep] = useState(1);
-  const [name, setName] = useState('');
+  
+  // Detailed Profile State
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    street: '',
+    city: '',
+    state: '',
+    zip: ''
+  });
+
   const [goal, setGoal] = useState('');
   
   // Analysis State
@@ -33,6 +44,11 @@ const Onboarding: React.FC = () => {
   const [dataMode, setDataMode] = useState<'REAL' | 'DEMO'>('REAL');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleNext = () => {
     vibrate(HAPTIC.LIGHT);
@@ -99,10 +115,16 @@ const Onboarding: React.FC = () => {
     
     const newUser: UserType = {
       id: `user-${Date.now()}`,
-      firstName: name || 'Guest',
-      lastName: '',
-      email: 'user@example.com',
+      firstName: formData.firstName || 'Guest',
+      lastName: formData.lastName || '',
+      email: formData.email || 'user@example.com',
       phone: '',
+      address: {
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip
+      },
       role: 'USER',
       creditScore: {
         equifax: isDemo ? 580 : 524,
@@ -149,49 +171,119 @@ const Onboarding: React.FC = () => {
     navigate('/dashboard');
   };
 
-  // --- RENDER STEP 1: IDENTITY ---
+  // --- RENDER STEP 1: IDENTITY & ADDRESS ---
   const renderStep1 = () => (
     <div className="animate-fade-in flex flex-col h-full">
-      <div className="flex-1 flex flex-col justify-center">
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Let's get started.</h1>
-        <p className="text-slate-400 text-lg mb-8">Tell us a bit about yourself to personalize your plan.</p>
+      <div className="flex-1 flex flex-col justify-center py-6 overflow-y-auto">
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Let's build your profile.</h1>
+        <p className="text-slate-400 text-sm mb-8">We need accurate details to generate valid legal dispute letters.</p>
 
         <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-bold text-slate-300 uppercase mb-2">First Name</label>
-            <input 
-              type="text" 
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Enter your name"
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-lg text-white focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all placeholder:text-slate-600"
-              autoFocus
-            />
+          
+          {/* Identity Section */}
+          <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+             <div className="flex items-center gap-2 mb-4 text-orange-500 font-bold text-sm uppercase tracking-wider">
+                <User className="w-4 h-4" /> Identity
+             </div>
+             <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-2">First Name</label>
+                  <input 
+                    type="text" 
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    placeholder="Jane"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-2">Last Name</label>
+                  <input 
+                    type="text" 
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    placeholder="Doe"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                  />
+                </div>
+             </div>
+             <div>
+                <label className="block text-xs font-bold text-slate-400 mb-2">Email Address</label>
+                <div className="relative">
+                   <Mail className="absolute left-3 top-3.5 w-4 h-4 text-slate-600" />
+                   <input 
+                     type="email" 
+                     name="email"
+                     value={formData.email}
+                     onChange={handleInputChange}
+                     placeholder="jane.doe@example.com"
+                     className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 pl-10 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                   />
+                </div>
+             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-slate-300 uppercase mb-3">Primary Goal</label>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { id: 'score', label: 'Boost Score', icon: TrendingUp },
-                { id: 'clean', label: 'Remove Items', icon: Shield },
-                { id: 'home', label: 'Buy a Home', icon: Home },
-                { id: 'auto', label: 'Buy a Car', icon: Car },
-              ].map(g => (
-                <button
-                  key={g.id}
-                  onClick={() => setGoal(g.id)}
-                  className={`p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${
-                    goal === g.id 
-                      ? 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-900/20' 
-                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700 hover:bg-slate-800/80'
-                  }`}
-                >
-                  <g.icon className={`w-6 h-6 ${goal === g.id ? 'text-white' : 'text-slate-500'}`} />
-                  <span className="font-bold text-sm">{g.label}</span>
-                </button>
-              ))}
-            </div>
+          {/* Address Section */}
+          <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+             <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2 text-orange-500 font-bold text-sm uppercase tracking-wider">
+                   <MapPin className="w-4 h-4" /> Mailing Address
+                </div>
+                <span className="text-[10px] text-slate-500 bg-slate-800 px-2 py-1 rounded">Required for Letters</span>
+             </div>
+             
+             <div className="space-y-4">
+                <div>
+                   <label className="block text-xs font-bold text-slate-400 mb-2">Street Address</label>
+                   <input 
+                     type="text" 
+                     name="street"
+                     value={formData.street}
+                     onChange={handleInputChange}
+                     placeholder="123 Main St, Apt 4B"
+                     className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                   />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                   <div className="col-span-1">
+                      <label className="block text-xs font-bold text-slate-400 mb-2">Zip Code</label>
+                      <input 
+                        type="text" 
+                        name="zip"
+                        value={formData.zip}
+                        onChange={handleInputChange}
+                        placeholder="90210"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                      />
+                   </div>
+                   <div className="col-span-1">
+                      <label className="block text-xs font-bold text-slate-400 mb-2">City</label>
+                      <input 
+                        type="text" 
+                        name="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        placeholder="Beverly Hills"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                      />
+                   </div>
+                   <div className="col-span-1">
+                      <label className="block text-xs font-bold text-slate-400 mb-2">State</label>
+                      <input 
+                        type="text" 
+                        name="state"
+                        value={formData.state}
+                        onChange={handleInputChange}
+                        placeholder="CA"
+                        maxLength={2}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700 uppercase"
+                      />
+                   </div>
+                </div>
+             </div>
           </div>
         </div>
       </div>
@@ -199,7 +291,51 @@ const Onboarding: React.FC = () => {
       <div className="pt-6">
         <button
           onClick={handleNext}
-          disabled={!name || !goal}
+          disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.street || !formData.zip}
+          className="w-full py-4 bg-white text-black rounded-xl font-bold text-lg hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-white/10"
+        >
+          Confirm Details <ArrowRight className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+
+  // --- RENDER STEP 2: GOALS ---
+  const renderStep2 = () => (
+    <div className="animate-fade-in flex flex-col h-full">
+      <div className="flex-1 flex flex-col justify-center">
+        <h1 className="text-3xl font-bold text-white mb-2">What is your primary goal?</h1>
+        <p className="text-slate-400 text-lg mb-8">We'll customize your dispute strategy based on this.</p>
+
+        <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { id: 'score', label: 'Boost Credit Score', icon: TrendingUp },
+                { id: 'clean', label: 'Remove Collections', icon: Shield },
+                { id: 'home', label: 'Buy a Home', icon: Home },
+                { id: 'auto', label: 'Buy a Car', icon: Car },
+              ].map(g => (
+                <button
+                  key={g.id}
+                  onClick={() => setGoal(g.id)}
+                  className={`p-6 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all ${
+                    goal === g.id 
+                      ? 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-900/20 scale-[1.02]' 
+                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600 hover:bg-slate-800/80'
+                  }`}
+                >
+                  <g.icon className={`w-8 h-8 ${goal === g.id ? 'text-white' : 'text-slate-500'}`} />
+                  <span className="font-bold text-sm md:text-base">{g.label}</span>
+                </button>
+              ))}
+            </div>
+        </div>
+      </div>
+
+      <div className="pt-6">
+        <button
+          onClick={handleNext}
+          disabled={!goal}
           className="w-full py-4 bg-white text-black rounded-xl font-bold text-lg hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           Continue <ArrowRight className="w-5 h-5" />
@@ -208,8 +344,8 @@ const Onboarding: React.FC = () => {
     </div>
   );
 
-  // --- RENDER STEP 2: SOURCE ---
-  const renderStep2 = () => (
+  // --- RENDER STEP 3: SOURCE ---
+  const renderStep3 = () => (
     <div className="animate-fade-in flex flex-col h-full">
       <div className="flex-1 flex flex-col justify-start py-6 overflow-y-auto">
         <div className="text-center mb-8">
@@ -304,8 +440,8 @@ const Onboarding: React.FC = () => {
     </div>
   );
 
-  // --- RENDER STEP 3: ANALYSIS ---
-  const renderStep3 = () => (
+  // --- RENDER STEP 4: ANALYSIS ---
+  const renderStep4 = () => (
     <div className="animate-fade-in flex flex-col h-full justify-center items-center text-center">
       {isAnalyzing ? (
         <div className="max-w-xs w-full">
@@ -362,7 +498,7 @@ const Onboarding: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6 z-10">
         <div className="flex gap-2">
-          {[1, 2, 3].map(i => (
+          {[1, 2, 3, 4].map(i => (
             <div 
               key={i} 
               className={`h-1.5 rounded-full transition-all duration-500 ${
@@ -371,7 +507,7 @@ const Onboarding: React.FC = () => {
             />
           ))}
         </div>
-        {step < 3 && (
+        {step < 4 && (
           <button onClick={() => navigate('/')} className="text-slate-500 hover:text-white transition-colors">
             <X className="w-6 h-6" />
           </button>
@@ -383,6 +519,7 @@ const Onboarding: React.FC = () => {
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}
+        {step === 4 && renderStep4()}
       </div>
 
       {/* Connect Modal */}

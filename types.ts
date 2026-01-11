@@ -32,6 +32,12 @@ export interface User {
   lastName: string;
   email: string;
   phone: string;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
   creditScore: {
     equifax: number;
     experian: number;
