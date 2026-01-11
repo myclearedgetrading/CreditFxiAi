@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
@@ -23,6 +22,33 @@ const Login: React.FC = () => {
 
     setIsLoading(true);
     setError(null);
+
+    // --- ADMIN OVERRIDE FOR ABEL MELENDEZ ---
+    if (email.toLowerCase() === 'hello@abelmelendez.com') {
+      const adminUser: User = {
+          id: 'admin-abel-melendez',
+          firstName: 'Abel',
+          lastName: 'Melendez',
+          email: 'hello@abelmelendez.com',
+          phone: '555-0199',
+          role: 'ADMIN',
+          creditScore: {
+              equifax: 815,
+              experian: 820,
+              transunion: 810
+          },
+          negativeItems: []
+      };
+      
+      // Simulate authenticating
+      setTimeout(() => {
+          login(adminUser);
+          setIsLoading(false);
+          navigate('/dashboard');
+      }, 800);
+      return;
+    }
+    // ----------------------------------------
 
     try {
       // 1. Authenticate with Firebase Auth
