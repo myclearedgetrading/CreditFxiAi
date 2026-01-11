@@ -1,30 +1,18 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  LifeBuoy, Ticket, Heart, MessageSquare, Plus, Search, 
-  Filter, CheckCircle2, Clock, AlertCircle, BarChart3, 
-  Send, User, Video, Mic, Sparkles, Smile, Frown, Meh
+  LifeBuoy, Ticket, Heart, MessageSquare, Plus, 
+  Loader2, Sparkles
 } from 'lucide-react';
 import { analyzeSupportTicket } from '../services/geminiService';
-import { SupportTicket, ClientHealthMetric, TicketStatus, TicketPriority } from '../types';
+import { subscribeToTickets, createTicket } from '../services/firebaseService';
+import { SupportTicket, TicketPriority } from '../types';
 import { useUser } from '../context/UserContext';
-
-// Mock Data
-const MOCK_TICKETS: SupportTicket[] = [
-  { id: 'T-101', clientId: 'c1', clientName: 'James Robinson', subject: 'Billing Issue - Double Charge', priority: 'HIGH', status: 'OPEN', category: 'BILLING', createdAt: '2h ago', updatedAt: '1h ago', channel: 'EMAIL', sentiment: 'NEGATIVE', tags: ['refund', 'urgent'] },
-  { id: 'T-102', clientId: 'c2', clientName: 'Sarah Connor', subject: 'Dispute Status Update?', priority: 'LOW', status: 'PENDING', category: 'DISPUTE_UPDATE', createdAt: '5h ago', updatedAt: '2h ago', channel: 'PORTAL', sentiment: 'NEUTRAL', tags: ['status_check'] },
-  { id: 'T-103', clientId: 'c3', clientName: 'Michael Scott', subject: 'Login not working', priority: 'MEDIUM', status: 'RESOLVED', category: 'TECHNICAL', createdAt: '1d ago', updatedAt: '1d ago', channel: 'CHAT', sentiment: 'NEGATIVE', tags: ['password_reset'] },
-];
-
-const MOCK_HEALTH: ClientHealthMetric[] = [
-  { clientId: 'c1', clientName: 'James Robinson', overallScore: 85, engagementScore: 90, paymentHealth: 100, disputeSuccess: 65, trend: 'STABLE', lastContact: 'Today', nextScheduledTouchpoint: 'Nov 25', riskFactors: [] },
-  { clientId: 'c2', clientName: 'Sarah Connor', overallScore: 42, engagementScore: 30, paymentHealth: 80, disputeSuccess: 15, trend: 'DECLINING', lastContact: '14 days ago', nextScheduledTouchpoint: 'Nov 22', riskFactors: ['Low Engagement', 'Poor Results'] },
-  { clientId: 'c3', clientName: 'Michael Scott', overallScore: 68, engagementScore: 70, paymentHealth: 50, disputeSuccess: 85, trend: 'IMPROVING', lastContact: 'Yesterday', nextScheduledTouchpoint: 'Nov 30', riskFactors: ['Late Payment'] },
-];
 
 const SupportCenter: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'tickets' | 'health' | 'chat'>('tickets');
-  const [tickets, setTickets] = useState<SupportTicket[]>(MOCK_TICKETS);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useUser();
   const role = user.role;
   
@@ -34,30 +22,30 @@ const SupportCenter: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Chat
-  const [chatMessage, setChatMessage] = useState('');
-  const [activeChat, setActiveChat] = useState<{id: string, name: string} | null>(null);
+  useEffect(() => {
+    // Subscribe to real tickets
+    const unsubscribe = subscribeToTickets((realTickets) => {
+        setTickets(realTickets);
+        setIsLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleCreateTicket = async () => {
     if (!newSubject || !newMessage) return;
     setIsAnalyzing(true);
     try {
       const analysis = await analyzeSupportTicket(newSubject, newMessage);
-      const newTicket: SupportTicket = {
-        id: `T-${Date.now()}`,
-        clientId: 'unknown',
-        clientName: role === 'ADMIN' ? 'New Client' : 'Me', 
+      await createTicket({
+        clientId: user.id,
+        clientName: `${user.firstName} ${user.lastName}`, 
         subject: newSubject,
         priority: analysis.priority,
-        status: 'OPEN',
         category: analysis.category,
-        createdAt: 'Just now',
-        updatedAt: 'Just now',
         channel: 'PORTAL', 
         sentiment: analysis.sentiment,
         tags: analysis.tags
-      };
-      setTickets([newTicket, ...tickets]);
+      });
       setShowCreateModal(false);
       setNewSubject('');
       setNewMessage('');
@@ -77,15 +65,9 @@ const SupportCenter: React.FC = () => {
     }
   };
 
-  const getHealthColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 50) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  // Filter tickets for client view (mock)
-  const displayTickets = role === 'CLIENT' 
-    ? tickets.filter(t => t.clientName === 'James Robinson' || t.clientName === 'Me') 
+  // Filter tickets for client view
+  const displayTickets = role === 'USER' 
+    ? tickets.filter(t => t.clientId === user.id) 
     : tickets;
 
   return (
@@ -112,7 +94,7 @@ const SupportCenter: React.FC = () => {
         </button>
       </div>
 
-      {/* Tabs - Only show all tabs for Admin */}
+      {/* Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-700 space-x-6 overflow-x-auto">
         <button 
           onClick={() => setActiveTab('tickets')}
@@ -120,22 +102,6 @@ const SupportCenter: React.FC = () => {
         >
           <Ticket className="w-4 h-4 mr-2" /> {role === 'ADMIN' ? 'Ticket Queue' : 'My Tickets'}
         </button>
-        {role === 'ADMIN' && (
-          <>
-            <button 
-              onClick={() => setActiveTab('health')}
-              className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'health' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
-            >
-              <Heart className="w-4 h-4 mr-2" /> Client Health
-            </button>
-            <button 
-              onClick={() => setActiveTab('chat')}
-              className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'chat' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
-            >
-              <MessageSquare className="w-4 h-4 mr-2" /> Live Support
-            </button>
-          </>
-        )}
       </div>
 
       {/* TICKET SYSTEM */}
@@ -158,7 +124,11 @@ const SupportCenter: React.FC = () => {
 
            {/* Ticket List */}
            <div className="lg:col-span-3 space-y-4">
-              {displayTickets.length === 0 ? (
+              {isLoading ? (
+                  <div className="flex justify-center py-10">
+                      <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+                  </div>
+              ) : displayTickets.length === 0 ? (
                 <div className="text-center py-10 text-slate-400">No tickets found.</div>
               ) : displayTickets.map((ticket) => (
                  <div key={ticket.id} className="bg-white dark:bg-[#0A0A0A] p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-500 transition-all cursor-pointer group">
@@ -181,7 +151,7 @@ const SupportCenter: React.FC = () => {
                     <div className="flex items-center justify-between mt-4">
                        <div className="flex items-center gap-2">
                           <div className="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300">
-                             {ticket.clientName.charAt(0)}
+                             {ticket.clientName ? ticket.clientName.charAt(0) : 'U'}
                           </div>
                           <span className="text-sm text-slate-600 dark:text-slate-300">{ticket.clientName}</span>
                        </div>
@@ -197,34 +167,6 @@ const SupportCenter: React.FC = () => {
               ))}
            </div>
         </div>
-      )}
-
-      {/* HEALTH MONITOR (Admin Only) */}
-      {activeTab === 'health' && role === 'ADMIN' && (
-         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               <div className="bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center justify-between mb-4">
-                     <h3 className="font-bold text-slate-700 dark:text-slate-200">Overall Health</h3>
-                     <Heart className="w-5 h-5 text-green-500" />
-                  </div>
-                  <div className="text-3xl font-bold text-slate-800 dark:text-white mb-1">88%</div>
-                  <p className="text-xs text-green-600 dark:text-green-400">+2% vs last week</p>
-               </div>
-               {/* ... (Rest of Health monitor UI) ... */}
-            </div>
-            {/* ... Table ... */}
-         </div>
-      )}
-
-      {/* LIVE CHAT (Admin Only) */}
-      {activeTab === 'chat' && role === 'ADMIN' && (
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
-            {/* ... Chat UI ... */}
-            <div className="lg:col-span-3 flex items-center justify-center text-slate-400">
-               Live Chat Console (Admin View)
-            </div>
-         </div>
       )}
 
       {/* Ticket Modal */}

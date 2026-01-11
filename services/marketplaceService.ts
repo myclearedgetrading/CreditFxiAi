@@ -2,12 +2,11 @@
 import { GoogleGenAI } from "@google/genai";
 import { CreditProduct, User } from "../types";
 
-const apiKey = process.env.API_KEY || 'MISSING_API_KEY_PLACEHOLDER';
-const isDemoMode = !process.env.API_KEY || process.env.API_KEY === 'MISSING_API_KEY_PLACEHOLDER';
-const ai = isDemoMode ? {} as any : new GoogleGenAI({ apiKey });
+const apiKey = process.env.API_KEY;
+const ai = new GoogleGenAI({ apiKey: apiKey || '' });
 
 export const getCreditProducts = async (): Promise<CreditProduct[]> => {
-  // In demo mode, return static data so the page isn't empty
+  // This represents the "database" of available products.
   return [
     {
       id: 'prod-1',
@@ -71,21 +70,6 @@ export const getCreditProducts = async (): Promise<CreditProduct[]> => {
 export const getAiProductRecommendations = async (user: User, products: CreditProduct[]): Promise<CreditProduct[]> => {
   if (products.length === 0) return [];
 
-  // DEMO MODE BYPASS
-  if (isDemoMode) {
-      await new Promise(r => setTimeout(r, 1200)); // Simulate thinking
-      return products.map((p, index) => ({
-          ...p,
-          matchScore: index === 0 ? 96 : index === 1 ? 88 : index === 2 ? 72 : 65,
-          aiReasoning: index === 0 
-            ? "Best match: Zero annual fee and high impact on utilization ratio for your specific score range." 
-            : index === 1 
-            ? "Strong option, but requires a security deposit which might tie up cash."
-            : "Good for payment history, but less impact on available credit mix."
-      })).sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
-  }
-
-  // REAL AI LOGIC
   const prompt = `
     Act as a financial credit advisor.
     User Profile:

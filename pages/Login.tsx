@@ -25,30 +25,12 @@ const Login: React.FC = () => {
     setError(null);
 
     try {
-      let loggedInUser;
-      
-      try {
-        // Attempt actual Firebase login
-        const credential = await loginWithEmail(email, password);
-        loggedInUser = {
-            id: credential.user.uid,
-            email: credential.user.email
-        };
-      } catch (authError: any) {
-        // Fallback for Demo Mode if Firebase isn't set up
-        if (authError.message === 'FIREBASE_NOT_CONFIGURED') {
-            if (email === 'demo@example.com' && password === 'password') {
-                loggedInUser = { id: 'demo-user', email: 'demo@example.com' };
-                // Simulate network delay for realism in demo mode
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            } else {
-                throw new Error("Invalid credentials. For demo, use: demo@example.com / password");
-            }
-        } else {
-            // Re-throw real auth errors
-            throw authError;
-        }
-      }
+      // Attempt actual Firebase login
+      const credential = await loginWithEmail(email, password);
+      const loggedInUser = {
+          id: credential.user.uid,
+          email: credential.user.email
+      };
 
       // --- USER DATA RETRIEVAL (Simulated DB) ---
       const userEmail = loggedInUser.email || email;
@@ -58,38 +40,24 @@ const Login: React.FC = () => {
       let userProfile: User;
 
       if (savedUserStr) {
-          // Load existing profile from "Database"
           userProfile = JSON.parse(savedUserStr);
-          // Ensure critical auth fields are up to date if they somehow changed (unlikely in demo)
           userProfile.id = loggedInUser.id || userProfile.id;
       } else {
-          // Create Default Mock User if no record exists
+          // Initialize fresh user profile if none exists
           userProfile = {
             id: loggedInUser.id || 'user-' + Date.now(),
-            firstName: 'Demo',
+            firstName: 'New',
             lastName: 'User',
-            email: userEmail,
-            phone: '555-0123',
+            email: userEmail || '',
+            phone: '',
             role: 'USER',
             creditScore: {
-              equifax: 580,
-              experian: 592,
-              transunion: 575
+              equifax: 0,
+              experian: 0,
+              transunion: 0
             },
-            negativeItems: [
-                {
-                    id: 'item-1',
-                    type: 'Collection',
-                    creditor: 'Midland Credit',
-                    accountNumber: '****4921',
-                    amount: 450,
-                    dateReported: '2023-10-15',
-                    bureau: ['Equifax' as any],
-                    status: 'Open' as const
-                }
-            ]
+            negativeItems: []
           };
-          // Save this new profile to the "Database" so it persists next time
           localStorage.setItem(dbKey, JSON.stringify(userProfile));
       }
 

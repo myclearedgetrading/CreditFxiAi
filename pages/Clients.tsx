@@ -1,10 +1,28 @@
 
-import React, { useState } from 'react';
-import { MOCK_CLIENTS } from '../constants';
-import { Search, Plus, Filter, MoreVertical } from 'lucide-react';
-import { ClientStatus } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Filter, MoreVertical, Loader2 } from 'lucide-react';
+import { ClientStatus, Client } from '../types';
+import { getClients } from '../services/firebaseService';
 
 const Clients: React.FC = () => {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        // Fetching for a default company ID or the user's company ID
+        const data = await getClients('default-company-id');
+        setClients(data);
+      } catch (e) {
+        console.error("Failed to fetch clients", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchClients();
+  }, []);
+
   const getStatusColor = (status: ClientStatus) => {
     switch (status) {
       case ClientStatus.ACTIVE: return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
@@ -59,59 +77,69 @@ const Clients: React.FC = () => {
 
       {/* Client Table */}
       <div className="bg-white dark:bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 dark:bg-[#111] border-b border-slate-200 dark:border-slate-800 text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold">
-                <th className="px-6 py-4">Client Name</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Scores (E/E/T)</th>
-                <th className="px-6 py-4">Negative Items</th>
-                <th className="px-6 py-4">Joined Date</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {MOCK_CLIENTS.map((client) => (
-                <tr key={client.id} className="hover:bg-slate-50 dark:hover:bg-[#111] transition-colors">
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="font-medium text-slate-900 dark:text-white">{client.firstName} {client.lastName}</div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">{client.email}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(client.status)}`}>
-                      {client.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex space-x-2 text-sm font-medium">
-                      <span className="text-slate-600 dark:text-slate-300">{client.creditScore.equifax}</span>
-                      <span className="text-slate-300 dark:text-slate-600">|</span>
-                      <span className="text-slate-600 dark:text-slate-300">{client.creditScore.experian}</span>
-                      <span className="text-slate-300 dark:text-slate-600">|</span>
-                      <span className="text-slate-600 dark:text-slate-300">{client.creditScore.transunion}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-sm font-medium">
-                      {client.negativeItems.length}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-sm">
-                    {client.joinedDate}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button className="text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
-                  </td>
+        {isLoading ? (
+          <div className="p-10 flex justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+          </div>
+        ) : clients.length === 0 ? (
+          <div className="p-10 text-center text-slate-400">
+            No clients found. Add one to get started.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 dark:bg-[#111] border-b border-slate-200 dark:border-slate-800 text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold">
+                  <th className="px-6 py-4">Client Name</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Scores (E/E/T)</th>
+                  <th className="px-6 py-4">Negative Items</th>
+                  <th className="px-6 py-4">Joined Date</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {clients.map((client) => (
+                  <tr key={client.id} className="hover:bg-slate-50 dark:hover:bg-[#111] transition-colors">
+                    <td className="px-6 py-4">
+                      <div>
+                        <div className="font-medium text-slate-900 dark:text-white">{client.firstName} {client.lastName}</div>
+                        <div className="text-sm text-slate-500 dark:text-slate-400">{client.email}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(client.status)}`}>
+                        {client.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex space-x-2 text-sm font-medium">
+                        <span className="text-slate-600 dark:text-slate-300">{client.creditScore.equifax}</span>
+                        <span className="text-slate-300 dark:text-slate-600">|</span>
+                        <span className="text-slate-600 dark:text-slate-300">{client.creditScore.experian}</span>
+                        <span className="text-slate-300 dark:text-slate-600">|</span>
+                        <span className="text-slate-600 dark:text-slate-300">{client.creditScore.transunion}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-sm font-medium">
+                        {client.negativeItems.length}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-sm">
+                      {client.joinedDate}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button className="text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400">
+                        <MoreVertical className="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

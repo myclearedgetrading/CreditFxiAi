@@ -78,7 +78,8 @@ const AnalysisEngine: React.FC = () => {
     setTimeout(() => {
         setConnectLoading(false);
         setShowConnectModal(false);
-        alert("Integrations are currently disabled in this demo environment. Please upload a file manually.");
+        // This would call a backend service to scrape/fetch the report
+        alert("Integrations are currently disabled. Please upload a file manually.");
         vibrate(HAPTIC.WARNING);
     }, 2000);
   };
@@ -115,10 +116,9 @@ const AnalysisEngine: React.FC = () => {
          const analysisResult = await analyzeCreditReportImage(base64Data, mimeType);
          setResult(analysisResult);
       } else {
-         // In demo mode, we allow PDF "uploads" to pass through to the mock generator
-         // Passing "MOCK_DATA" as the base64 string, which the service will ignore in demo mode
-         const analysisResult = await analyzeCreditReportImage("MOCK_DATA", file.type);
-         setResult(analysisResult);
+         // Real Mode: We cannot parse PDFs/HTML client-side easily without huge libraries.
+         // Since we removed mock data, we must inform the user to use images or implement server-side parsing.
+         throw new Error("Client-side parsing is currently supported for Images only. Please convert your report to an Image (JPG/PNG).");
       }
       
       clearInterval(stepInterval);
@@ -168,7 +168,7 @@ const AnalysisEngine: React.FC = () => {
               type="file" 
               id="fileInput" 
               className="hidden" 
-              accept="image/*,.pdf,.html" 
+              accept="image/*" 
               capture="environment" 
               onChange={handleFileChange} 
             />
@@ -197,7 +197,7 @@ const AnalysisEngine: React.FC = () => {
                   <Camera className="w-8 h-8 text-slate-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-white">Tap to Scan or Upload</h3>
-                <p className="text-slate-400 mt-1">Supports Image, PDF, HTML</p>
+                <p className="text-slate-400 mt-1">Supports Image Files (JPG, PNG)</p>
               </div>
             )}
           </div>
