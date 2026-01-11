@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { useUser } from '../context/UserContext';
+import { loginWithEmail } from '../services/firebaseService';
 import { User } from '../types';
 
 const Login: React.FC = () => {
@@ -13,7 +14,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       setError('Please enter both email and password.');
@@ -23,15 +24,38 @@ const Login: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
-    // Simulate API Login
-    setTimeout(() => {
-      // For demo purposes, we accept any login, but in a real app this verifies credentials
-      // Construct a mock user object based on login
+    try {
+      let loggedInUser;
+      
+      try {
+        // Attempt actual Firebase login
+        const credential = await loginWithEmail(email, password);
+        loggedInUser = {
+            id: credential.user.uid,
+            email: credential.user.email
+        };
+      } catch (authError: any) {
+        // Fallback for Demo Mode if Firebase isn't set up
+        if (authError.message === 'FIREBASE_NOT_CONFIGURED') {
+            if (email === 'demo@example.com' && password === 'password') {
+                loggedInUser = { id: 'demo-user', email: 'demo@example.com' };
+                // Simulate network delay for realism in demo mode
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            } else {
+                throw new Error("Invalid credentials. For demo, use: demo@example.com / password");
+            }
+        } else {
+            // Re-throw real auth errors
+            throw authError;
+        }
+      }
+
+      // Construct Application User Object
       const mockUser: User = {
-        id: 'user-' + Date.now(),
+        id: loggedInUser.id || 'user-' + Date.now(),
         firstName: 'Demo',
         lastName: 'User',
-        email: email,
+        email: loggedInUser.email || email,
         phone: '555-0123',
         role: 'USER',
         creditScore: {
@@ -56,7 +80,20 @@ const Login: React.FC = () => {
       login(mockUser);
       setIsLoading(false);
       navigate('/dashboard');
-    }, 1500);
+
+    } catch (err: any) {
+      console.error(err);
+      let errorMessage = 'Failed to sign in. Please check your credentials.';
+      
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        errorMessage = 'Invalid email or password.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+      setIsLoading(false);
+    }
   };
 
   return (
