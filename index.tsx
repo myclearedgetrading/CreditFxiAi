@@ -3,18 +3,20 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-// Service Worker Registration
+// NOTE: Service Worker registration has been disabled to prevent "invalid state" errors 
+// in preview environments. To enable PWA features later, uncomment this block when 
+// running in a standard HTTPS environment.
+/*
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
         console.log('SW registered: ', registration);
-        // Check for updates immediately
-        registration.update();
       })
       .catch(registrationError => console.log('SW registration failed: ', registrationError));
   });
 }
+*/
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
