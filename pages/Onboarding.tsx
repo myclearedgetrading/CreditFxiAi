@@ -83,8 +83,13 @@ const Onboarding: React.FC = () => {
   const handleAffiliateClick = (providerName: string) => {
     vibrate(HAPTIC.MEDIUM);
     // In production, these would be real affiliate links
-    const url = providerName === 'IdentityIQ' ? 'https://www.identityiq.com' : 
-                providerName === 'SmartCredit' ? 'https://www.smartcredit.com' : '#';
+    let url = '#';
+    switch (providerName) {
+      case 'IdentityIQ': url = 'https://www.identityiq.com'; break;
+      case 'SmartCredit': url = 'https://www.smartcredit.com'; break;
+      case 'MyFreeScoreNow': url = 'https://www.myfreescorenow.com'; break;
+      case 'PrivacyGuard': url = 'https://www.privacyguard.com'; break;
+    }
     window.open(url, '_blank');
   };
 
@@ -260,6 +265,8 @@ const Onboarding: React.FC = () => {
             {[
               { name: 'IdentityIQ', offer: 'Get for $1', desc: 'Detailed 3-Bureau Report', color: 'text-blue-400' },
               { name: 'SmartCredit', offer: 'Get for $1', desc: 'Best for Score Tracking', color: 'text-green-400' },
+              { name: 'MyFreeScoreNow', offer: 'Free Trial', desc: 'Fastest Updates', color: 'text-red-400' },
+              { name: 'PrivacyGuard', offer: 'Get for $1', desc: 'Identity Protection', color: 'text-purple-400' },
             ].map((provider) => (
               <div 
                 key={provider.name}
@@ -273,7 +280,7 @@ const Onboarding: React.FC = () => {
                   <ExternalLink className="w-3 h-3 text-slate-600 group-hover:text-white" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-sm">{provider.name}</h4>
+                  <h4 className="font-bold text-white text-sm truncate">{provider.name}</h4>
                   <p className="text-[10px] text-slate-500 leading-tight mb-2">{provider.desc}</p>
                   <span className="inline-block bg-orange-900/30 text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded border border-orange-900/50">
                     {provider.offer}
