@@ -3,16 +3,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   CheckCircle2, ChevronRight, Upload, Shield, CreditCard, 
-  FileText, User, Home, Car, TrendingUp, AlertCircle, 
+  FileText, User as UserIcon, Home, Car, TrendingUp, AlertCircle, 
   ArrowLeft, Lock, Loader2, Sparkles, Zap, Check, X, ArrowRight
 } from 'lucide-react';
 import { vibrate, HAPTIC } from '../services/mobileService';
+import { useUser } from '../context/UserContext';
+import { User } from '../types';
 
 const STORAGE_KEY = 'creditfix_onboarding_state';
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useUser();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -131,6 +134,27 @@ const Onboarding: React.FC = () => {
   const completeOnboarding = () => {
     setLoading(true);
     setTimeout(() => {
+      // Create user profile
+      const newUser: User = {
+        id: 'new-user-' + Date.now(),
+        firstName: formData.firstName,
+        lastName: '',
+        email: 'user@example.com', // In a real app this would come from sign up
+        phone: '',
+        role: 'USER',
+        creditScore: {
+          equifax: 520, // Default start
+          experian: 540,
+          transunion: 530
+        },
+        negativeItems: analysisComplete ? [
+            { id: '1', type: 'Collection', creditor: 'Portfolio Recovery', accountNumber: '***99', amount: 800, dateReported: '2023-01', bureau: ['Experian' as any], status: 'Open' },
+            { id: '2', type: 'Late Payment', creditor: 'Chase Bank', accountNumber: '***22', amount: 0, dateReported: '2023-05', bureau: ['Equifax' as any], status: 'Open' }
+        ] : []
+      };
+
+      login(newUser); // Authenticate
+      
       setLoading(false);
       vibrate(HAPTIC.SUCCESS);
       localStorage.removeItem(STORAGE_KEY);

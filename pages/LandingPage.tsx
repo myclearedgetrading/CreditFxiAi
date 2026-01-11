@@ -58,7 +58,7 @@ const LandingPage: React.FC = () => {
 
           <div className="flex items-center gap-3 sm:gap-4">
             <button 
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/login')}
               className="text-sm font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-full transition-all"
             >
               Log In

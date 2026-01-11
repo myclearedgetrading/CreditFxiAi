@@ -5,6 +5,9 @@ import { User } from '../types';
 interface UserContextType {
   user: User;
   updateUser: (data: Partial<User>) => void;
+  login: (userData: User) => void;
+  logout: () => void;
+  isAuthenticated: boolean;
 }
 
 const DEFAULT_USER: User = {
@@ -26,17 +29,25 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User>(DEFAULT_USER);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load user from local storage if available (simple persistence for MVP)
+  // Load user from local storage
   useEffect(() => {
     const savedUser = localStorage.getItem('creditfix_user');
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsed = JSON.parse(savedUser);
+        if (parsed.email) {
+            setUser(parsed);
+            setIsAuthenticated(true);
+        }
       } catch (e) {
         console.error("Failed to load user", e);
+        localStorage.removeItem('creditfix_user');
       }
     }
+    setIsLoading(false);
   }, []);
 
   const updateUser = (data: Partial<User>) => {
@@ -47,9 +58,28 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
+  const login = (userData: User) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+    localStorage.setItem('creditfix_user', JSON.stringify(userData));
+  };
+
+  const logout = () => {
+    setUser(DEFAULT_USER);
+    setIsAuthenticated(false);
+    localStorage.removeItem('creditfix_user');
+    localStorage.removeItem('creditfix_onboarding_state');
+  };
+
   return (
-    <UserContext.Provider value={{ user, updateUser }}>
-      {children}
+    <UserContext.Provider value={{ 
+      user, 
+      updateUser, 
+      login, 
+      logout, 
+      isAuthenticated 
+    }}>
+      {!isLoading && children}
     </UserContext.Provider>
   );
 };

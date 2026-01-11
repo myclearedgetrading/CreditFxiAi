@@ -4,6 +4,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { WifiOff, Download } from 'lucide-react';
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import DisputeGenerator from './pages/DisputeGenerator';
@@ -17,6 +18,7 @@ import LearningCenter from './pages/LearningCenter';
 import BusinessFunding from './pages/BusinessFunding';
 import Marketplace from './pages/Marketplace';
 import Onboarding from './pages/Onboarding';
+import ProtectedRoute from './components/ProtectedRoute';
 import { requestNotificationPermission } from './services/mobileService';
 import { ThemeProvider } from './context/ThemeContext';
 import { UserProvider } from './context/UserContext';
@@ -93,32 +95,32 @@ const App: React.FC = () => {
           {showInstallPrompt && <InstallPrompt onInstall={handleInstallClick} onClose={() => setShowInstallPrompt(false)} />}
           
           <Routes>
-            {/* Public Landing Page */}
+            {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
-            
-            {/* Onboarding Standalone */}
+            <Route path="/login" element={<Login />} />
             <Route path="/onboarding" element={<Onboarding />} />
             
-            {/* Authenticated App Routes */}
+            {/* Authenticated Routes */}
             <Route path="/*" element={
-              <Layout>
-                <Routes>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/clients" element={<Clients />} />
-                  <Route path="/disputes" element={<DisputeGenerator />} />
-                  <Route path="/analysis" element={<AnalysisEngine />} />
-                  <Route path="/marketplace" element={<Marketplace />} />
-                  <Route path="/analytics" element={<Reports />} />
-                  <Route path="/communication" element={<CommunicationHub />} />
-                  <Route path="/learning" element={<LearningCenter />} />
-                  <Route path="/funding" element={<BusinessFunding />} />
-                  <Route path="/support" element={<SupportCenter />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/rewards" element={<GamificationCenter />} />
-                  {/* Redirect legacy / to dashboard if logged in, but for now fallback to landing */}
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </Routes>
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <Routes>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/clients" element={<Clients />} />
+                    <Route path="/disputes" element={<DisputeGenerator />} />
+                    <Route path="/analysis" element={<AnalysisEngine />} />
+                    <Route path="/marketplace" element={<Marketplace />} />
+                    <Route path="/analytics" element={<Reports />} />
+                    <Route path="/communication" element={<CommunicationHub />} />
+                    <Route path="/learning" element={<LearningCenter />} />
+                    <Route path="/funding" element={<BusinessFunding />} />
+                    <Route path="/support" element={<SupportCenter />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/rewards" element={<GamificationCenter />} />
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                  </Routes>
+                </Layout>
+              </ProtectedRoute>
             } />
           </Routes>
         </Router>
