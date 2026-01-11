@@ -32,7 +32,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user from local storage
+  // Load user from local storage (Session Persistence)
   useEffect(() => {
     const savedUser = localStorage.getItem('creditfix_user');
     if (savedUser) {
@@ -53,7 +53,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateUser = (data: Partial<User>) => {
     setUser(prev => {
       const updated = { ...prev, ...data };
+      
+      // 1. Update Session Storage (Current Login)
       localStorage.setItem('creditfix_user', JSON.stringify(updated));
+      
+      // 2. Update Persistent "Database" Storage (Survives Logout)
+      if (updated.email) {
+        localStorage.setItem(`creditfix_db_${updated.email}`, JSON.stringify(updated));
+      }
+      
       return updated;
     });
   };
@@ -67,6 +75,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     setUser(DEFAULT_USER);
     setIsAuthenticated(false);
+    // Only clear session data, not the "database" data
     localStorage.removeItem('creditfix_user');
     localStorage.removeItem('creditfix_onboarding_state');
   };

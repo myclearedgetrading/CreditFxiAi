@@ -50,34 +50,50 @@ const Login: React.FC = () => {
         }
       }
 
-      // Construct Application User Object
-      const mockUser: User = {
-        id: loggedInUser.id || 'user-' + Date.now(),
-        firstName: 'Demo',
-        lastName: 'User',
-        email: loggedInUser.email || email,
-        phone: '555-0123',
-        role: 'USER',
-        creditScore: {
-          equifax: 580,
-          experian: 592,
-          transunion: 575
-        },
-        negativeItems: [
-            {
-                id: 'item-1',
-                type: 'Collection',
-                creditor: 'Midland Credit',
-                accountNumber: '****4921',
-                amount: 450,
-                dateReported: '2023-10-15',
-                bureau: ['Equifax' as any],
-                status: 'Open' as const
-            }
-        ]
-      };
+      // --- USER DATA RETRIEVAL (Simulated DB) ---
+      const userEmail = loggedInUser.email || email;
+      const dbKey = `creditfix_db_${userEmail}`;
+      const savedUserStr = localStorage.getItem(dbKey);
+      
+      let userProfile: User;
 
-      login(mockUser);
+      if (savedUserStr) {
+          // Load existing profile from "Database"
+          userProfile = JSON.parse(savedUserStr);
+          // Ensure critical auth fields are up to date if they somehow changed (unlikely in demo)
+          userProfile.id = loggedInUser.id || userProfile.id;
+      } else {
+          // Create Default Mock User if no record exists
+          userProfile = {
+            id: loggedInUser.id || 'user-' + Date.now(),
+            firstName: 'Demo',
+            lastName: 'User',
+            email: userEmail,
+            phone: '555-0123',
+            role: 'USER',
+            creditScore: {
+              equifax: 580,
+              experian: 592,
+              transunion: 575
+            },
+            negativeItems: [
+                {
+                    id: 'item-1',
+                    type: 'Collection',
+                    creditor: 'Midland Credit',
+                    accountNumber: '****4921',
+                    amount: 450,
+                    dateReported: '2023-10-15',
+                    bureau: ['Equifax' as any],
+                    status: 'Open' as const
+                }
+            ]
+          };
+          // Save this new profile to the "Database" so it persists next time
+          localStorage.setItem(dbKey, JSON.stringify(userProfile));
+      }
+
+      login(userProfile);
       setIsLoading(false);
       navigate('/dashboard');
 
