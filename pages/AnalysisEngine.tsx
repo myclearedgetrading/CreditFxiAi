@@ -11,7 +11,11 @@ import {
   Scale,
   Loader2,
   ScanLine,
-  Camera
+  Camera,
+  Zap,
+  ChevronRight,
+  Lock,
+  X
 } from 'lucide-react';
 import { analyzeCreditReportImage } from '../services/geminiService';
 import { CreditAnalysisResult, Discrepancy, StrategyRecommendation } from '../types';
@@ -25,6 +29,15 @@ const AnalysisEngine: React.FC = () => {
   const [result, setResult] = useState<CreditAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progressStep, setProgressStep] = useState(0);
+
+  // Connect Modal State
+  const [showConnectModal, setShowConnectModal] = useState(false);
+  const [connectLoading, setConnectLoading] = useState(false);
+  const [connectForm, setConnectForm] = useState({
+    provider: 'IdentityIQ',
+    username: '',
+    password: ''
+  });
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -66,6 +79,26 @@ const AnalysisEngine: React.FC = () => {
       // For PDF/HTML, we can just show an icon or a text preview
       setPreview('DOC_PREVIEW');
     }
+  };
+
+  const handleConnectSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!connectForm.username || !connectForm.password) return;
+
+    setConnectLoading(true);
+    vibrate(HAPTIC.MEDIUM);
+
+    setTimeout(() => {
+        setConnectLoading(false);
+        setShowConnectModal(false);
+        
+        // Mock file to trigger analysis state
+        const mockFile = new File([""], `${connectForm.provider}_Report_Import.pdf`, { type: "application/pdf" });
+        setFile(mockFile);
+        setPreview("DOC_PREVIEW");
+        
+        vibrate(HAPTIC.SUCCESS);
+    }, 2000);
   };
 
   const handleAnalysis = async () => {
@@ -142,7 +175,7 @@ const AnalysisEngine: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-10">
       <div>
         <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
           <BrainCircuit className="text-indigo-600 dark:text-indigo-400" />
@@ -203,6 +236,35 @@ const AnalysisEngine: React.FC = () => {
               </div>
             )}
           </div>
+
+          {!file && !analyzing && (
+            <>
+              <div className="relative py-6">
+                  <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold">
+                  <span className="px-2 bg-slate-50 dark:bg-slate-900 text-slate-400">OR</span>
+                  </div>
+              </div>
+
+              <button
+                  onClick={() => setShowConnectModal(true)}
+                  className="w-full py-4 bg-white dark:bg-slate-800 border-2 border-indigo-100 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-xl flex items-center justify-between px-6 transition-all group shadow-sm"
+              >
+                  <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                          <Zap className="w-5 h-5 fill-current" />
+                      </div>
+                      <div className="text-left">
+                          <h3 className="font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">Connect Provider</h3>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">IdentityIQ, SmartCredit, etc.</p>
+                      </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-500" />
+              </button>
+            </>
+          )}
 
           {analyzing && (
             <div className="mt-8 space-y-4">
@@ -403,6 +465,71 @@ const AnalysisEngine: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* LOGIN MODAL */}
+      {showConnectModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-200 dark:border-slate-700">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                    <h3 className="font-bold text-lg text-slate-800 dark:text-white">Connect Report</h3>
+                    <button onClick={() => setShowConnectModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                <form onSubmit={handleConnectSubmit} className="p-6 space-y-4">
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Provider</label>
+                        <select 
+                            value={connectForm.provider}
+                            onChange={(e) => setConnectForm({...connectForm, provider: e.target.value})}
+                            className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                            <option value="IdentityIQ">IdentityIQ</option>
+                            <option value="SmartCredit">SmartCredit</option>
+                            <option value="PrivacyGuard">PrivacyGuard</option>
+                            <option value="MyScoreIQ">MyScoreIQ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Username / Email</label>
+                        <input 
+                            type="text" 
+                            placeholder="Enter username"
+                            value={connectForm.username}
+                            onChange={(e) => setConnectForm({...connectForm, username: e.target.value})}
+                            className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Password</label>
+                        <div className="relative">
+                            <input 
+                                type="password" 
+                                placeholder="Enter password"
+                                value={connectForm.password}
+                                onChange={(e) => setConnectForm({...connectForm, password: e.target.value})}
+                                className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                            <Lock className="absolute right-3 top-3.5 w-4 h-4 text-slate-400" />
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-center gap-2 text-xs text-green-600 dark:text-green-400 font-medium py-1">
+                        <Lock className="w-3 h-3" /> 256-bit Bank Level Encryption
+                    </div>
+
+                    <button 
+                        type="submit"
+                        disabled={connectLoading || !connectForm.username || !connectForm.password}
+                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                        {connectLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Zap className="w-5 h-5" />}
+                        {connectLoading ? 'Verifying...' : 'Secure Connect'}
+                    </button>
+                </form>
+            </div>
         </div>
       )}
     </div>
