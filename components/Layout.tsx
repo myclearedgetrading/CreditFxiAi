@@ -4,12 +4,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Settings, LogOut, Menu, X,
   ShieldCheck, ScanSearch, LineChart, Trophy,
-  Sun, Moon, Briefcase, GraduationCap, Building2, Home,
+  Briefcase, GraduationCap, Building2,
   ShoppingBag
 } from 'lucide-react';
 import MobileNav from './MobileNav';
 import { isMobileDevice } from '../services/mobileService';
-import { useTheme } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 
 interface LayoutProps {
@@ -20,7 +19,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme();
   const { user } = useUser();
 
   useEffect(() => {
@@ -106,14 +104,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
              </div>
           </div>
 
-          <button 
-            onClick={toggleTheme}
-            className="flex items-center w-full px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-900 rounded-lg transition-colors"
-          >
-            {theme === 'dark' ? <Sun className="w-5 h-5 mr-3" /> : <Moon className="w-5 h-5 mr-3" />}
-            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-          </button>
-          
           <Link to="/" className="flex items-center w-full px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-900 rounded-lg transition-colors">
             <LogOut className="w-5 h-5 mr-3" />
             Sign Out
