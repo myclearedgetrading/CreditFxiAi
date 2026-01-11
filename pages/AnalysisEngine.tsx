@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { 
   UploadCloud, FileText, AlertTriangle, CheckCircle2, BrainCircuit, 
   ArrowRight, TrendingUp, Scale, Loader2, ScanLine, Camera, Zap, 
-  ChevronRight, Lock, X
+  ChevronRight, Lock, X, ExternalLink, Shield
 } from 'lucide-react';
 import { analyzeCreditReportImage } from '../services/geminiService';
 import { CreditAnalysisResult, Discrepancy, StrategyRecommendation } from '../types';
@@ -83,6 +83,19 @@ const AnalysisEngine: React.FC = () => {
     }, 2000);
   };
 
+  const handleAffiliateClick = (providerName: string) => {
+    vibrate(HAPTIC.MEDIUM);
+    // In production, these would be real affiliate links
+    let url = '#';
+    switch (providerName) {
+      case 'IdentityIQ': url = 'https://www.identityiq.com'; break;
+      case 'SmartCredit': url = 'https://www.smartcredit.com'; break;
+      case 'MyFreeScoreNow': url = 'https://www.myfreescorenow.com'; break;
+      case 'PrivacyGuard': url = 'https://www.privacyguard.com'; break;
+    }
+    window.open(url, '_blank');
+  };
+
   const handleAnalysis = async () => {
     if (!preview || !file) return;
 
@@ -126,7 +139,6 @@ const AnalysisEngine: React.FC = () => {
 
   return (
     <div className="space-y-8 pb-10">
-      {/* ... (Keep existing JSX for header) ... */}
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <BrainCircuit className="text-orange-500" />
@@ -201,7 +213,7 @@ const AnalysisEngine: React.FC = () => {
 
               <button
                   onClick={() => setShowConnectModal(true)}
-                  className="w-full py-4 bg-[#0A0A0A] border-2 border-slate-800 hover:border-orange-500 rounded-xl flex items-center justify-between px-6 transition-all group shadow-sm"
+                  className="w-full py-4 bg-[#0A0A0A] border-2 border-slate-800 hover:border-orange-500 rounded-xl flex items-center justify-between px-6 transition-all group shadow-sm mb-8"
               >
                   <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-orange-900/30 rounded-full flex items-center justify-center text-orange-500">
@@ -214,6 +226,41 @@ const AnalysisEngine: React.FC = () => {
                   </div>
                   <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-orange-500" />
               </button>
+
+              <div className="border-t border-slate-800 pt-6">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Don't have a report?</h3>
+                    <span className="text-[10px] text-green-500 bg-green-900/20 px-2 py-0.5 rounded border border-green-900/30">Get for $1</span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                {[
+                    { name: 'IdentityIQ', offer: 'Get for $1', desc: 'Detailed 3-Bureau Report', color: 'text-blue-400', hoverColor: 'hover:border-blue-500/30 hover:shadow-blue-500/10' },
+                    { name: 'SmartCredit', offer: 'Get for $1', desc: 'Best for Score Tracking', color: 'text-green-400', hoverColor: 'hover:border-green-500/30 hover:shadow-green-500/10' },
+                    { name: 'MyFreeScoreNow', offer: 'Free Trial', desc: 'Fastest Updates', color: 'text-red-400', hoverColor: 'hover:border-red-500/30 hover:shadow-red-500/10' },
+                    { name: 'PrivacyGuard', offer: 'Get for $1', desc: 'Identity Protection', color: 'text-purple-400', hoverColor: 'hover:border-purple-500/30 hover:shadow-purple-500/10' },
+                ].map((provider) => (
+                    <div 
+                    key={provider.name}
+                    onClick={() => handleAffiliateClick(provider.name)}
+                    className={`bg-[#0A0A0A] border border-slate-800 p-4 rounded-xl cursor-pointer transition-all duration-300 group flex flex-col justify-between h-32 relative overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 ${provider.hoverColor}`}
+                    >
+                    <div className="flex justify-between items-start z-10">
+                        <div className="w-8 h-8 rounded-full bg-[#050505] flex items-center justify-center border border-slate-800 group-hover:border-slate-700 transition-colors">
+                        <Shield className={`w-4 h-4 ${provider.color}`} />
+                        </div>
+                        <ExternalLink className="w-3 h-3 text-slate-600 group-hover:text-white transition-colors" />
+                    </div>
+                    <div className="z-10">
+                        <h4 className="font-bold text-white text-xs truncate mb-1">{provider.name}</h4>
+                        <span className="inline-block bg-slate-900 text-slate-300 text-[10px] font-medium px-2 py-0.5 rounded border border-slate-800 group-hover:border-slate-700 transition-colors">
+                        {provider.offer}
+                        </span>
+                    </div>
+                    </div>
+                ))}
+                </div>
+              </div>
             </>
           )}
 
@@ -419,7 +466,7 @@ const AnalysisEngine: React.FC = () => {
         </div>
       )}
 
-      {/* LOGIN MODAL (Reused for connecting, now just shows alert about disabled integrations) */}
+      {/* CONNECT MODAL */}
       {showConnectModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-sm p-4 animate-fade-in">
             <div className="bg-[#0A0A0A] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-700">
