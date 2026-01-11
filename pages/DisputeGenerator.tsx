@@ -3,13 +3,16 @@ import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { Bureau, DisputeStrategy, NegativeItem } from '../types';
 import { generateDisputeLetter } from '../services/geminiService';
-import { Wand2, Send, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X } from 'lucide-react';
+import { Wand2, Send, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X, Layers } from 'lucide-react';
 
 const DisputeGenerator: React.FC = () => {
   const { user } = useUser();
   const [selectedItemId, setSelectedItemId] = useState<string>('');
   const [strategy, setStrategy] = useState<DisputeStrategy>(DisputeStrategy.FACTUAL);
-  const [targetBureau, setTargetBureau] = useState<Bureau>(Bureau.EQUIFAX);
+  
+  // Changed from single target to array for multi-select
+  const [selectedBureaus, setSelectedBureaus] = useState<Bureau[]>([Bureau.EQUIFAX]);
+  
   const [generatedLetter, setGeneratedLetter] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,21 +26,45 @@ const DisputeGenerator: React.FC = () => {
   const myNegativeItems = user.negativeItems || [];
   const selectedItem = myNegativeItems.find(i => i.id === selectedItemId);
 
+  const toggleBureau = (b: Bureau) => {
+    setSelectedBureaus(prev => {
+      if (prev.includes(b)) {
+        // Prevent deselecting the last one for UX stability, or allow it but validate on generate
+        if (prev.length === 1) return prev;
+        return prev.filter(item => item !== b);
+      }
+      return [...prev, b];
+    });
+  };
+
+  const selectAllBureaus = () => {
+    setSelectedBureaus(Object.values(Bureau));
+  };
+
   const handleGenerate = async () => {
-    if (!selectedItem) return;
+    if (!selectedItem || selectedBureaus.length === 0) return;
 
     setIsLoading(true);
     setError(null);
     setGeneratedLetter('');
 
     try {
-      const letter = await generateDisputeLetter({
-        client: user,
-        item: selectedItem,
-        strategy,
-        targetBureau
-      });
-      setGeneratedLetter(letter);
+      const generatedParts = [];
+      
+      // Generate a letter for each selected bureau
+      for (const bureau of selectedBureaus) {
+        const letterContent = await generateDisputeLetter({
+          client: user,
+          item: selectedItem,
+          strategy,
+          targetBureau: bureau
+        });
+        
+        // Add a header for clarity in the preview text area
+        generatedParts.push(`----------------------------------------\nLETTER TO: ${bureau.toUpperCase()}\n----------------------------------------\n\n${letterContent}`);
+      }
+
+      setGeneratedLetter(generatedParts.join('\n\n\n'));
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
     } finally {
@@ -52,24 +79,29 @@ const DisputeGenerator: React.FC = () => {
   };
 
   const calculateTotalPages = () => {
-    let pages = 1;
-    if (includeID) pages++;
-    if (includeSSN) pages++;
-    if (includeAddress) pages++;
-    if (additionalProof) pages++;
-    return pages;
+    let pagesPerLetter = 1; // Base letter
+    if (includeID) pagesPerLetter++;
+    if (includeSSN) pagesPerLetter++;
+    if (includeAddress) pagesPerLetter++;
+    if (additionalProof) pagesPerLetter++;
+    
+    // Total is pages per letter * number of bureaus targeted
+    return pagesPerLetter * selectedBureaus.length;
   };
 
   const handleDownload = () => {
     if (!generatedLetter) return;
-    alert(`Downloading PDF package (${calculateTotalPages()} pages). Includes selected identity documents.`);
+    alert(`Downloading ${selectedBureaus.length} letter(s). Total ${calculateTotalPages()} pages including attachments.`);
   };
 
   const handleMail = () => {
     if (!generatedLetter) return;
-    const cost = 2 + (calculateTotalPages() - 1) * 0.5;
-    if(confirm(`Send via USPS Certified Mail?\n\nTotal Pages: ${calculateTotalPages()}\nEstimated Cost: $${cost.toFixed(2)}`)) {
-        alert("Letter queued for mailing!");
+    // Base cost $2.00 + $0.50 per additional page
+    const costPerLetter = 2 + ((calculateTotalPages() / selectedBureaus.length) - 1) * 0.5;
+    const totalCost = costPerLetter * selectedBureaus.length;
+    
+    if(confirm(`Send ${selectedBureaus.length} Certified Letter(s)?\n\nTargeting: ${selectedBureaus.join(', ')}\nTotal Pages: ${calculateTotalPages()}\nEstimated Cost: $${totalCost.toFixed(2)}`)) {
+        alert("Letters queued for mailing!");
     }
   };
 
@@ -140,21 +172,36 @@ const DisputeGenerator: React.FC = () => {
 
              {/* Step 3 */}
              <div>
-              <label className="block text-sm font-semibold text-white mb-2">3. Target Bureau</label>
-              <div className="flex space-x-2">
-                {Object.values(Bureau).map((b) => (
-                  <button
-                    key={b}
-                    onClick={() => setTargetBureau(b)}
-                    className={`flex-1 py-2 text-xs font-medium rounded-lg border transition-colors ${
-                      targetBureau === b 
-                        ? 'bg-orange-900/30 border-orange-700 text-orange-300' 
-                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
-                    }`}
-                  >
-                    {b}
-                  </button>
-                ))}
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-semibold text-white">3. Target Bureau(s)</label>
+                <button 
+                  onClick={selectAllBureaus}
+                  className="text-[10px] text-orange-500 hover:text-orange-400 font-bold uppercase tracking-wide"
+                >
+                  Select All
+                </button>
+              </div>
+              <div className="flex flex-col gap-2">
+                {Object.values(Bureau).map((b) => {
+                  const isSelected = selectedBureaus.includes(b);
+                  return (
+                    <button
+                      key={b}
+                      onClick={() => toggleBureau(b)}
+                      className={`flex items-center justify-between px-3 py-2.5 text-xs font-medium rounded-lg border transition-all ${
+                        isSelected
+                          ? 'bg-orange-900/30 border-orange-700 text-orange-300 shadow-[0_0_10px_rgba(234,88,12,0.1)]' 
+                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        {isSelected ? <Check className="w-3.5 h-3.5" /> : <div className="w-3.5 h-3.5 rounded-full border border-slate-600"></div>}
+                        {b}
+                      </span>
+                      {isSelected && <span className="text-[10px] bg-orange-900/50 px-1.5 py-0.5 rounded text-orange-200">Targeted</span>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -204,18 +251,18 @@ const DisputeGenerator: React.FC = () => {
 
             <button 
               onClick={handleGenerate}
-              disabled={!selectedItem || isLoading}
+              disabled={!selectedItem || isLoading || selectedBureaus.length === 0}
               className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Writing Letter...
+                  Writing {selectedBureaus.length} Letters...
                 </>
               ) : (
                 <>
                   <Wand2 className="w-5 h-5 mr-2" />
-                  Generate Letter
+                  Generate {selectedBureaus.length > 1 ? 'All Letters' : 'Letter'}
                 </>
               )}
             </button>
@@ -229,9 +276,14 @@ const DisputeGenerator: React.FC = () => {
                  <div className="flex items-center gap-2">
                     <h2 className="font-semibold text-slate-200">Letter Preview</h2>
                     {generatedLetter && (
-                        <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">
-                            {calculateTotalPages()} Pages Total
-                        </span>
+                        <div className="flex gap-2">
+                            <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <Layers className="w-3 h-3" /> {selectedBureaus.length} Versions
+                            </span>
+                            <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">
+                                {calculateTotalPages()} Pages Total
+                            </span>
+                        </div>
                     )}
                  </div>
                  
