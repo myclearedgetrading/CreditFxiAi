@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -181,8 +180,8 @@ const Onboarding: React.FC = () => {
         <div className="space-y-6">
           
           {/* Identity Section */}
-          <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-             <div className="flex items-center gap-2 mb-4 text-orange-500 font-bold text-sm uppercase tracking-wider">
+          <div className="bg-[#0F0F0F] p-5 rounded-2xl border border-slate-800 shadow-xl">
+             <div className="flex items-center gap-2 mb-5 text-orange-500 font-bold text-sm uppercase tracking-wider">
                 <User className="w-4 h-4" /> Identity
              </div>
              <div className="grid grid-cols-2 gap-4 mb-4">
@@ -194,7 +193,7 @@ const Onboarding: React.FC = () => {
                     value={formData.firstName}
                     onChange={handleInputChange}
                     placeholder="Jane"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                    className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700 transition-all focus:border-orange-500"
                     autoFocus
                   />
                 </div>
@@ -206,7 +205,7 @@ const Onboarding: React.FC = () => {
                     value={formData.lastName}
                     onChange={handleInputChange}
                     placeholder="Doe"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                    className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700 transition-all focus:border-orange-500"
                   />
                 </div>
              </div>
@@ -220,19 +219,19 @@ const Onboarding: React.FC = () => {
                      value={formData.email}
                      onChange={handleInputChange}
                      placeholder="jane.doe@example.com"
-                     className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 pl-10 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                     className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 pl-10 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700 transition-all focus:border-orange-500"
                    />
                 </div>
              </div>
           </div>
 
           {/* Address Section */}
-          <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-             <div className="flex justify-between items-center mb-4">
+          <div className="bg-[#0F0F0F] p-5 rounded-2xl border border-slate-800 shadow-xl">
+             <div className="flex justify-between items-center mb-5">
                 <div className="flex items-center gap-2 text-orange-500 font-bold text-sm uppercase tracking-wider">
                    <MapPin className="w-4 h-4" /> Mailing Address
                 </div>
-                <span className="text-[10px] text-slate-500 bg-slate-800 px-2 py-1 rounded">Required for Letters</span>
+                <span className="text-[10px] text-slate-400 bg-[#050505] border border-slate-800 px-2 py-1 rounded">Required for Letters</span>
              </div>
              
              <div className="space-y-4">
@@ -244,7 +243,7 @@ const Onboarding: React.FC = () => {
                      value={formData.street}
                      onChange={handleInputChange}
                      placeholder="123 Main St, Apt 4B"
-                     className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                     className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700 transition-all focus:border-orange-500"
                    />
                 </div>
                 <div className="grid grid-cols-3 gap-3">
@@ -256,7 +255,7 @@ const Onboarding: React.FC = () => {
                         value={formData.zip}
                         onChange={handleInputChange}
                         placeholder="90210"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                        className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700 transition-all focus:border-orange-500"
                       />
                    </div>
                    <div className="col-span-1">
@@ -267,7 +266,7 @@ const Onboarding: React.FC = () => {
                         value={formData.city}
                         onChange={handleInputChange}
                         placeholder="Beverly Hills"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700"
+                        className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700 transition-all focus:border-orange-500"
                       />
                    </div>
                    <div className="col-span-1">
@@ -279,7 +278,7 @@ const Onboarding: React.FC = () => {
                         onChange={handleInputChange}
                         placeholder="CA"
                         maxLength={2}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700 uppercase"
+                        className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700 uppercase transition-all focus:border-orange-500"
                       />
                    </div>
                 </div>
@@ -292,7 +291,7 @@ const Onboarding: React.FC = () => {
         <button
           onClick={handleNext}
           disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.street || !formData.zip}
-          className="w-full py-4 bg-white text-black rounded-xl font-bold text-lg hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-white/10"
+          className="w-full py-4 bg-white text-black rounded-2xl font-bold text-lg hover:bg-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-white/10 hover:shadow-white/20 hover:scale-[1.01]"
         >
           Confirm Details <ArrowRight className="w-5 h-5" />
         </button>
@@ -318,14 +317,16 @@ const Onboarding: React.FC = () => {
                 <button
                   key={g.id}
                   onClick={() => setGoal(g.id)}
-                  className={`p-6 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all ${
+                  className={`p-6 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all relative overflow-hidden group ${
                     goal === g.id 
-                      ? 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-900/20 scale-[1.02]' 
-                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600 hover:bg-slate-800/80'
+                      ? 'bg-orange-600 border-orange-600 text-white shadow-xl shadow-orange-900/30 scale-[1.02] z-10' 
+                      : 'bg-[#0F0F0F] border-slate-800 text-slate-400 hover:border-slate-700 hover:bg-slate-900 hover:shadow-lg'
                   }`}
                 >
-                  <g.icon className={`w-8 h-8 ${goal === g.id ? 'text-white' : 'text-slate-500'}`} />
-                  <span className="font-bold text-sm md:text-base">{g.label}</span>
+                  <div className={`p-3 rounded-full transition-colors ${goal === g.id ? 'bg-white/20' : 'bg-slate-900 group-hover:bg-slate-800'}`}>
+                    <g.icon className={`w-8 h-8 ${goal === g.id ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'}`} />
+                  </div>
+                  <span className={`font-bold text-sm md:text-base ${goal === g.id ? 'text-white' : 'group-hover:text-slate-300'}`}>{g.label}</span>
                 </button>
               ))}
             </div>
@@ -336,7 +337,7 @@ const Onboarding: React.FC = () => {
         <button
           onClick={handleNext}
           disabled={!goal}
-          className="w-full py-4 bg-white text-black rounded-xl font-bold text-lg hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-4 bg-white text-black rounded-2xl font-bold text-lg hover:bg-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:scale-[1.01]"
         >
           Continue <ArrowRight className="w-5 h-5" />
         </button>
@@ -358,35 +359,35 @@ const Onboarding: React.FC = () => {
           <label className="text-xs font-bold text-slate-500 uppercase ml-1">I have a report</label>
           <button
             onClick={() => setShowConnect(true)}
-            className="w-full p-4 bg-slate-900 border border-slate-800 hover:border-orange-500/50 rounded-xl flex items-center justify-between group transition-all"
+            className="w-full p-5 bg-[#0F0F0F] border border-slate-800 hover:border-orange-500/50 hover:bg-slate-900/50 rounded-2xl flex items-center justify-between group transition-all shadow-md"
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-slate-950 rounded-lg text-orange-500 border border-slate-800">
-                <Zap className="w-5 h-5 fill-current" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-[#050505] rounded-xl text-orange-500 border border-slate-800 group-hover:border-orange-500/30 transition-colors">
+                <Zap className="w-6 h-6 fill-current" />
               </div>
               <div className="text-left">
-                <h3 className="font-bold text-white text-sm">Connect Monitoring</h3>
-                <p className="text-slate-500 text-xs">IdentityIQ, SmartCredit, etc.</p>
+                <h3 className="font-bold text-white text-sm group-hover:text-orange-400 transition-colors">Connect Monitoring</h3>
+                <p className="text-slate-500 text-xs mt-0.5">IdentityIQ, SmartCredit, etc.</p>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-orange-500" />
+            <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
           </button>
 
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full p-4 bg-slate-900 border border-slate-800 hover:border-slate-600 rounded-xl flex items-center justify-between group transition-all"
+            className="w-full p-5 bg-[#0F0F0F] border border-slate-800 hover:border-slate-600 hover:bg-slate-900/50 rounded-2xl flex items-center justify-between group transition-all shadow-md"
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-slate-950 rounded-lg text-slate-400 border border-slate-800">
-                <Upload className="w-5 h-5" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-[#050505] rounded-xl text-slate-400 border border-slate-800 group-hover:text-white transition-colors">
+                <Upload className="w-6 h-6" />
               </div>
               <div className="text-left">
-                <h3 className="font-bold text-white text-sm">Upload File</h3>
-                <p className="text-slate-500 text-xs">PDF or HTML report</p>
+                <h3 className="font-bold text-white text-sm group-hover:text-slate-300 transition-colors">Upload File</h3>
+                <p className="text-slate-500 text-xs mt-0.5">PDF or HTML report</p>
               </div>
             </div>
             <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.html" onChange={handleFileUpload} />
-            <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white" />
+            <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-white group-hover:translate-x-1 transition-all" />
           </button>
         </div>
 
@@ -394,34 +395,36 @@ const Onboarding: React.FC = () => {
         <div className="space-y-3 mb-8">
           <label className="text-xs font-bold text-slate-500 uppercase ml-1 flex justify-between">
             <span>I need a report</span>
-            <span className="text-green-500 text-[10px]">Best for Metro 2</span>
+            <span className="text-green-500 text-[10px] bg-green-900/20 px-2 py-0.5 rounded border border-green-900/30">Best for Metro 2</span>
           </label>
           
           <div className="grid grid-cols-2 gap-3">
             {[
-              { name: 'IdentityIQ', offer: 'Get for $1', desc: 'Detailed 3-Bureau Report', color: 'text-blue-400' },
-              { name: 'SmartCredit', offer: 'Get for $1', desc: 'Best for Score Tracking', color: 'text-green-400' },
-              { name: 'MyFreeScoreNow', offer: 'Free Trial', desc: 'Fastest Updates', color: 'text-red-400' },
-              { name: 'PrivacyGuard', offer: 'Get for $1', desc: 'Identity Protection', color: 'text-purple-400' },
+              { name: 'IdentityIQ', offer: 'Get for $1', desc: 'Detailed 3-Bureau Report', color: 'text-blue-400', hoverColor: 'hover:border-blue-500/30 hover:shadow-blue-500/10' },
+              { name: 'SmartCredit', offer: 'Get for $1', desc: 'Best for Score Tracking', color: 'text-green-400', hoverColor: 'hover:border-green-500/30 hover:shadow-green-500/10' },
+              { name: 'MyFreeScoreNow', offer: 'Free Trial', desc: 'Fastest Updates', color: 'text-red-400', hoverColor: 'hover:border-red-500/30 hover:shadow-red-500/10' },
+              { name: 'PrivacyGuard', offer: 'Get for $1', desc: 'Identity Protection', color: 'text-purple-400', hoverColor: 'hover:border-purple-500/30 hover:shadow-purple-500/10' },
             ].map((provider) => (
               <div 
                 key={provider.name}
                 onClick={() => handleAffiliateClick(provider.name)}
-                className="bg-slate-900 border border-slate-800 hover:border-slate-600 p-3 rounded-xl cursor-pointer transition-all group flex flex-col justify-between h-32"
+                className={`bg-[#0F0F0F] border border-slate-800 p-4 rounded-2xl cursor-pointer transition-all duration-300 group flex flex-col justify-between h-36 relative overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 ${provider.hoverColor}`}
               >
-                <div className="flex justify-between items-start">
-                  <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
-                    <Shield className={`w-4 h-4 ${provider.color}`} />
+                <div className="flex justify-between items-start z-10">
+                  <div className="w-9 h-9 rounded-full bg-[#050505] flex items-center justify-center border border-slate-800 group-hover:border-slate-700 transition-colors">
+                    <Shield className={`w-5 h-5 ${provider.color}`} />
                   </div>
-                  <ExternalLink className="w-3 h-3 text-slate-600 group-hover:text-white" />
+                  <ExternalLink className="w-3 h-3 text-slate-600 group-hover:text-white transition-colors" />
                 </div>
-                <div>
-                  <h4 className="font-bold text-white text-sm truncate">{provider.name}</h4>
-                  <p className="text-[10px] text-slate-500 leading-tight mb-2">{provider.desc}</p>
-                  <span className="inline-block bg-orange-900/30 text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded border border-orange-900/50">
+                <div className="z-10">
+                  <h4 className="font-bold text-white text-sm truncate mb-1">{provider.name}</h4>
+                  <p className="text-[10px] text-slate-500 leading-tight mb-2 line-clamp-2">{provider.desc}</p>
+                  <span className="inline-block bg-orange-500/10 text-orange-400 text-[10px] font-bold px-2 py-1 rounded border border-orange-500/20 group-hover:bg-orange-500/20 transition-colors">
                     {provider.offer}
                   </span>
                 </div>
+                {/* Background Gradient Effect on Hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               </div>
             ))}
           </div>
@@ -431,9 +434,9 @@ const Onboarding: React.FC = () => {
         <div className="text-center pt-2">
           <button
             onClick={() => startAnalysis('DEMO')}
-            className="text-slate-500 hover:text-white text-sm font-medium transition-colors flex items-center justify-center gap-2 mx-auto py-2"
+            className="text-slate-500 hover:text-white text-sm font-medium transition-colors flex items-center justify-center gap-2 mx-auto py-2 group"
           >
-            <Sparkles className="w-3 h-3" /> Just exploring? Use Demo Data
+            <Sparkles className="w-3 h-3 group-hover:text-orange-400 transition-colors" /> Just exploring? Use Demo Data
           </button>
         </div>
       </div>
@@ -468,8 +471,8 @@ const Onboarding: React.FC = () => {
             We found <span className="text-white font-bold">3 negative items</span> hurting your score. We can help you remove them.
           </p>
 
-          <div className="bg-slate-900 rounded-xl p-4 border border-slate-800 mb-8 text-left">
-            <div className="flex justify-between text-sm mb-2">
+          <div className="bg-[#0F0F0F] rounded-2xl p-5 border border-slate-800 mb-8 text-left shadow-xl">
+            <div className="flex justify-between text-sm mb-3">
               <span className="text-slate-400">Current Score Estimate</span>
               <span className="text-white font-bold">{dataMode === 'DEMO' ? '580' : '524'}</span>
             </div>
@@ -481,7 +484,7 @@ const Onboarding: React.FC = () => {
 
           <button
             onClick={completeOnboarding}
-            className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-orange-900/20 transition-all hover:scale-[1.02]"
+            className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white rounded-2xl font-bold text-lg shadow-lg shadow-orange-900/20 transition-all hover:scale-[1.02] hover:shadow-orange-900/30"
           >
             View My Dashboard
           </button>
@@ -534,7 +537,7 @@ const Onboarding: React.FC = () => {
                   <select 
                     value={connectProvider}
                     onChange={e => setConnectProvider(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-white focus:outline-none focus:border-orange-500"
+                    className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500"
                   >
                     <option>IdentityIQ</option>
                     <option>SmartCredit</option>
@@ -547,7 +550,7 @@ const Onboarding: React.FC = () => {
                     type="text"
                     value={connectUser}
                     onChange={e => setConnectUser(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-white focus:outline-none focus:border-orange-500"
+                    className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500"
                     placeholder="Username"
                   />
                 </div>
@@ -557,21 +560,21 @@ const Onboarding: React.FC = () => {
                     type="password"
                     value={connectPass}
                     onChange={e => setConnectPass(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-white focus:outline-none focus:border-orange-500"
+                    className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500"
                     placeholder="••••••••"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={isConnecting || !connectUser || !connectPass}
-                  className="w-full py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 mt-2"
+                  className="w-full py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mt-2"
                 >
                   {isConnecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
                   {isConnecting ? 'Verifying...' : 'Secure Connect'}
                 </button>
               </form>
             </div>
-            <div className="bg-slate-900 p-3 text-center border-t border-slate-800">
+            <div className="bg-[#050505] p-3 text-center border-t border-slate-800">
               <button onClick={() => setShowConnect(false)} className="text-sm text-slate-400 hover:text-white">Cancel</button>
             </div>
           </div>
