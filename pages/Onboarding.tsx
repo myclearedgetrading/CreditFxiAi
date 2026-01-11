@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -6,6 +7,7 @@ import {
   ChevronRight, Car, Home, X, ExternalLink, CreditCard, Mail, MapPin
 } from 'lucide-react';
 import { vibrate, HAPTIC } from '../services/mobileService';
+import { registerWithEmail } from '../services/firebaseService';
 import { useUser } from '../context/UserContext';
 import { User as UserType } from '../types';
 
@@ -19,6 +21,7 @@ const Onboarding: React.FC = () => {
     firstName: '',
     lastName: '',
     email: '',
+    password: '',
     street: '',
     city: '',
     state: '',
@@ -26,9 +29,11 @@ const Onboarding: React.FC = () => {
   });
 
   const [goal, setGoal] = useState('');
+  const [error, setError] = useState<string | null>(null);
   
   // Analysis State
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [analysisStep, setAnalysisStep] = useState('Initializing AI...');
   
@@ -38,9 +43,6 @@ const Onboarding: React.FC = () => {
   const [connectUser, setConnectUser] = useState('');
   const [connectPass, setConnectPass] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
-
-  // Data Mode (Real vs Demo)
-  const [dataMode, setDataMode] = useState<'REAL' | 'DEMO'>('REAL');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,15 +56,14 @@ const Onboarding: React.FC = () => {
     setStep(prev => prev + 1);
   };
 
-  const startAnalysis = (mode: 'REAL' | 'DEMO') => {
-    setDataMode(mode);
+  const startAnalysis = () => {
     setStep(4);
     setIsAnalyzing(true);
     
-    // Simulate complex AI analysis
+    // Simulate complex AI analysis visualization (the actual processing happens later or via file upload)
     let progress = 0;
     const interval = setInterval(() => {
-      progress += 2; // 50 ticks * 60ms = 3000ms total
+      progress += 2;
       setAnalysisProgress(progress);
       
       if (progress < 20) setAnalysisStep('Scanning for negative items...');
@@ -85,13 +86,13 @@ const Onboarding: React.FC = () => {
     setTimeout(() => {
       setIsConnecting(false);
       setShowConnect(false);
-      startAnalysis('REAL');
+      startAnalysis();
     }, 2000);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      startAnalysis('REAL');
+      startAnalysis();
     }
   };
 
@@ -108,66 +109,60 @@ const Onboarding: React.FC = () => {
     window.open(url, '_blank');
   };
 
-  const completeOnboarding = () => {
-    // Generate User Profile based on mode
-    const isDemo = dataMode === 'DEMO';
-    
-    const newUser: UserType = {
-      id: `user-${Date.now()}`,
-      firstName: formData.firstName || 'Guest',
-      lastName: formData.lastName || '',
-      email: formData.email || 'user@example.com',
-      phone: '',
-      address: {
-        street: formData.street,
-        city: formData.city,
-        state: formData.state,
-        zip: formData.zip
-      },
-      role: 'USER',
-      creditScore: {
-        equifax: isDemo ? 580 : 524,
-        experian: isDemo ? 595 : 538,
-        transunion: isDemo ? 590 : 515
-      },
-      negativeItems: [
-        { 
-          id: 'item-1', 
-          type: 'Collection', 
-          creditor: 'Midland Funding', 
-          accountNumber: '****4921', 
-          amount: 1250, 
-          dateReported: '2023-05-15', 
-          bureau: ['Equifax' as any, 'Experian' as any], 
-          status: 'Open' as const
-        },
-        { 
-          id: 'item-2', 
-          type: 'Late Payment', 
-          creditor: 'Capital One', 
-          accountNumber: '****9999', 
-          amount: 0, 
-          dateReported: '2023-01-20', 
-          bureau: ['TransUnion' as any], 
-          status: 'Open' as const 
-        },
-        ...(isDemo ? [
-          { 
-            id: 'item-3', 
-            type: 'Charge Off', 
-            creditor: 'Chase Bank', 
-            accountNumber: '****1234', 
-            amount: 4500, 
-            dateReported: '2022-11-01', 
-            bureau: ['Experian' as any], 
-            status: 'Open' as const
-          }
-        ] : [])
-      ]
-    };
+  const completeOnboarding = async () => {
+    setError(null);
+    setIsRegistering(true);
 
-    login(newUser);
-    navigate('/dashboard');
+    try {
+      const newUserProfile: Partial<UserType> = {
+        firstName: formData.firstName || 'Guest',
+        lastName: formData.lastName || '',
+        phone: '',
+        address: {
+          street: formData.street,
+          city: formData.city,
+          state: formData.state,
+          zip: formData.zip
+        },
+        creditScore: {
+          equifax: 524,
+          experian: 538,
+          transunion: 515
+        },
+        negativeItems: [
+          { 
+            id: 'item-1', 
+            type: 'Collection', 
+            creditor: 'Midland Funding', 
+            accountNumber: '****4921', 
+            amount: 1250, 
+            dateReported: '2023-05-15', 
+            bureau: ['Equifax' as any, 'Experian' as any], 
+            status: 'Open' as const
+          },
+          { 
+            id: 'item-2', 
+            type: 'Late Payment', 
+            creditor: 'Capital One', 
+            accountNumber: '****9999', 
+            amount: 0, 
+            dateReported: '2023-01-20', 
+            bureau: ['TransUnion' as any], 
+            status: 'Open' as const 
+          }
+        ]
+      };
+
+      // Create Firebase Auth User & Save to Firestore
+      const fullUser = await registerWithEmail(formData.email, formData.password, newUserProfile);
+      
+      login(fullUser);
+      navigate('/dashboard');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to create account. Please try again.");
+      setIsRegistering(false);
+    }
   };
 
   // --- RENDER STEP 1: IDENTITY & ADDRESS ---
@@ -175,14 +170,14 @@ const Onboarding: React.FC = () => {
     <div className="animate-fade-in flex flex-col h-full">
       <div className="flex-1 flex flex-col justify-center py-6 overflow-y-auto">
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Let's build your profile.</h1>
-        <p className="text-slate-400 text-sm mb-8">We need accurate details to generate valid legal dispute letters.</p>
+        <p className="text-slate-400 text-sm mb-8">Create your account to save your dispute progress securely.</p>
 
         <div className="space-y-6">
           
           {/* Identity Section */}
           <div className="bg-[#0F0F0F] p-5 rounded-2xl border border-slate-800 shadow-xl">
              <div className="flex items-center gap-2 mb-5 text-orange-500 font-bold text-sm uppercase tracking-wider">
-                <User className="w-4 h-4" /> Identity
+                <User className="w-4 h-4" /> Account Details
              </div>
              <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
@@ -209,7 +204,7 @@ const Onboarding: React.FC = () => {
                   />
                 </div>
              </div>
-             <div>
+             <div className="mb-4">
                 <label className="block text-xs font-bold text-slate-400 mb-2">Email Address</label>
                 <div className="relative">
                    <Mail className="absolute left-3 top-3.5 w-4 h-4 text-slate-600" />
@@ -219,6 +214,20 @@ const Onboarding: React.FC = () => {
                      value={formData.email}
                      onChange={handleInputChange}
                      placeholder="jane.doe@example.com"
+                     className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 pl-10 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700 transition-all focus:border-orange-500"
+                   />
+                </div>
+             </div>
+             <div>
+                <label className="block text-xs font-bold text-slate-400 mb-2">Create Password</label>
+                <div className="relative">
+                   <Lock className="absolute left-3 top-3.5 w-4 h-4 text-slate-600" />
+                   <input 
+                     type="password" 
+                     name="password"
+                     value={formData.password}
+                     onChange={handleInputChange}
+                     placeholder="••••••••"
                      className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 pl-10 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder:text-slate-700 transition-all focus:border-orange-500"
                    />
                 </div>
@@ -290,7 +299,7 @@ const Onboarding: React.FC = () => {
       <div className="pt-6">
         <button
           onClick={handleNext}
-          disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.street || !formData.zip}
+          disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.street || !formData.zip}
           className="w-full py-4 bg-white text-black rounded-2xl font-bold text-lg hover:bg-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-white/10 hover:shadow-white/20 hover:scale-[1.01]"
         >
           Confirm Details <ArrowRight className="w-5 h-5" />
@@ -429,16 +438,6 @@ const Onboarding: React.FC = () => {
             ))}
           </div>
         </div>
-
-        {/* Demo Mode */}
-        <div className="text-center pt-2">
-          <button
-            onClick={() => startAnalysis('DEMO')}
-            className="text-slate-500 hover:text-white text-sm font-medium transition-colors flex items-center justify-center gap-2 mx-auto py-2 group"
-          >
-            <Sparkles className="w-3 h-3 group-hover:text-orange-400 transition-colors" /> Just exploring? Use Demo Data
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -468,13 +467,13 @@ const Onboarding: React.FC = () => {
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Analysis Complete!</h1>
           <p className="text-slate-400 mb-8">
-            We found <span className="text-white font-bold">3 negative items</span> hurting your score. We can help you remove them.
+            We found <span className="text-white font-bold">2 negative items</span> hurting your score. We can help you remove them.
           </p>
 
           <div className="bg-[#0F0F0F] rounded-2xl p-5 border border-slate-800 mb-8 text-left shadow-xl">
             <div className="flex justify-between text-sm mb-3">
               <span className="text-slate-400">Current Score Estimate</span>
-              <span className="text-white font-bold">{dataMode === 'DEMO' ? '580' : '524'}</span>
+              <span className="text-white font-bold">524</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Potential Increase</span>
@@ -482,11 +481,23 @@ const Onboarding: React.FC = () => {
             </div>
           </div>
 
+          {error && (
+            <div className="mb-4 p-3 bg-red-900/20 border border-red-900 rounded-lg text-red-400 text-sm flex items-center">
+              <AlertCircle className="w-4 h-4 mr-2" />
+              {error}
+            </div>
+          )}
+
           <button
             onClick={completeOnboarding}
-            className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white rounded-2xl font-bold text-lg shadow-lg shadow-orange-900/20 transition-all hover:scale-[1.02] hover:shadow-orange-900/30"
+            disabled={isRegistering}
+            className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white rounded-2xl font-bold text-lg shadow-lg shadow-orange-900/20 transition-all hover:scale-[1.02] hover:shadow-orange-900/30 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            View My Dashboard
+            {isRegistering ? (
+                <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating Account...
+                </>
+            ) : "View My Dashboard"}
           </button>
         </div>
       )}

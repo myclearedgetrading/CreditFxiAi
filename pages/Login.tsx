@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { useUser } from '../context/UserContext';
-import { loginWithEmail } from '../services/firebaseService';
+import { loginWithEmail, getUserFromFirestore } from '../services/firebaseService';
 import { User } from '../types';
 
 const Login: React.FC = () => {
@@ -25,45 +25,21 @@ const Login: React.FC = () => {
     setError(null);
 
     try {
-      // Attempt actual Firebase login
+      // 1. Authenticate with Firebase Auth
       const credential = await loginWithEmail(email, password);
-      const loggedInUser = {
-          id: credential.user.uid,
-          email: credential.user.email
-      };
-
-      // --- USER DATA RETRIEVAL (Simulated DB) ---
-      const userEmail = loggedInUser.email || email;
-      const dbKey = `creditfix_db_${userEmail}`;
-      const savedUserStr = localStorage.getItem(dbKey);
       
-      let userProfile: User;
+      // 2. Fetch User Profile from Firestore
+      const userProfile = await getUserFromFirestore(credential.user.uid);
 
-      if (savedUserStr) {
-          userProfile = JSON.parse(savedUserStr);
-          userProfile.id = loggedInUser.id || userProfile.id;
+      if (userProfile) {
+        login(userProfile);
+        navigate('/dashboard');
       } else {
-          // Initialize fresh user profile if none exists
-          userProfile = {
-            id: loggedInUser.id || 'user-' + Date.now(),
-            firstName: 'New',
-            lastName: 'User',
-            email: userEmail || '',
-            phone: '',
-            role: 'USER',
-            creditScore: {
-              equifax: 0,
-              experian: 0,
-              transunion: 0
-            },
-            negativeItems: []
-          };
-          localStorage.setItem(dbKey, JSON.stringify(userProfile));
+        // Fallback if profile doesn't exist (e.g. created via console or old method)
+        // In a production app, we might redirect to a 'profile setup' page here.
+        setError("Account exists but profile data is missing. Please contact support.");
+        setIsLoading(false);
       }
-
-      login(userProfile);
-      setIsLoading(false);
-      navigate('/dashboard');
 
     } catch (err: any) {
       console.error(err);

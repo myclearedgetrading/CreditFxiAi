@@ -1,20 +1,41 @@
+
 import { 
-  collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, 
+  collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, 
   query, where, orderBy, limit, onSnapshot, Timestamp 
 } from 'firebase/firestore';
 import { 
   signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser,
-  signInWithEmailAndPassword 
+  signInWithEmailAndPassword, createUserWithEmailAndPassword
 } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage, googleProvider } from './firebaseConfig';
-import { Client, SupportTicket, ActivityLog } from '../types';
+import { Client, SupportTicket, ActivityLog, User } from '../types';
 
-// --- AUTHENTICATION ---
+// --- AUTHENTICATION & USER MANAGEMENT ---
+
+export const registerWithEmail = async (email: string, pass: string, userData: Partial<User>) => {
+  if (!auth.app) throw new Error("Firebase Auth not configured");
+  
+  // 1. Create Auth User
+  const credential = await createUserWithEmailAndPassword(auth, email, pass);
+  const uid = credential.user.uid;
+
+  // 2. Create User Document in Firestore
+  const userProfile: User = {
+    ...userData as User,
+    id: uid,
+    email: email,
+    role: 'USER'
+  };
+
+  await saveUserToFirestore(userProfile);
+  return userProfile;
+};
 
 export const loginWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
+    // Check if user doc exists, if not, could create one (optional logic)
     return result.user;
   } catch (error) {
     console.error("Login failed", error);
@@ -23,7 +44,6 @@ export const loginWithGoogle = async () => {
 };
 
 export const loginWithEmail = async (email: string, pass: string) => {
-  // Check if auth is initialized (mock object has no 'app' property)
   if (!auth.app) {
     throw new Error("FIREBASE_NOT_CONFIGURED");
   }
@@ -33,6 +53,23 @@ export const loginWithEmail = async (email: string, pass: string) => {
 export const logoutUser = async () => {
   if (auth.app) {
     await signOut(auth);
+  }
+};
+
+export const saveUserToFirestore = async (user: User) => {
+  if (!db.app) return;
+  await setDoc(doc(db, 'users', user.id), user);
+};
+
+export const getUserFromFirestore = async (uid: string): Promise<User | null> => {
+  if (!db.app) return null;
+  const docRef = doc(db, 'users', uid);
+  const docSnap = await getDoc(docRef);
+  
+  if (docSnap.exists()) {
+    return docSnap.data() as User;
+  } else {
+    return null;
   }
 };
 
