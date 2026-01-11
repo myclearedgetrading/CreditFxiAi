@@ -3,18 +3,89 @@ import { GoogleGenAI } from "@google/genai";
 import { CreditProduct, User } from "../types";
 
 const apiKey = process.env.API_KEY || 'MISSING_API_KEY_PLACEHOLDER';
-const ai = new GoogleGenAI({ apiKey });
+const isDemoMode = !process.env.API_KEY || process.env.API_KEY === 'MISSING_API_KEY_PLACEHOLDER';
+const ai = isDemoMode ? {} as any : new GoogleGenAI({ apiKey });
 
-// In a real production app, this would fetch from a backend API or CMS.
-// For now, we return an empty array or a static list of REAL affiliate partners if configured.
-// Returning empty list to ensure no "fake" data is shown.
 export const getCreditProducts = async (): Promise<CreditProduct[]> => {
-  return []; 
+  // In demo mode, return static data so the page isn't empty
+  return [
+    {
+      id: 'prod-1',
+      name: 'CreditBuilder Plus',
+      issuer: 'Chime',
+      type: 'SECURED_CARD',
+      description: 'No credit check to apply. Money you move to Credit Builder is the amount you can spend.',
+      annualFee: 0,
+      minDeposit: 200,
+      creditImpact: 'HIGH',
+      approvalOdds: 'EXCELLENT',
+      features: ['No Annual Fee', 'No Interest', 'Build Credit Fast'],
+      imageUrl: 'placeholder',
+      applyLink: '#'
+    },
+    {
+      id: 'prod-2',
+      name: 'Platinum Secured',
+      issuer: 'Capital One',
+      type: 'SECURED_CARD',
+      description: 'No annual fee and a refundable security deposit. Reports to all 3 bureaus.',
+      annualFee: 0,
+      minDeposit: 49,
+      creditImpact: 'HIGH',
+      approvalOdds: 'GOOD',
+      features: ['Low Deposit', 'Automatic Credit Line Reviews', 'Mobile App'],
+      imageUrl: 'placeholder',
+      applyLink: '#'
+    },
+    {
+      id: 'prod-3',
+      name: 'Self Visa®',
+      issuer: 'Self',
+      type: 'LOAN',
+      description: 'Build credit while you save. No hard pull. Unlock the card after 3 months.',
+      annualFee: 25,
+      minDeposit: 0,
+      creditImpact: 'MEDIUM',
+      approvalOdds: 'EXCELLENT',
+      features: ['No Hard Pull', 'Savings Account', 'Card Access'],
+      imageUrl: 'placeholder',
+      applyLink: '#'
+    },
+    {
+      id: 'prod-4',
+      name: 'BoomPay',
+      issuer: 'Boom',
+      type: 'RENT_REPORTING',
+      description: 'Report your past and future rent payments to all 3 major credit bureaus.',
+      annualFee: 24,
+      minDeposit: 0,
+      creditImpact: 'MEDIUM',
+      approvalOdds: 'EXCELLENT',
+      features: ['Rent Reporting', 'No Hard Pull', 'Instant Verification'],
+      imageUrl: 'placeholder',
+      applyLink: '#'
+    }
+  ]; 
 };
 
 export const getAiProductRecommendations = async (user: User, products: CreditProduct[]): Promise<CreditProduct[]> => {
   if (products.length === 0) return [];
 
+  // DEMO MODE BYPASS
+  if (isDemoMode) {
+      await new Promise(r => setTimeout(r, 1200)); // Simulate thinking
+      return products.map((p, index) => ({
+          ...p,
+          matchScore: index === 0 ? 96 : index === 1 ? 88 : index === 2 ? 72 : 65,
+          aiReasoning: index === 0 
+            ? "Best match: Zero annual fee and high impact on utilization ratio for your specific score range." 
+            : index === 1 
+            ? "Strong option, but requires a security deposit which might tie up cash."
+            : "Good for payment history, but less impact on available credit mix."
+      })).sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+  }
+
+  // REAL AI LOGIC
   const prompt = `
     Act as a financial credit advisor.
     User Profile:

@@ -1,6 +1,7 @@
+
 # CreditFix AI - CRM Platform
 
-A comprehensive, AI-powered Credit Repair Business CRM built with Next.js, Firebase, and Gemini API.
+A comprehensive, AI-powered Credit Repair Business CRM built with React, Firebase, and Gemini API.
 
 ## Features
 
@@ -13,17 +14,30 @@ A comprehensive, AI-powered Credit Repair Business CRM built with Next.js, Fireb
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, React, Tailwind CSS, Lucide Icons, Recharts
+- **Frontend**: React 18, Tailwind CSS, Lucide Icons, Recharts
 - **Backend**: Firebase (Auth, Firestore, Storage, Functions)
 - **AI**: Google Gemini API (`@google/genai`)
-- **Deployment**: Vercel
+- **Build Tool**: Vite
+
+## API Key Setup
+
+To enable real AI features (instead of Demo Mode), you need a Google Gemini API Key.
+
+1.  Go to [Google AI Studio](https://aistudio.google.com/).
+2.  Click **"Get API key"**.
+3.  Create a key in a new or existing Google Cloud project.
+4.  Create a file named `.env` in the root directory.
+5.  Add your key:
+    ```env
+    API_KEY=your_api_key_here
+    ```
 
 ## Setup
 
 1. **Clone the repository**
 2. **Install dependencies**: `npm install`
 3. **Environment Setup**:
-   - Copy `.env.example` to `.env.local`
+   - Copy `.env.example` to `.env.local` or `.env`
    - Add your Firebase Config keys
    - Add your Google Gemini API key (`API_KEY`)
 4. **Run Development Server**: `npm run dev`

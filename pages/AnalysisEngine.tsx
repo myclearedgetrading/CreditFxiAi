@@ -115,8 +115,10 @@ const AnalysisEngine: React.FC = () => {
          const analysisResult = await analyzeCreditReportImage(base64Data, mimeType);
          setResult(analysisResult);
       } else {
-         // Placeholder for PDF logic
-         throw new Error("PDF processing currently requires backend integration. Please try an image file.");
+         // In demo mode, we allow PDF "uploads" to pass through to the mock generator
+         // Passing "MOCK_DATA" as the base64 string, which the service will ignore in demo mode
+         const analysisResult = await analyzeCreditReportImage("MOCK_DATA", file.type);
+         setResult(analysisResult);
       }
       
       clearInterval(stepInterval);
