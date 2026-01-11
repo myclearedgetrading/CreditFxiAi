@@ -4,11 +4,54 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   CheckCircle2, ChevronRight, Upload, Shield, CreditCard, 
   FileText, User, Home, Car, TrendingUp, AlertCircle, 
-  ArrowLeft, Lock, Loader2, Sparkles, Zap, Check, X, ArrowRight
+  ArrowLeft, Lock, Loader2, Sparkles, Zap, Check, X, ArrowRight,
+  ScrollText, PenTool, Scale
 } from 'lucide-react';
 import { vibrate, HAPTIC } from '../services/mobileService';
 
 const STORAGE_KEY = 'creditfix_onboarding_state';
+
+const LEGAL_DOCS = {
+  AGREEMENT: `CREDIT REPAIR SERVICE AGREEMENT
+
+1. PARTIES
+This Service Agreement ("Agreement") is entered into by and between the undersigned ("Client") and CreditFix AI ("Provider").
+
+2. SERVICES
+Provider agrees to analyze Client's credit reports, identify negative items, and generate dispute correspondence ("Services"). Client understands that Provider is an AI-powered software platform and not a law firm.
+
+3. CLIENT OBLIGATIONS
+Client agrees to provide accurate identification documents and credit monitoring credentials. Client agrees to forward any correspondence received from credit bureaus to Provider immediately.
+
+4. FEES
+Services are provided on a monthly subscription basis. Client may cancel at any time via the dashboard.
+
+5. DISCLAIMER OF GUARANTEE
+Provider cannot guarantee specific outcomes or score increases. Credit repair results vary based on individual circumstances.
+
+6. ELECTRONIC SIGNATURE
+By signing this Agreement, Client consents to the use of electronic signatures and records.`,
+
+  CROA: `CONSUMER CREDIT FILE RIGHTS UNDER STATE AND FEDERAL LAW (CROA DISCLOSURE)
+
+You have a right to dispute inaccurate information in your credit report by contacting the credit bureau directly. However, neither you nor any "credit repair" company or credit repair organization has the right to have accurate, current, and verifiable information removed from your credit report. The credit bureau must remove accurate, negative information from your report only if it is over 7 years old. Bankruptcy information can be reported for 10 years.
+
+You have a right to obtain a copy of your credit report from a credit bureau. You may be charged a reasonable fee. There is no fee, however, if you have been turned down for credit, employment, insurance, or a rental dwelling because of information in your credit report within the preceding 60 days. The credit bureau must provide someone to help you interpret the information in your credit file. You are entitled to receive a free copy of your credit report if you are unemployed and intend to apply for employment in the next 60 days, if you are a recipient of public welfare assistance, or if you have reason to believe that there is inaccurate information in your credit report due to fraud.
+
+You have a right to sue a credit repair organization that violates the Credit Repair Organizations Act. This law prohibits deceptive practices by credit repair organizations.
+
+You have the right to cancel your contract with any credit repair organization for any reason within 3 business days from the date you signed it.`,
+
+  LPOA: `LIMITED POWER OF ATTORNEY
+
+I, the undersigned Client, hereby grant CreditFix AI ("Agent") a Limited Power of Attorney to act on my behalf for the specific and limited purpose of:
+
+1. Requesting and obtaining consumer credit reports from Equifax, Experian, and TransUnion.
+2. Preparing, signing, and submitting dispute letters and challenges regarding inaccurate, unfair, or unsubstantiated items on my credit reports.
+3. Communicating with creditors, collection agencies, and credit bureaus regarding my accounts.
+
+This Limited Power of Attorney shall remain in effect until my subscription with CreditFix AI is terminated. I understand I may revoke this power of attorney at any time by providing written notice.`
+};
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +60,9 @@ const Onboarding: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+  
+  // Legal State
+  const [activeLegalTab, setActiveLegalTab] = useState<'AGREEMENT' | 'CROA' | 'LPOA'>('AGREEMENT');
   
   // Connect Modal State
   const [showConnectModal, setShowConnectModal] = useState(false);
@@ -32,7 +78,8 @@ const Onboarding: React.FC = () => {
     goal: '', 
     reportProvider: '',
     reportFile: null as string | null,
-    agreedToTerms: false
+    agreedToTerms: false,
+    signature: ''
   });
 
   // Load state
@@ -62,12 +109,17 @@ const Onboarding: React.FC = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, formData }));
   }, [step, formData]);
 
-  const totalSteps = 3;
+  const totalSteps = 4;
 
   const handleNext = () => {
     if (step === 1 && (!formData.firstName.trim() || !formData.goal)) {
       vibrate(HAPTIC.ERROR);
       return; 
+    }
+    
+    if (step === 3 && (!formData.signature || !formData.agreedToTerms)) {
+        vibrate(HAPTIC.ERROR);
+        return;
     }
     
     vibrate(HAPTIC.LIGHT);
@@ -274,7 +326,85 @@ const Onboarding: React.FC = () => {
     </div>
   );
 
-  const renderStep3_Analyze = () => (
+  const renderStep3_Legal = () => (
+    <div className="space-y-6 animate-fade-in">
+        <div className="text-center">
+            <h2 className="text-2xl font-bold text-white mb-2">Service Agreement</h2>
+            <p className="text-slate-400 text-sm">Please review and sign the required legal documents to proceed.</p>
+        </div>
+
+        <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+            {/* Tabs */}
+            <div className="flex border-b border-slate-700">
+                {[
+                    { id: 'AGREEMENT', label: 'Service Contract', icon: ScrollText },
+                    { id: 'CROA', label: 'CROA Rights', icon: Scale },
+                    { id: 'LPOA', label: 'Power of Attorney', icon: FileText }
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveLegalTab(tab.id as any)}
+                        className={`flex-1 py-3 text-xs font-bold flex flex-col items-center justify-center gap-1 transition-colors ${
+                            activeLegalTab === tab.id 
+                                ? 'bg-slate-700 text-white border-b-2 border-orange-500' 
+                                : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                    >
+                        <tab.icon className="w-4 h-4" />
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Document Content */}
+            <div className="p-4 h-64 overflow-y-auto bg-slate-900/50 text-slate-300 text-xs leading-relaxed whitespace-pre-wrap font-mono custom-scrollbar">
+                {LEGAL_DOCS[activeLegalTab]}
+            </div>
+        </div>
+
+        {/* Signature Section */}
+        <div className="space-y-4">
+            <div>
+                <label className="block text-sm font-bold text-slate-300 mb-2 flex items-center gap-2">
+                    <PenTool className="w-4 h-4 text-orange-500" /> Digital Signature
+                </label>
+                <input 
+                    type="text" 
+                    value={formData.signature}
+                    onChange={(e) => setFormData({...formData, signature: e.target.value})}
+                    placeholder="Type your full legal name"
+                    className="w-full p-3 border border-slate-600 rounded-lg bg-slate-800 text-white focus:ring-2 focus:ring-orange-500 focus:outline-none font-script text-xl"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">
+                    By typing your name, you agree your electronic signature is the legal equivalent of your manual signature.
+                </p>
+            </div>
+
+            <div className="flex items-center gap-3 bg-slate-800 p-3 rounded-lg border border-slate-700 cursor-pointer" onClick={() => setFormData({...formData, agreedToTerms: !formData.agreedToTerms})}>
+                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.agreedToTerms ? 'bg-green-500 border-green-500' : 'border-slate-500'}`}>
+                    {formData.agreedToTerms && <Check className="w-3 h-3 text-white" />}
+                </div>
+                <label className="text-sm text-slate-300 cursor-pointer select-none">
+                    I have read and agree to the Service Agreement, CROA Disclosure, and Limited Power of Attorney.
+                </label>
+            </div>
+
+            <button 
+                onClick={handleNext}
+                disabled={!formData.signature || !formData.agreedToTerms}
+                className={`w-full py-4 text-white rounded-xl font-bold text-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${
+                    formData.signature && formData.agreedToTerms
+                    ? 'bg-orange-600 hover:bg-orange-700 shadow-[0_0_15px_rgba(234,88,12,0.3)]' 
+                    : 'bg-slate-700 cursor-not-allowed'
+                }`}
+            >
+                Accept & Continue <ChevronRight className="w-5 h-5" />
+            </button>
+        </div>
+    </div>
+  );
+
+  const renderStep4_Analyze = () => (
     <div className="space-y-8 animate-fade-in text-center">
       {!analysisComplete && !analyzing && (
           <div className="py-10">
@@ -327,27 +457,9 @@ const Onboarding: React.FC = () => {
                 </ul>
              </div>
 
-             <div className="flex items-center gap-3 mb-6 justify-center">
-                <input 
-                type="checkbox" 
-                id="agree"
-                checked={formData.agreedToTerms}
-                onChange={(e) => setFormData({...formData, agreedToTerms: e.target.checked})}
-                className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
-                />
-                <label htmlFor="agree" className="text-sm text-slate-400 cursor-pointer text-left">
-                I agree to the <span className="underline">Terms</span> and grant Limited Power of Attorney.
-                </label>
-            </div>
-
              <button 
                 onClick={completeOnboarding}
-                disabled={!formData.agreedToTerms}
-                className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${
-                    formData.agreedToTerms
-                    ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                }`}
+                className="w-full py-4 bg-green-600 text-white hover:bg-green-700 rounded-xl font-bold text-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
                 Fix My Credit Now <ChevronRight className="w-5 h-5" />
             </button>
@@ -377,13 +489,13 @@ const Onboarding: React.FC = () => {
           
           {/* Simple Dots Progress */}
           <div className="flex gap-2">
-            {[1, 2, 3].map(i => (
+            {[1, 2, 3, 4].map(i => (
                 <div key={i} className={`w-2 h-2 rounded-full transition-colors ${step >= i ? 'bg-orange-600' : 'bg-slate-700'}`} />
             ))}
           </div>
         </div>
         <div className="text-sm font-bold text-orange-500">
-            {step === 1 ? 'Start' : step === 2 ? 'Connect' : 'Analyze'}
+            {step === 1 ? 'Start' : step === 2 ? 'Connect' : step === 3 ? 'Legal' : 'Analyze'}
         </div>
       </div>
 
@@ -391,7 +503,8 @@ const Onboarding: React.FC = () => {
       <div className="flex-1 max-w-md w-full mx-auto p-6 pb-32 flex flex-col justify-center">
         {step === 1 && renderStep1_Personalize()}
         {step === 2 && renderStep2_Connect()}
-        {step === 3 && renderStep3_Analyze()}
+        {step === 3 && renderStep3_Legal()}
+        {step === 4 && renderStep4_Analyze()}
       </div>
 
       {/* Footer Actions (Only for Step 1, others have inline buttons) */}
