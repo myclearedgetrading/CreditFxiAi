@@ -1,4 +1,3 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { 
   User, NegativeItem, DisputeStrategy, Bureau, CreditAnalysisResult, 
@@ -7,7 +6,10 @@ import {
   TicketAnalysis, ModelFeedback
 } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Prevent crash if API Key is missing. Uses a placeholder to allow app to load.
+// Calls will fail gracefully in the try/catch blocks of the functions below.
+const apiKey = process.env.API_KEY || 'MISSING_API_KEY_PLACEHOLDER';
+const ai = new GoogleGenAI({ apiKey });
 
 interface GenerateLetterParams {
   client: User;
@@ -77,7 +79,7 @@ export const generateDisputeLetter = async ({
     return response.text || "Failed to generate letter content.";
   } catch (error) {
     console.error("Gemini API Error:", error);
-    throw new Error("Failed to generate dispute letter via AI.");
+    throw new Error("Failed to generate dispute letter via AI. Please check your API Key configuration.");
   }
 };
 

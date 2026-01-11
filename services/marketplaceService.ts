@@ -2,7 +2,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { CreditProduct, User } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Prevent crash if API Key is missing. Uses a placeholder to allow app to load.
+const apiKey = process.env.API_KEY || 'MISSING_API_KEY_PLACEHOLDER';
+const ai = new GoogleGenAI({ apiKey });
 
 const MOCK_PRODUCTS: CreditProduct[] = [
   {
