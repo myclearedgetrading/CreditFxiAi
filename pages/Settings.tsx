@@ -22,7 +22,7 @@ const Settings: React.FC = () => {
   ];
 
   const FileUploadField = ({ label, description, accepted }: { label: string, description: string, accepted?: string }) => (
-    <div className="border border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors group">
+    <div className="border border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-[#111] transition-colors group">
       <div className="flex items-center gap-4">
         <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
           <UploadCloud className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -34,7 +34,7 @@ const Settings: React.FC = () => {
       </div>
       <label className="relative cursor-pointer">
         <input type="file" className="hidden" accept={accepted} />
-        <span className="px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 transition-colors shadow-sm">
+        <span className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 transition-colors shadow-sm">
           Select File
         </span>
       </label>
@@ -50,7 +50,7 @@ const Settings: React.FC = () => {
       case 'rewards': return <GamificationCenter />;
       case 'profile': 
         return (
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 max-w-2xl">
+          <div className="bg-white dark:bg-[#0A0A0A] p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl">
             <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
               Personal Information
             </h2>
@@ -62,23 +62,23 @@ const Settings: React.FC = () => {
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     First Name
                   </label>
-                  <input type="text" defaultValue={user.firstName} placeholder="Your Name" className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <input type="text" defaultValue={user.firstName} placeholder="Your Name" className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Last Name
                   </label>
-                  <input type="text" defaultValue={user.lastName} placeholder="Surname" className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <input type="text" defaultValue={user.lastName} placeholder="Surname" className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
-                <input type="email" defaultValue={user.email} placeholder="you@example.com" className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input type="email" defaultValue={user.email} placeholder="you@example.com" className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               </div>
             </div>
 
             {/* Verification Documents (New Section) */}
-            <div className="border-t border-slate-100 dark:border-slate-700 pt-8 mb-8">
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-8 mb-8">
               <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Identity Verification</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                 Required for dispute letters to be accepted by bureaus. These are stored in our secure encrypted vault.
@@ -103,7 +103,7 @@ const Settings: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-end pt-4 border-t border-slate-100 dark:border-slate-700">
+            <div className="flex items-center justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
                <button className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium shadow-sm transition-colors">
                  Save Changes
                </button>
@@ -112,7 +112,7 @@ const Settings: React.FC = () => {
         );
       case 'billing':
         return (
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 max-w-2xl">
+          <div className="bg-white dark:bg-[#0A0A0A] p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl">
             <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Subscription Plan</h2>
             <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl flex justify-between items-center mb-6">
               <div>
@@ -124,7 +124,7 @@ const Settings: React.FC = () => {
               <span className="px-3 py-1 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-full shadow-sm">ACTIVE</span>
             </div>
             <h3 className="font-bold text-slate-800 dark:text-white mb-3">Payment Methods</h3>
-            <div className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-600 rounded-lg">
+            <div className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg">
               <div className="w-10 h-6 bg-slate-200 rounded"></div>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">•••• •••• •••• 4242</span>
               <button className="ml-auto text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Edit</button>
@@ -160,7 +160,7 @@ const Settings: React.FC = () => {
                   className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                     activeTab === tab.id
                       ? 'bg-indigo-600 text-white shadow-md'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
                   <Icon className={`w-5 h-5 mr-3 ${activeTab === tab.id ? 'text-white' : 'text-slate-400'}`} />

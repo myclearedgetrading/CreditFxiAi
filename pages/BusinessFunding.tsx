@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   Building2, CheckCircle2, Circle, AlertCircle, 
@@ -75,7 +76,7 @@ const BusinessFunding: React.FC = () => {
         
         {/* Left Col: Compliance Checklist */}
         <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+            <div className="bg-white dark:bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
                 <h3 className="font-bold text-slate-800 dark:text-white mb-2">Fundability Foundation</h3>
                 <p className="text-xs text-slate-500 mb-4">Complete these steps before applying to avoid denial.</p>
                 
@@ -97,7 +98,7 @@ const BusinessFunding: React.FC = () => {
                             className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                                 item.completed 
                                     ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-900' 
-                                    : 'bg-slate-50 border-slate-100 dark:bg-slate-750 dark:border-slate-700'
+                                    : 'bg-slate-50 border-slate-100 dark:bg-[#111] dark:border-slate-800'
                             }`}
                         >
                             {item.completed ? (
@@ -145,7 +146,7 @@ const BusinessFunding: React.FC = () => {
                         className={`px-6 py-3 rounded-lg font-bold whitespace-nowrap transition-colors ${
                             activeTier === tier 
                                 ? 'bg-slate-800 text-white dark:bg-white dark:text-slate-900' 
-                                : 'bg-white text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+                                : 'bg-white text-slate-500 border border-slate-200 dark:bg-[#0A0A0A] dark:text-slate-400 dark:border-slate-800'
                         }`}
                     >
                         Tier {tier}
@@ -153,7 +154,7 @@ const BusinessFunding: React.FC = () => {
                 ))}
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+            <div className="bg-white dark:bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">
@@ -176,9 +177,9 @@ const BusinessFunding: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {FUNDING_SOURCES.filter(s => s.tier === activeTier).map((source, idx) => (
-                        <div key={idx} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors group cursor-pointer">
+                        <div key={idx} className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors group cursor-pointer">
                             <div className="flex justify-between items-start mb-4">
-                                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center text-2xl">
+                                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-2xl">
                                     {source.logo}
                                 </div>
                                 <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 text-xs font-bold px-2 py-1 rounded">

@@ -89,14 +89,14 @@ const PredictiveAnalytics: React.FC = () => {
       {/* --- TAB CONTENT: DISPUTE SUCCESS --- */}
       {activeTab === 'dispute' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-6">
-            <h3 className="font-bold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2">Simulator Parameters</h3>
+          <div className="bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6">
+            <h3 className="font-bold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Simulator Parameters</h3>
             
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Negative Item Type</label>
                 <select 
-                  className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-700 dark:text-white"
+                  className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-[#111] dark:text-white"
                   value={itemType} onChange={e => setItemType(e.target.value)}
                 >
                   <option>Collection</option>
@@ -111,7 +111,7 @@ const PredictiveAnalytics: React.FC = () => {
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Item Age</label>
                 <select 
-                  className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-700 dark:text-white"
+                  className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-[#111] dark:text-white"
                   value={itemAge} onChange={e => setItemAge(e.target.value)}
                 >
                   <option>Less than 1 Year</option>
@@ -124,7 +124,7 @@ const PredictiveAnalytics: React.FC = () => {
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Bureau</label>
                 <select 
-                  className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-700 dark:text-white"
+                  className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-[#111] dark:text-white"
                   value={bureau} onChange={e => setBureau(e.target.value)}
                 >
                   <option>Equifax</option>
@@ -136,7 +136,7 @@ const PredictiveAnalytics: React.FC = () => {
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Proposed Strategy</label>
                 <select 
-                  className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-700 dark:text-white"
+                  className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-[#111] dark:text-white"
                   value={strategy} onChange={e => setStrategy(e.target.value as DisputeStrategy)}
                 >
                   {Object.values(DisputeStrategy).map(s => <option key={s} value={s}>{s}</option>)}
@@ -156,12 +156,12 @@ const PredictiveAnalytics: React.FC = () => {
 
           <div className="lg:col-span-2">
             {!prediction ? (
-              <div className="h-full min-h-[400px] flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700">
-                <BrainCircuit className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
+              <div className="h-full min-h-[400px] flex flex-col items-center justify-center bg-slate-50 dark:bg-[#0A0A0A] rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                <BrainCircuit className="w-16 h-16 text-slate-300 dark:text-slate-700 mb-4" />
                 <p className="text-slate-500 dark:text-slate-400">Configure parameters and run the model to see AI predictions.</p>
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-8 h-full">
+              <div className="bg-white dark:bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-8 h-full">
                 <div className="flex flex-col md:flex-row items-center justify-between mb-8">
                   <div className="text-center md:text-left">
                     <h2 className="text-slate-500 dark:text-slate-400 font-medium">Predicted Success Rate</h2>
@@ -196,7 +196,7 @@ const PredictiveAnalytics: React.FC = () => {
                   <h3 className="font-bold text-slate-800 dark:text-white">Key Influencing Factors</h3>
                   <div className="grid gap-3">
                     {prediction.keyFactors.map((factor, idx) => (
-                      <div key={idx} className="flex items-start p-3 bg-slate-50 dark:bg-slate-750 rounded-lg">
+                      <div key={idx} className="flex items-start p-3 bg-slate-50 dark:bg-[#111] rounded-lg">
                         <ArrowUpRight className="w-5 h-5 text-purple-600 dark:text-purple-400 mr-3 mt-0.5" />
                         <p className="text-sm text-slate-700 dark:text-slate-300">{factor}</p>
                       </div>
@@ -212,27 +212,27 @@ const PredictiveAnalytics: React.FC = () => {
       {/* --- TAB CONTENT: SCORE SIMULATOR --- */}
       {activeTab === 'score' && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-6">
+          <div className="bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6">
             <h3 className="font-bold text-slate-800 dark:text-white">Current Profile</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Current Score</label>
                 <input 
-                  type="number" className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white"
+                  type="number" className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-[#111] dark:text-white"
                   value={currentScore} onChange={e => setCurrentScore(Number(e.target.value))}
                 />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1"># Negative Items</label>
                 <input 
-                  type="number" className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white"
+                  type="number" className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-[#111] dark:text-white"
                   value={negItems} onChange={e => setNegItems(Number(e.target.value))}
                 />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Credit Utilization %</label>
                 <input 
-                  type="number" className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white"
+                  type="number" className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-[#111] dark:text-white"
                   value={utilization} onChange={e => setUtilization(Number(e.target.value))}
                 />
               </div>
@@ -246,10 +246,10 @@ const PredictiveAnalytics: React.FC = () => {
             </div>
           </div>
 
-          <div className="lg:col-span-3 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <div className="lg:col-span-3 bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
              <h3 className="font-bold text-slate-800 dark:text-white mb-6">6-Month Score Trajectory (AI Forecast)</h3>
              {forecast.length === 0 ? (
-               <div className="h-80 flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-100 dark:border-slate-700 rounded-xl">
+               <div className="h-80 flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-xl">
                  No forecast data generated yet.
                </div>
              ) : (
@@ -268,7 +268,7 @@ const PredictiveAnalytics: React.FC = () => {
                      </defs>
                      <XAxis dataKey="month" stroke="#94a3b8" />
                      <YAxis domain={['dataMin - 20', 'dataMax + 20']} stroke="#94a3b8" />
-                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-700" />
+                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-800" />
                      <RechartsTooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', color: '#fff' }} />
                      <Area type="monotone" dataKey="bestCase" stroke="#22c55e" fillOpacity={1} fill="url(#colorBest)" name="Best Case" strokeWidth={2} />
                      <Area type="monotone" dataKey="likelyCase" stroke="#3b82f6" fillOpacity={1} fill="url(#colorLikely)" name="Likely Case" strokeWidth={2} />

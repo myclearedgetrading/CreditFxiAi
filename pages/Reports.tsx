@@ -77,7 +77,7 @@ const Reports: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <div className="bg-white dark:bg-[#0A0A0A] p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
             <CheckCircle2 className="w-4 h-4 text-green-500" />
             <span className="text-xs font-bold uppercase">Items Deleted</span>
@@ -86,7 +86,7 @@ const Reports: React.FC = () => {
           <p className="text-xs text-slate-400 mt-1">Total removed</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <div className="bg-white dark:bg-[#0A0A0A] p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
             <Activity className="w-4 h-4 text-blue-500" />
             <span className="text-xs font-bold uppercase">Active Disputes</span>
@@ -95,7 +95,7 @@ const Reports: React.FC = () => {
           <p className="text-xs text-slate-400 mt-1">In progress</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <div className="bg-white dark:bg-[#0A0A0A] p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
             <Shield className="w-4 h-4 text-purple-500" />
             <span className="text-xs font-bold uppercase">Current Score</span>
@@ -104,7 +104,7 @@ const Reports: React.FC = () => {
           <p className="text-xs text-green-500 mt-1 font-bold">Experian</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <div className="bg-white dark:bg-[#0A0A0A] p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
             <Calendar className="w-4 h-4 text-orange-500" />
             <span className="text-xs font-bold uppercase">Est. Completion</span>
@@ -117,11 +117,11 @@ const Reports: React.FC = () => {
       <div className="grid grid-cols-1 gap-6">
         
         {/* Score History Chart */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <div className="bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-slate-800 dark:text-white">Score History</h3>
           </div>
-          <div className="h-72 flex items-center justify-center border-2 border-dashed border-slate-100 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+          <div className="h-72 flex items-center justify-center border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900">
              <div className="text-center text-slate-400">
                <TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-20" />
                <p>No history data available yet.</p>

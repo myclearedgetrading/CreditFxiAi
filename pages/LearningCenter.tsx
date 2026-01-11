@@ -186,7 +186,7 @@ const LearningCenter: React.FC = () => {
         <div className="flex items-center gap-4 mb-4">
           <button 
             onClick={() => { setSelectedCourse(null); setSelectedLesson(null); }}
-            className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors"
+            className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
           </button>
@@ -200,7 +200,7 @@ const LearningCenter: React.FC = () => {
              <button 
                onClick={() => setShowAiTutor(!showAiTutor)}
                className={`flex items-center px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
-                 showAiTutor ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600 dark:bg-slate-700 dark:text-indigo-400'
+                 showAiTutor ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400'
                }`}
              >
                <Bot className="w-4 h-4 mr-2" />
@@ -211,8 +211,8 @@ const LearningCenter: React.FC = () => {
 
         <div className="flex-1 flex gap-6 overflow-hidden">
           {/* Sidebar: Lesson List */}
-          <div className="w-64 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 overflow-y-auto hidden md:block">
-             <div className="p-4 border-b border-slate-100 dark:border-slate-700">
+          <div className="w-64 bg-white dark:bg-[#0A0A0A] rounded-xl border border-slate-100 dark:border-slate-800 overflow-y-auto hidden md:block">
+             <div className="p-4 border-b border-slate-100 dark:border-slate-800">
                <h3 className="font-bold text-slate-700 dark:text-slate-300 text-sm">Course Content</h3>
              </div>
              <div className="p-2 space-y-1">
@@ -223,7 +223,7 @@ const LearningCenter: React.FC = () => {
                    className={`w-full text-left p-3 rounded-lg text-sm flex items-start gap-3 transition-colors ${
                      selectedLesson?.id === lesson.id 
                        ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' 
-                       : 'hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-400'
+                       : 'hover:bg-slate-50 dark:hover:bg-[#111] text-slate-600 dark:text-slate-400'
                    }`}
                  >
                    <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold border ${
@@ -241,7 +241,7 @@ const LearningCenter: React.FC = () => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 flex flex-col overflow-hidden relative">
+          <div className="flex-1 bg-white dark:bg-[#0A0A0A] rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col overflow-hidden relative">
              {selectedLesson ? (
                <>
                  {/* Video Placeholder */}
@@ -271,8 +271,8 @@ const LearningCenter: React.FC = () => {
 
              {/* AI Tutor Side Panel */}
              {showAiTutor && (
-               <div className="absolute top-0 bottom-0 right-0 w-80 bg-white dark:bg-slate-850 border-l border-slate-200 dark:border-slate-700 shadow-xl flex flex-col animate-slide-in-right z-10">
-                  <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-indigo-600 text-white flex justify-between items-center">
+               <div className="absolute top-0 bottom-0 right-0 w-80 bg-white dark:bg-slate-850 border-l border-slate-200 dark:border-slate-800 shadow-xl flex flex-col animate-slide-in-right z-10">
+                  <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-indigo-600 text-white flex justify-between items-center">
                      <div className="flex items-center gap-2 font-bold">
                         <Sparkles className="w-4 h-4" /> AI Tutor
                      </div>
@@ -287,7 +287,7 @@ const LearningCenter: React.FC = () => {
                            <div className={`max-w-[85%] p-3 rounded-xl text-sm ${
                               msg.sender === 'user' 
                                  ? 'bg-indigo-600 text-white rounded-br-none' 
-                                 : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-bl-none shadow-sm'
+                                 : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-bl-none shadow-sm'
                            }`}>
                               {msg.text}
                            </div>
@@ -295,7 +295,7 @@ const LearningCenter: React.FC = () => {
                      ))}
                      {isTyping && (
                         <div className="flex justify-start">
-                           <div className="bg-white dark:bg-slate-700 p-3 rounded-xl rounded-bl-none shadow-sm">
+                           <div className="bg-white dark:bg-slate-800 p-3 rounded-xl rounded-bl-none shadow-sm">
                               <div className="flex gap-1">
                                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
                                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
@@ -306,10 +306,10 @@ const LearningCenter: React.FC = () => {
                      )}
                   </div>
 
-                  <div className="p-3 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
+                  <div className="p-3 bg-white dark:bg-[#0A0A0A] border-t border-slate-100 dark:border-slate-800">
                      <div className="flex gap-2">
                         <input 
-                           className="flex-1 text-sm p-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                           className="flex-1 text-sm p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
                            placeholder="Ask about this lesson..."
                            value={chatInput}
                            onChange={(e) => setChatInput(e.target.value)}
@@ -347,14 +347,14 @@ const LearningCenter: React.FC = () => {
         </div>
         
         {/* Global Progress */}
-        <div className="bg-white dark:bg-slate-800 px-6 py-3 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex items-center gap-4">
+        <div className="bg-white dark:bg-[#0A0A0A] px-6 py-3 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center gap-4">
            <div>
               <p className="text-xs text-slate-400 uppercase font-bold">Total Progress</p>
               <div className="flex items-end gap-1">
                  <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">0%</span>
               </div>
            </div>
-           <div className="w-24 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+           <div className="w-24 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
               <div className="h-full bg-indigo-600 w-[0%] rounded-full" />
            </div>
         </div>
@@ -371,7 +371,7 @@ const LearningCenter: React.FC = () => {
               className={`flex items-center px-6 py-4 rounded-xl border-2 transition-all min-w-[160px] flex-col gap-2 ${
                 activeCategory === cat.id 
                   ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-500 text-indigo-800 dark:text-indigo-200 shadow-md' 
-                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:border-indigo-200 dark:hover:border-slate-600'
+                  : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0A0A0A] text-slate-500 dark:text-slate-400 hover:border-indigo-200 dark:hover:border-slate-700'
               }`}
             >
               <Icon className={`w-6 h-6 ${activeCategory === cat.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`} />
@@ -386,14 +386,14 @@ const LearningCenter: React.FC = () => {
         {COURSES.filter(c => c.category === activeCategory).map(course => (
           <div 
             key={course.id}
-            className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border overflow-hidden flex flex-col transition-all hover:shadow-md ${
+            className={`bg-white dark:bg-[#0A0A0A] rounded-xl shadow-sm border overflow-hidden flex flex-col transition-all hover:shadow-md ${
               course.isLocked 
-                ? 'border-slate-200 dark:border-slate-700 opacity-70 grayscale-[0.5]' 
-                : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500'
+                ? 'border-slate-200 dark:border-slate-800 opacity-70 grayscale-[0.5]' 
+                : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500'
             }`}
           >
             {/* Thumbnail Placeholder */}
-            <div className="h-40 bg-slate-100 dark:bg-slate-750 relative flex items-center justify-center">
+            <div className="h-40 bg-slate-100 dark:bg-[#111] relative flex items-center justify-center">
                <div className="absolute top-3 right-3">
                   <span className={`text-[10px] font-bold px-2 py-1 rounded bg-white/80 dark:bg-black/50 backdrop-blur-sm ${
                      course.level === 'Beginner' ? 'text-green-600' : course.level === 'Intermediate' ? 'text-yellow-600' : 'text-red-600'
@@ -421,7 +421,7 @@ const LearningCenter: React.FC = () => {
                   </div>
                   
                   {/* Course Progress */}
-                  <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-4">
+                  <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-4">
                      <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${course.progress}%` }} />
                   </div>
 
@@ -430,9 +430,9 @@ const LearningCenter: React.FC = () => {
                     disabled={!!course.isLocked}
                     className={`w-full py-2.5 rounded-lg font-bold text-sm transition-colors flex items-center justify-center ${
                        course.isLocked 
-                          ? 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500 cursor-not-allowed' 
+                          ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed' 
                           : course.progress > 0
-                             ? 'bg-white border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:bg-slate-800 dark:border-indigo-500 dark:text-indigo-400 dark:hover:bg-indigo-900/20'
+                             ? 'bg-white border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:bg-[#111] dark:border-indigo-500 dark:text-indigo-400 dark:hover:bg-indigo-900/20'
                              : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
                     }`}
                   >

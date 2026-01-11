@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   CreditCard, Shield, MessageCircle, Mail, FileSignature, 
@@ -120,7 +121,7 @@ const Integrations: React.FC = () => {
           </p>
         </div>
         
-        <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-100 dark:border-indigo-900 shadow-sm transition-colors">
+        <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#0A0A0A] text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-100 dark:border-indigo-900 shadow-sm transition-colors">
            <Zap className="w-4 h-4 fill-indigo-100 dark:fill-indigo-900" />
            <span className="font-bold text-sm">{integrations.filter(i => i.status === 'CONNECTED').length} Active Connections</span>
         </div>
@@ -138,7 +139,7 @@ const Integrations: React.FC = () => {
               <input 
                 type="text" 
                 placeholder="Search apps..." 
-                className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-800 dark:text-white dark:placeholder-slate-500"
+                className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-[#0A0A0A] dark:text-white dark:placeholder-slate-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -151,14 +152,14 @@ const Integrations: React.FC = () => {
                   className={`px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                     selectedCategory === cat.id 
                       ? 'bg-indigo-600 text-white' 
-                      : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                      : 'bg-white dark:bg-[#0A0A0A] border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   {cat.label}
                 </button>
               ))}
               <select 
-                className="px-3 py-2 rounded-lg text-sm font-medium border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 focus:outline-none"
+                className="px-3 py-2 rounded-lg text-sm font-medium border border-slate-200 dark:border-slate-600 bg-white dark:bg-[#0A0A0A] text-slate-600 dark:text-slate-300 focus:outline-none"
                 onChange={(e) => setSelectedCategory(e.target.value as any)}
                 value={['ALL', 'CREDIT_BUREAU', 'PAYMENT'].includes(selectedCategory) ? '' : selectedCategory}
               >
@@ -174,16 +175,16 @@ const Integrations: React.FC = () => {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="h-40 bg-slate-100 dark:bg-slate-700 rounded-xl animate-pulse" />
+                <div key={i} className="h-40 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
               ))}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredIntegrations.map(int => (
-                <div key={int.id} className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between transition-all hover:shadow-md">
+                <div key={int.id} className="bg-white dark:bg-[#0A0A0A] p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between transition-all hover:shadow-md">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
-                      <div className={`p-3 rounded-lg ${int.status === 'CONNECTED' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+                      <div className={`p-3 rounded-lg ${int.status === 'CONNECTED' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
                         <IntegrationIcon name={int.icon} />
                       </div>
                       <div>
@@ -197,7 +198,7 @@ const Integrations: React.FC = () => {
                         Active
                       </span>
                     ) : (
-                      <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-700 dark:text-slate-500 px-2 py-1 rounded-full">
+                      <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 dark:text-slate-500 px-2 py-1 rounded-full">
                         Offline
                       </span>
                     )}
@@ -205,7 +206,7 @@ const Integrations: React.FC = () => {
                   
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2 min-h-[40px]">{int.description}</p>
                   
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-700">
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
                     <div className="flex gap-2">
                       {int.status === 'CONNECTED' ? (
                         <>
@@ -228,7 +229,7 @@ const Integrations: React.FC = () => {
                       ) : (
                         <button 
                           onClick={() => handleConnectClick(int)}
-                          className="px-4 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs font-bold rounded-lg hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors"
+                          className="px-4 py-1.5 bg-slate-900 dark:bg-slate-800 text-white text-xs font-bold rounded-lg hover:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
                           disabled={!!connectingId}
                         >
                           {connectingId === int.id ? 'Connecting...' : 'Connect'}
@@ -248,7 +249,7 @@ const Integrations: React.FC = () => {
         {/* Sidebar: Activity & Health */}
         <div className="space-y-6">
           {/* Health Status */}
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
+          <div className="bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
             <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center">
               <ShieldCheck className="w-5 h-5 mr-2 text-green-600 dark:text-green-400" />
               System Health
@@ -261,7 +262,7 @@ const Integrations: React.FC = () => {
                     {int.name}
                   </span>
                   <div className="flex items-center gap-2">
-                    <div className="w-20 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className="w-20 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${int.health > 90 ? 'bg-green-500' : 'bg-orange-500'}`} style={{ width: `${int.health}%` }} />
                     </div>
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{int.health}%</span>
@@ -275,14 +276,14 @@ const Integrations: React.FC = () => {
           </div>
 
           {/* Webhook Stream */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col max-h-[500px] transition-colors">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-750 flex justify-between items-center">
+          <div className="bg-white dark:bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[500px] transition-colors">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#111] flex justify-between items-center">
               <h3 className="font-bold text-slate-800 dark:text-white text-sm">Live Event Stream</h3>
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-2">
               {webhookLogs.map(log => (
-                <div key={log.id} className="p-3 border-l-2 border-indigo-100 dark:border-indigo-900 hover:bg-slate-50 dark:hover:bg-slate-750 rounded-r-md transition-colors">
+                <div key={log.id} className="p-3 border-l-2 border-indigo-100 dark:border-indigo-900 hover:bg-slate-50 dark:hover:bg-[#111] rounded-r-md transition-colors">
                   <div className="flex justify-between items-start mb-1">
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{log.source}</span>
                     <span className="text-[10px] text-slate-400">{log.timestamp}</span>
@@ -308,7 +309,7 @@ const Integrations: React.FC = () => {
       {/* Connect Modal */}
       {showConnectModal && selectedIntegration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transition-colors">
+          <div className="bg-white dark:bg-[#0A0A0A] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transition-colors">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl">
@@ -339,7 +340,7 @@ const Integrations: React.FC = () => {
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API Key / Secret</label>
                     <input 
                       type="password" 
-                      className="w-full border border-slate-200 dark:border-slate-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm bg-white dark:bg-slate-700 dark:text-white"
+                      className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm bg-white dark:bg-[#111] dark:text-white"
                       placeholder="sk_test_..."
                       value={apiKey}
                       onChange={e => setApiKey(e.target.value)}
@@ -356,7 +357,7 @@ const Integrations: React.FC = () => {
                 </div>
               )}
             </div>
-            <div className="bg-slate-50 dark:bg-slate-750 p-4 text-center border-t border-slate-100 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-[#111] p-4 text-center border-t border-slate-100 dark:border-slate-800">
               <button 
                 onClick={() => setShowConnectModal(false)}
                 className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium"

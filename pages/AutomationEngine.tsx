@@ -149,7 +149,7 @@ const AutomationEngine: React.FC = () => {
       {activeTab === 'workflows' && (
         <div className="space-y-6">
           {/* Creator Panel */}
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <div className="bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-slate-800 dark:text-white flex items-center">
                 <Wand2 className="w-5 h-5 mr-2 text-teal-500" />
@@ -160,7 +160,7 @@ const AutomationEngine: React.FC = () => {
               <input 
                 type="text" 
                 placeholder="Describe your automation goal (e.g., 'If payment fails, send email and notify admin on Slack')"
-                className="flex-1 p-3 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white dark:bg-slate-700 dark:text-white"
+                className="flex-1 p-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white dark:bg-[#111] dark:text-white"
                 value={goalInput}
                 onChange={(e) => setGoalInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleGenerateWorkflow()}
@@ -185,7 +185,7 @@ const AutomationEngine: React.FC = () => {
                 </div>
             ) : (
                 workflows.map((wf) => (
-                <div key={wf.id} className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border p-6 transition-all ${wf.isActive ? 'border-slate-200 dark:border-slate-700' : 'border-slate-100 dark:border-slate-800 opacity-75'}`}>
+                <div key={wf.id} className={`bg-white dark:bg-[#0A0A0A] rounded-xl shadow-sm border p-6 transition-all ${wf.isActive ? 'border-slate-200 dark:border-slate-800' : 'border-slate-100 dark:border-slate-800 opacity-75'}`}>
                     <div className="flex justify-between items-start mb-4">
                     <div>
                         <h4 className="text-lg font-bold text-slate-800 dark:text-white">{wf.name}</h4>
@@ -197,7 +197,7 @@ const AutomationEngine: React.FC = () => {
                     </div>
 
                     {/* Visual Flow */}
-                    <div className="bg-slate-50 dark:bg-slate-750 rounded-lg p-4 space-y-3 relative overflow-hidden border border-slate-100 dark:border-slate-700">
+                    <div className="bg-slate-50 dark:bg-[#111] rounded-lg p-4 space-y-3 relative overflow-hidden border border-slate-100 dark:border-slate-800">
                     <div className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300">
                         <Zap className="w-4 h-4 mr-2 text-amber-500" />
                         WHEN: {wf.trigger}
@@ -232,13 +232,13 @@ const AutomationEngine: React.FC = () => {
       {activeTab === 'email-ai' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[calc(100vh-250px)]">
           {/* Input */}
-          <div className="flex flex-col h-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+          <div className="flex flex-col h-full bg-white dark:bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
             <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center">
               <Mail className="w-5 h-5 mr-2 text-blue-500" />
               Incoming Email Simulator
             </h3>
             <textarea 
-              className="flex-1 p-4 border border-slate-200 dark:border-slate-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 dark:bg-slate-700 dark:text-white"
+              className="flex-1 p-4 border border-slate-200 dark:border-slate-700 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 dark:bg-[#111] dark:text-white"
               placeholder="Paste a client email here to test the AI..."
               value={emailInput}
               onChange={(e) => setEmailInput(e.target.value)}
@@ -256,7 +256,7 @@ const AutomationEngine: React.FC = () => {
           </div>
 
           {/* Output */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 overflow-y-auto">
             {!emailAnalysis ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400">
                 <MessageSquare className="w-12 h-12 mb-3 opacity-20" />
@@ -271,7 +271,7 @@ const AutomationEngine: React.FC = () => {
                   }`}>
                     {emailAnalysis.priority} PRIORITY
                   </span>
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                     Category: {emailAnalysis.category}
                   </span>
                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
@@ -282,7 +282,7 @@ const AutomationEngine: React.FC = () => {
                 {/* Draft */}
                 <div className="space-y-2">
                   <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase">AI Suggested Draft</h4>
-                  <div className="p-4 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
+                  <div className="p-4 bg-slate-50 dark:bg-[#111] border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
                     {emailAnalysis.suggestedResponse}
                   </div>
                 </div>
@@ -309,12 +309,12 @@ const AutomationEngine: React.FC = () => {
       {activeTab === 'doc-intelligence' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Upload Simulation */}
-          <div className="lg:col-span-1 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <div className="lg:col-span-1 bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
              <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center">
                <FileSearch className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
                Document Analysis
              </h3>
-             <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 text-center hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors relative cursor-pointer">
+             <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-8 text-center hover:bg-slate-50 dark:hover:bg-[#111] transition-colors relative cursor-pointer">
                <input 
                  type="file" 
                  className="absolute inset-0 opacity-0 cursor-pointer" 
@@ -337,12 +337,12 @@ const AutomationEngine: React.FC = () => {
           {/* Analysis Results */}
           <div className="lg:col-span-2 space-y-6">
             {!docClassification ? (
-              <div className="h-64 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 text-slate-400">
+              <div className="h-64 flex flex-col items-center justify-center bg-slate-50 dark:bg-[#0A0A0A] rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
                 <ScanText className="w-12 h-12 mb-3 opacity-20" />
                 <p>Upload a document to test auto-classification and parsing</p>
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 animate-fade-in">
+              <div className="bg-white dark:bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 animate-fade-in">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-bold text-slate-800 dark:text-white">Classification Results</h3>
                   <span className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-full text-xs font-bold">
@@ -350,7 +350,7 @@ const AutomationEngine: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="bg-slate-50 dark:bg-slate-750 p-4 rounded-lg mb-6 border border-slate-200 dark:border-slate-700">
+                <div className="bg-slate-50 dark:bg-[#111] p-4 rounded-lg mb-6 border border-slate-200 dark:border-slate-800">
                   <p className="text-xs text-slate-400 uppercase font-bold mb-1">Detected Category</p>
                   <p className="text-lg font-bold text-slate-800 dark:text-white">{docClassification.category}</p>
                 </div>

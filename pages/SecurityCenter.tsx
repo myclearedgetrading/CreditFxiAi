@@ -76,10 +76,10 @@ const SecurityCenter: React.FC = () => {
       {activeTab === 'dashboard' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Security Score */}
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center text-center">
+          <div className="bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center text-center">
              <div className="relative w-32 h-32 flex items-center justify-center mb-4">
                 <svg className="absolute w-full h-full -rotate-90">
-                  <circle cx="64" cy="64" r="56" stroke="#e2e8f0" strokeWidth="8" fill="transparent" className="dark:stroke-slate-700" />
+                  <circle cx="64" cy="64" r="56" stroke="#e2e8f0" strokeWidth="8" fill="transparent" className="dark:stroke-slate-800" />
                   <circle cx="64" cy="64" r="56" stroke="#10b981" strokeWidth="8" fill="transparent" strokeDasharray="351" strokeDashoffset="0" strokeLinecap="round" />
                 </svg>
                 <div className="text-3xl font-bold text-slate-800 dark:text-white">100</div>
@@ -89,7 +89,7 @@ const SecurityCenter: React.FC = () => {
           </div>
 
           {/* MFA Adoption */}
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <div className="bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
              <h3 className="font-bold text-slate-800 dark:text-white mb-4">2FA Status</h3>
              <div className="flex items-center gap-4">
                 <div>
@@ -107,7 +107,7 @@ const SecurityCenter: React.FC = () => {
       {/* --- ENCRYPTION VAULT TAB --- */}
       {activeTab === 'encryption' && (
          <div className="max-w-2xl mx-auto text-center">
-            <div className={`inline-flex p-6 rounded-full mb-6 transition-all duration-500 ${isVaultLocked ? 'bg-slate-100 dark:bg-slate-700' : 'bg-emerald-100 dark:bg-emerald-900/30 scale-110'}`}>
+            <div className={`inline-flex p-6 rounded-full mb-6 transition-all duration-500 ${isVaultLocked ? 'bg-slate-100 dark:bg-slate-800' : 'bg-emerald-100 dark:bg-emerald-900/30 scale-110'}`}>
                {isVaultLocked ? (
                   <Lock className="w-16 h-16 text-slate-400 dark:text-slate-500" />
                ) : (
@@ -130,7 +130,7 @@ const SecurityCenter: React.FC = () => {
                   Authenticate to View Data
                </button>
             ) : (
-               <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-900 text-left animate-fade-in">
+               <div className="bg-white dark:bg-[#0A0A0A] p-8 rounded-2xl shadow-sm border border-emerald-100 dark:border-emerald-900 text-left animate-fade-in">
                   <div className="flex justify-between items-center mb-6">
                      <h3 className="font-bold text-slate-800 dark:text-white">Decrypted Sample Record</h3>
                      <button onClick={toggleEncryption} className="text-xs text-red-500 hover:underline">Lock Vault</button>
@@ -143,7 +143,7 @@ const SecurityCenter: React.FC = () => {
                      </div>
                      <div>
                         <label className="text-xs font-bold text-slate-400 uppercase">Social Security Number</label>
-                        <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-750 p-2 rounded border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between bg-slate-50 dark:bg-[#111] p-2 rounded border border-slate-200 dark:border-slate-800">
                            <span className="font-mono text-slate-800 dark:text-white tracking-widest">
                               {ssnVisible ? '000-00-0000' : '•••-••-••••'}
                            </span>

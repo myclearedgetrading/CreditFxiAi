@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { MOCK_CLIENTS } from '../constants';
 import { Search, Plus, Filter, MoreVertical } from 'lucide-react';
@@ -27,27 +28,27 @@ const Clients: React.FC = () => {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row gap-4 transition-colors">
+      <div className="bg-white dark:bg-[#0A0A0A] p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-4 transition-colors">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
           <input 
             type="text" 
             placeholder="Search clients..." 
-            className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-white dark:placeholder-slate-400"
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-[#111] dark:text-white dark:placeholder-slate-400"
           />
         </div>
-        <button className="flex items-center px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+        <button className="flex items-center px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300">
           <Filter className="w-4 h-4 mr-2" />
           Filters
         </button>
       </div>
 
       {/* Client Table */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors">
+      <div className="bg-white dark:bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-750 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold">
+              <tr className="bg-slate-50 dark:bg-[#111] border-b border-slate-200 dark:border-slate-800 text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold">
                 <th className="px-6 py-4">Client Name</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Scores (E/E/T)</th>
@@ -56,9 +57,9 @@ const Clients: React.FC = () => {
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {MOCK_CLIENTS.map((client) => (
-                <tr key={client.id} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+                <tr key={client.id} className="hover:bg-slate-50 dark:hover:bg-[#111] transition-colors">
                   <td className="px-6 py-4">
                     <div>
                       <div className="font-medium text-slate-900 dark:text-white">{client.firstName} {client.lastName}</div>
@@ -80,7 +81,7 @@ const Clients: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md text-sm font-medium">
+                    <span className="text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-sm font-medium">
                       {client.negativeItems.length}
                     </span>
                   </td>

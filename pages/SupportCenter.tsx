@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   LifeBuoy, Ticket, Heart, MessageSquare, Plus, Search, 
@@ -141,14 +142,14 @@ const SupportCenter: React.FC = () => {
       {activeTab === 'tickets' && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
            {/* Sidebar Filters */}
-           <div className="lg:col-span-1 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 h-fit">
+           <div className="lg:col-span-1 bg-white dark:bg-[#0A0A0A] p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 h-fit">
               <div className="mb-6">
                  <h3 className="font-bold text-slate-700 dark:text-slate-200 mb-3">Views</h3>
                  <div className="space-y-1">
                     <button className="w-full text-left px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm font-medium">
                       {role === 'ADMIN' ? 'All Open Tickets' : 'Active Tickets'}
                     </button>
-                    <button className="w-full text-left px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg text-sm">
+                    <button className="w-full text-left px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-sm">
                       {role === 'ADMIN' ? 'Assigned to Me' : 'Closed Tickets'}
                     </button>
                  </div>
@@ -160,7 +161,7 @@ const SupportCenter: React.FC = () => {
               {displayTickets.length === 0 ? (
                 <div className="text-center py-10 text-slate-400">No tickets found.</div>
               ) : displayTickets.map((ticket) => (
-                 <div key={ticket.id} className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-500 transition-all cursor-pointer group">
+                 <div key={ticket.id} className="bg-white dark:bg-[#0A0A0A] p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-500 transition-all cursor-pointer group">
                     <div className="flex justify-between items-start mb-2">
                        <div className="flex items-center gap-3">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getPriorityColor(ticket.priority)}`}>
@@ -202,7 +203,7 @@ const SupportCenter: React.FC = () => {
       {activeTab === 'health' && role === 'ADMIN' && (
          <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+               <div className="bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center justify-between mb-4">
                      <h3 className="font-bold text-slate-700 dark:text-slate-200">Overall Health</h3>
                      <Heart className="w-5 h-5 text-green-500" />
@@ -229,8 +230,8 @@ const SupportCenter: React.FC = () => {
       {/* Ticket Modal */}
       {showCreateModal && (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
-               <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+            <div className="bg-white dark:bg-[#0A0A0A] rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
+               <div className="p-6 border-b border-slate-100 dark:border-slate-800">
                   <h3 className="text-xl font-bold text-slate-800 dark:text-white">Create Support Ticket</h3>
                </div>
                <div className="p-6 space-y-4">
@@ -238,7 +239,7 @@ const SupportCenter: React.FC = () => {
                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subject</label>
                      <input 
                         type="text" 
-                        className="w-full border border-slate-200 dark:border-slate-600 rounded-lg p-2 bg-white dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border border-slate-200 dark:border-slate-800 rounded-lg p-2 bg-white dark:bg-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder="Brief summary of the issue"
                         value={newSubject}
                         onChange={e => setNewSubject(e.target.value)}
@@ -247,7 +248,7 @@ const SupportCenter: React.FC = () => {
                   <div>
                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
                      <textarea 
-                        className="w-full border border-slate-200 dark:border-slate-600 rounded-lg p-2 h-32 bg-white dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                        className="w-full border border-slate-200 dark:border-slate-800 rounded-lg p-2 h-32 bg-white dark:bg-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                         placeholder="Detailed description..."
                         value={newMessage}
                         onChange={e => setNewMessage(e.target.value)}
@@ -260,8 +261,8 @@ const SupportCenter: React.FC = () => {
                      </div>
                   )}
                </div>
-               <div className="p-6 bg-slate-50 dark:bg-slate-750 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
-                  <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors">Cancel</button>
+               <div className="p-6 bg-slate-50 dark:bg-[#111] border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+                  <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancel</button>
                   <button onClick={handleCreateTicket} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">Create Ticket</button>
                </div>
             </div>
