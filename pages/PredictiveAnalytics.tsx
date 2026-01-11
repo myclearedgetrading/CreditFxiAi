@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -10,15 +11,7 @@ import {
 import { predictDisputeOutcome, forecastCreditScore } from '../services/geminiService';
 import { DisputePrediction, ScoreForecastPoint, ChurnRiskProfile, DisputeStrategy } from '../types';
 
-// Mock Churn Data (since we can't predict on live data yet)
-const MOCK_CHURN_RISKS: ChurnRiskProfile[] = [
-  { clientId: '101', clientName: 'James Robinson', riskScore: 78, primaryRiskFactor: 'Low Engagement', suggestedRetentionAction: 'Schedule check-in call' },
-  { clientId: '102', clientName: 'Sarah Connor', riskScore: 12, primaryRiskFactor: 'None', suggestedRetentionAction: 'Send success summary' },
-  { clientId: '103', clientName: 'Michael Scott', riskScore: 65, primaryRiskFactor: 'No deletions in 45 days', suggestedRetentionAction: 'Offer discount on next month' },
-];
-
 const PredictiveAnalytics: React.FC = () => {
-  // Tabs: 'dispute', 'score', 'churn', 'business'
   const [activeTab, setActiveTab] = useState('dispute');
 
   // Dispute Predictor State
@@ -60,12 +53,6 @@ const PredictiveAnalytics: React.FC = () => {
     }
   };
 
-  const getRiskColor = (score: number) => {
-    if (score > 70) return 'text-red-600 bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900 dark:text-red-400';
-    if (score > 40) return 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-900 dark:text-orange-400';
-    return 'text-green-600 bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900 dark:text-green-400';
-  };
-
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
@@ -83,8 +70,6 @@ const PredictiveAnalytics: React.FC = () => {
         {[
           { id: 'dispute', label: 'Dispute Success', icon: Target },
           { id: 'score', label: 'Score Simulator', icon: TrendingUp },
-          { id: 'churn', label: 'Client Retention', icon: UserMinus },
-          { id: 'business', label: 'Business Forecast', icon: BarChart3 },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -297,70 +282,6 @@ const PredictiveAnalytics: React.FC = () => {
                  </div>
                </div>
              )}
-          </div>
-        </div>
-      )}
-
-      {/* --- TAB CONTENT: CLIENT CHURN & BUSINESS --- */}
-      {(activeTab === 'churn' || activeTab === 'business') && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-              <h3 className="font-bold text-slate-800 dark:text-white flex items-center">
-                <AlertTriangle className="w-5 h-5 text-orange-500 mr-2" /> 
-                At-Risk Clients (AI Detected)
-              </h3>
-            </div>
-            <div className="p-6 space-y-4">
-              {MOCK_CHURN_RISKS.map((risk) => (
-                <div key={risk.clientId} className={`p-4 rounded-lg border ${getRiskColor(risk.riskScore)}`}>
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h4 className="font-bold dark:text-white">{risk.clientName}</h4>
-                      <p className="text-xs opacity-80 mt-1 dark:text-slate-300">Risk Factor: {risk.primaryRiskFactor}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-2xl font-bold dark:text-white">{risk.riskScore}%</span>
-                      <p className="text-[10px] uppercase font-bold tracking-wide dark:text-slate-300">Churn Prob.</p>
-                    </div>
-                  </div>
-                  <div className="bg-white/60 dark:bg-black/20 p-2 rounded text-sm mt-2 flex items-center">
-                    <BrainCircuit className="w-4 h-4 mr-2 opacity-70" />
-                    <span className="font-medium dark:text-white">AI Suggestion: {risk.suggestedRetentionAction}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-               <h3 className="font-bold text-slate-800 dark:text-white mb-4">Revenue Forecast (Next 3 Months)</h3>
-               <div className="flex items-end space-x-2 h-48">
-                  {/* Mock Forecast Bars */}
-                  <div className="flex-1 bg-slate-100 dark:bg-slate-700 rounded-t-lg relative group h-[60%] hover:h-[65%] transition-all">
-                    <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-bold text-slate-600 dark:text-slate-300">Current</div>
-                  </div>
-                  <div className="flex-1 bg-purple-100 dark:bg-purple-900/30 rounded-t-lg relative group h-[70%] hover:h-[75%] transition-all">
-                    <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-bold text-purple-700 dark:text-purple-300">Month +1</div>
-                  </div>
-                  <div className="flex-1 bg-purple-200 dark:bg-purple-900/50 rounded-t-lg relative group h-[80%] hover:h-[85%] transition-all">
-                    <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-bold text-purple-800 dark:text-purple-200">Month +2</div>
-                  </div>
-                  <div className="flex-1 bg-purple-300 dark:bg-purple-900/70 rounded-t-lg relative group h-[90%] hover:h-[95%] transition-all">
-                    <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-bold text-purple-900 dark:text-purple-100">Month +3</div>
-                  </div>
-               </div>
-               <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-4">Projected 15% Growth based on current lead velocity.</p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-               <h3 className="font-bold text-slate-800 dark:text-white mb-2">Specialist Performance AI Coach</h3>
-               <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-900 dark:text-indigo-200 text-sm">
-                  <p className="font-semibold mb-2">💡 Weekly Optimization Tip:</p>
-                  <p>"Sarah Connor has a 20% higher deletion rate with 'Factual Disputes' on Medical Collections than the team average. Suggest team training session led by Sarah."</p>
-               </div>
-            </div>
           </div>
         </div>
       )}

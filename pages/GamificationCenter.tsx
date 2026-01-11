@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   Trophy, Medal, Star, Flame, Target, Share2, 
@@ -7,28 +8,26 @@ import {
 import { GamificationProfile, Achievement, Quest, QuizQuestion } from '../types';
 import { generateQuiz } from '../services/geminiService';
 
-// Mock Data
 const INITIAL_PROFILE: GamificationProfile = {
-  level: 4,
-  currentPoints: 4250,
-  pointsToNextLevel: 5000,
-  tier: 'SILVER',
-  streakDays: 12,
-  referralCode: 'JAMES-R-2024',
-  totalReferrals: 2
+  level: 1,
+  currentPoints: 0,
+  pointsToNextLevel: 1000,
+  tier: 'BRONZE',
+  streakDays: 0,
+  referralCode: 'USER-2024',
+  totalReferrals: 0
 };
 
 const INITIAL_ACHIEVEMENTS: Achievement[] = [
-  { id: '1', title: 'First Win', description: 'Get your first negative item deleted', icon: 'Trophy', unlocked: true, progress: 100, pointsReward: 500, unlockedAt: '2023-11-01' },
-  { id: '2', title: 'Triple Threat', description: 'Remove items from all 3 bureaus', icon: 'Zap', unlocked: true, progress: 100, pointsReward: 1000, unlockedAt: '2023-11-15' },
-  { id: '3', title: 'Century Club', description: 'Improve credit score by 100 points', icon: 'Star', unlocked: false, progress: 45, pointsReward: 2000 },
-  { id: '4', title: 'Debt Destroyer', description: 'Pay off $5,000 in collections', icon: 'Flame', unlocked: false, progress: 20, pointsReward: 1500 },
+  { id: '1', title: 'First Win', description: 'Get your first negative item deleted', icon: 'Trophy', unlocked: false, progress: 0, pointsReward: 500 },
+  { id: '2', title: 'Triple Threat', description: 'Remove items from all 3 bureaus', icon: 'Zap', unlocked: false, progress: 0, pointsReward: 1000 },
+  { id: '3', title: 'Century Club', description: 'Improve credit score by 100 points', icon: 'Star', unlocked: false, progress: 0, pointsReward: 2000 },
+  { id: '4', title: 'Debt Destroyer', description: 'Pay off $5,000 in collections', icon: 'Flame', unlocked: false, progress: 0, pointsReward: 1500 },
 ];
 
 const INITIAL_QUESTS: Quest[] = [
-  { id: '1', title: 'Credit Basics Mastery', description: 'Learn the fundamentals of FICO scores', category: 'BASICS', totalSteps: 5, completedSteps: 5, rewardPoints: 250, status: 'COMPLETED' },
-  { id: '2', title: 'Dispute Process 101', description: 'Understand how disputes work', category: 'BASICS', totalSteps: 3, completedSteps: 1, rewardPoints: 150, status: 'ACTIVE' },
-  { id: '3', title: 'Debt Management', description: 'Strategies to lower utilization', category: 'BUILDING', totalSteps: 4, completedSteps: 0, rewardPoints: 300, status: 'LOCKED' },
+  { id: '1', title: 'Credit Basics Mastery', description: 'Learn the fundamentals of FICO scores', category: 'BASICS', totalSteps: 5, completedSteps: 0, rewardPoints: 250, status: 'ACTIVE' },
+  { id: '2', title: 'Dispute Process 101', description: 'Understand how disputes work', category: 'BASICS', totalSteps: 3, completedSteps: 0, rewardPoints: 150, status: 'LOCKED' },
 ];
 
 const GamificationCenter: React.FC = () => {
@@ -64,7 +63,6 @@ const GamificationCenter: React.FC = () => {
     setSelectedOption(index);
     if (currentQuiz && index === currentQuiz.correctIndex) {
       setQuizResult('correct');
-      // Simulate adding points
       setProfile(prev => ({ ...prev, currentPoints: prev.currentPoints + 50 }));
     } else {
       setQuizResult('incorrect');
@@ -106,7 +104,7 @@ const GamificationCenter: React.FC = () => {
             </div>
             
             <div>
-              <h2 className="text-2xl font-bold">James Robinson</h2>
+              <h2 className="text-2xl font-bold">My Rewards</h2>
               <div className="flex items-center gap-2 mt-1">
                 <Medal className="w-5 h-5 text-yellow-400" />
                 <span className="font-bold tracking-wide">{profile.tier} MEMBER</span>
@@ -145,12 +143,6 @@ const GamificationCenter: React.FC = () => {
         >
           <Target className="w-4 h-4 mr-2" /> Quests & Learning
         </button>
-        <button 
-          onClick={() => setActiveTab('referrals')}
-          className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors flex items-center ${activeTab === 'referrals' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
-        >
-          <UserPlus className="w-4 h-4 mr-2" /> Referrals
-        </button>
       </div>
 
       {/* OVERVIEW CONTENT */}
@@ -159,7 +151,7 @@ const GamificationCenter: React.FC = () => {
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
             <h3 className="font-bold text-slate-800 dark:text-white mb-6 flex items-center">
               <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
-              Recent Achievements
+              Achievements
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {achievements.map((badge) => (
@@ -184,56 +176,14 @@ const GamificationCenter: React.FC = () => {
                   <h4 className="font-bold text-slate-800 dark:text-white text-sm">{badge.title}</h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-3 h-8">{badge.description}</p>
                   
-                  {/* Progress Bar for Locked */}
                   {!badge.unlocked && (
                     <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div className="h-full bg-indigo-500" style={{ width: `${badge.progress}%` }} />
                     </div>
                   )}
-                  {badge.unlocked && (
-                    <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700 inline-block px-2 py-1 rounded border border-indigo-100 dark:border-indigo-900 mt-auto">
-                      +{badge.pointsReward} pts
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-xl shadow-sm p-6 text-white">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-lg">Monthly Challenge</h3>
-                    <p className="text-indigo-100 text-sm">Expires in 12 days</p>
-                  </div>
-                  <Gift className="w-8 h-8 text-yellow-400" />
-                </div>
-                <div className="bg-white bg-opacity-10 rounded-lg p-4 mb-4 backdrop-blur-sm">
-                   <p className="font-medium mb-2">Upload 3 new documents</p>
-                   <div className="flex justify-between text-xs mb-1 opacity-80">
-                      <span>1/3 uploaded</span>
-                      <span>33%</span>
-                   </div>
-                   <div className="w-full h-2 bg-black bg-opacity-20 rounded-full overflow-hidden">
-                      <div className="h-full bg-yellow-400" style={{ width: '33%' }} />
-                   </div>
-                </div>
-                <button className="w-full py-2 bg-white text-indigo-700 font-bold rounded-lg hover:bg-indigo-50 transition-colors">
-                   View Details
-                </button>
-             </div>
-
-             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex flex-col justify-center items-center text-center">
-                <Share2 className="w-12 h-12 text-indigo-200 dark:text-indigo-900 mb-3" />
-                <h3 className="font-bold text-slate-800 dark:text-white">Share Your Success</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 max-w-xs">
-                   You recently hit a 50pt increase! Share this milestone to inspire others.
-                </p>
-                <button className="px-6 py-2 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-medium rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                   Create Social Post
-                </button>
-             </div>
           </div>
         </div>
       )}
@@ -251,11 +201,6 @@ const GamificationCenter: React.FC = () => {
                        }`}>
                           {quest.category}
                        </span>
-                       {quest.status === 'COMPLETED' && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 flex items-center">
-                             <CheckCircle2 className="w-3 h-3 mr-1" /> Completed
-                          </span>
-                       )}
                     </div>
                     <h3 className="font-bold text-slate-800 dark:text-white text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{quest.title}</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">{quest.description}</p>
@@ -272,64 +217,15 @@ const GamificationCenter: React.FC = () => {
                       className={`p-3 rounded-full transition-colors ${
                          quest.status === 'ACTIVE' 
                             ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:scale-105 transform' 
-                            : quest.status === 'COMPLETED' 
-                               ? 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400 cursor-default'
-                               : 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500 cursor-not-allowed'
+                            : 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500 cursor-not-allowed'
                       }`}
                     >
-                       {quest.status === 'LOCKED' ? <Lock className="w-6 h-6" /> : 
-                        quest.status === 'COMPLETED' ? <CheckCircle2 className="w-6 h-6" /> : 
-                        <PlayCircle className="w-6 h-6" />}
+                       {quest.status === 'LOCKED' ? <Lock className="w-6 h-6" /> : <PlayCircle className="w-6 h-6" />}
                     </button>
                  </div>
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* REFERRALS CONTENT */}
-      {activeTab === 'referrals' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-           <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 text-center">
-              <Gift className="w-16 h-16 text-indigo-600 dark:text-indigo-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Invite Friends, Earn Rewards</h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-6">
-                 Get 500 points ($50 credit) for every friend who joins. They get 20% off their first month!
-              </p>
-              
-              <div className="bg-slate-50 dark:bg-slate-700 p-4 rounded-xl border border-slate-200 dark:border-slate-600 flex items-center justify-between max-w-md mx-auto mb-6">
-                 <code className="text-lg font-bold text-slate-700 dark:text-slate-200 tracking-wider">{profile.referralCode}</code>
-                 <button onClick={copyReferral} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors text-slate-500 dark:text-slate-400">
-                    <Copy className="w-5 h-5" />
-                 </button>
-              </div>
-              
-              <div className="flex justify-center gap-3">
-                 <button className="px-6 py-2 bg-[#1DA1F2] text-white rounded-lg font-medium shadow-sm hover:opacity-90">
-                    Share on Twitter
-                 </button>
-                 <button className="px-6 py-2 bg-[#4267B2] text-white rounded-lg font-medium shadow-sm hover:opacity-90">
-                    Share on Facebook
-                 </button>
-              </div>
-           </div>
-
-           <div className="space-y-6">
-              <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-                 <h4 className="font-bold text-slate-800 dark:text-white mb-4">Your Referral Stats</h4>
-                 <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                       <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">{profile.totalReferrals}</div>
-                       <div className="text-xs text-indigo-900 dark:text-indigo-300 opacity-70 uppercase font-bold">Total Signups</div>
-                    </div>
-                    <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                       <div className="text-2xl font-bold text-green-700 dark:text-green-400">$100</div>
-                       <div className="text-xs text-green-900 dark:text-green-300 opacity-70 uppercase font-bold">Earned Credit</div>
-                    </div>
-                 </div>
-              </div>
-           </div>
         </div>
       )}
 
@@ -375,13 +271,6 @@ const GamificationCenter: React.FC = () => {
                             )}
                          </button>
                       ))}
-
-                      {quizResult && (
-                         <div className={`mt-4 p-4 rounded-lg text-sm ${quizResult === 'correct' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
-                            <p className="font-bold mb-1">{quizResult === 'correct' ? 'Correct! +50 Points' : 'Incorrect'}</p>
-                            <p>{currentQuiz.explanation}</p>
-                         </div>
-                      )}
 
                       {quizResult && (
                          <button 

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { 
   BookOpen, PlayCircle, Shield, TrendingUp, Building2, 
   CheckCircle2, Lock, ChevronRight, ArrowLeft, Bot, 
-  MessageSquare, Send, Sparkles, User, Lightbulb
+  Send, Sparkles, User, Lightbulb
 } from 'lucide-react';
 import { generateTutorResponse } from '../services/geminiService';
 
@@ -29,7 +29,7 @@ interface Course {
   isLocked?: boolean;
 }
 
-// --- MOCK DATA ---
+// --- MOCK DATA (Educational Content is static, progress is reset) ---
 const COURSES: Course[] = [
   // CREDIT BASICS
   {
@@ -39,7 +39,7 @@ const COURSES: Course[] = [
     description: 'Learn how to read reports from Equifax, Experian, and TransUnion like a pro.',
     level: 'Beginner',
     duration: '15 min',
-    progress: 100,
+    progress: 0,
     lessons: [
       { id: 'l1', title: 'The 3 Bureaus Explained', duration: '5 min', content: 'Equifax, Experian, and TransUnion are effectively data aggregators. They do not share data perfectly, which is why your score varies.' },
       { id: 'l2', title: 'Identifying Errors', duration: '10 min', content: 'Look for: misspelled names, old addresses, accounts that arent yours, and incorrect balances.' }
@@ -52,7 +52,7 @@ const COURSES: Course[] = [
     description: 'Master the 5 factors that make up your score: Payment History, Utilization, etc.',
     level: 'Beginner',
     duration: '20 min',
-    progress: 45,
+    progress: 0,
     lessons: [
       { id: 'l1', title: 'Payment History (35%)', duration: '5 min', content: 'The single biggest factor. Even one late payment can drop you 50-100 points.' }
     ]
@@ -259,9 +259,6 @@ const LearningCenter: React.FC = () => {
                     <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Lesson Notes</h3>
                     <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300">
                        <p className="leading-relaxed text-lg">{selectedLesson.content}</p>
-                       <p className="mt-4">
-                         (This is a placeholder for the full lesson text. In a real application, this would contain detailed educational material, diagrams, and step-by-step guides corresponding to the video content.)
-                       </p>
                     </div>
                  </div>
                </>
@@ -272,7 +269,7 @@ const LearningCenter: React.FC = () => {
                </div>
              )}
 
-             {/* AI Tutor Side Panel (Overlay or Split) */}
+             {/* AI Tutor Side Panel */}
              {showAiTutor && (
                <div className="absolute top-0 bottom-0 right-0 w-80 bg-white dark:bg-slate-850 border-l border-slate-200 dark:border-slate-700 shadow-xl flex flex-col animate-slide-in-right z-10">
                   <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-indigo-600 text-white flex justify-between items-center">
@@ -337,7 +334,6 @@ const LearningCenter: React.FC = () => {
   // --- RENDER: CATALOG VIEW ---
   return (
     <div className="space-y-8 animate-fade-in pb-20">
-      
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -355,11 +351,11 @@ const LearningCenter: React.FC = () => {
            <div>
               <p className="text-xs text-slate-400 uppercase font-bold">Total Progress</p>
               <div className="flex items-end gap-1">
-                 <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">12%</span>
+                 <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">0%</span>
               </div>
            </div>
            <div className="w-24 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-600 w-[12%] rounded-full" />
+              <div className="h-full bg-indigo-600 w-[0%] rounded-full" />
            </div>
         </div>
       </div>

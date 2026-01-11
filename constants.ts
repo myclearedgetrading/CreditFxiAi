@@ -1,3 +1,4 @@
+
 import { Client, Task, ActivityLog } from './types';
 
 export const MOCK_CLIENTS: Client[] = [];

@@ -78,12 +78,8 @@ const AnalysisEngine: React.FC = () => {
     setTimeout(() => {
         setConnectLoading(false);
         setShowConnectModal(false);
-        
-        const mockFile = new File([""], `${connectForm.provider}_Report_Import.pdf`, { type: "application/pdf" });
-        setFile(mockFile);
-        setPreview("DOC_PREVIEW");
-        
-        vibrate(HAPTIC.SUCCESS);
+        alert("Integrations are currently disabled in this demo environment. Please upload a file manually.");
+        vibrate(HAPTIC.WARNING);
     }, 2000);
   };
 
@@ -106,27 +102,12 @@ const AnalysisEngine: React.FC = () => {
          const analysisResult = await analyzeCreditReportImage(base64Data, mimeType);
          setResult(analysisResult);
       } else {
-         setTimeout(() => {}, 3000);
-         if (file.name.endsWith('.html')) {
-             throw new Error("HTML Parsing enabled in backend. Please use Image for Vision Demo.");
-         }
+         // Placeholder for PDF logic
+         throw new Error("PDF processing currently requires backend integration. Please try an image file.");
       }
       
       clearInterval(stepInterval);
       setProgressStep(4); 
-      
-      if (!result && file.type.includes('image')) {
-          // Handled
-      } else if (!result) {
-           setResult({
-              summary: { totalNegativeItems: 5, estimatedScoreImprovement: 62, utilizationRate: 45 },
-              negativeItems: [{ creditor: 'Chase', accountType: 'Credit Card', amount: 500, bureau: 'Experian', date: '2023-01-01' }],
-              discrepancies: [],
-              recommendations: [],
-              actionPlan: []
-           } as any);
-      }
-
       vibrate(HAPTIC.SUCCESS);
     } catch (err: any) {
       clearInterval(stepInterval);
@@ -145,6 +126,7 @@ const AnalysisEngine: React.FC = () => {
 
   return (
     <div className="space-y-8 pb-10">
+      {/* ... (Keep existing JSX for header) ... */}
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <BrainCircuit className="text-orange-500" />
@@ -437,7 +419,7 @@ const AnalysisEngine: React.FC = () => {
         </div>
       )}
 
-      {/* LOGIN MODAL */}
+      {/* LOGIN MODAL (Reused for connecting, now just shows alert about disabled integrations) */}
       {showConnectModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-sm p-4 animate-fade-in">
             <div className="bg-[#0A0A0A] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-700">
@@ -485,10 +467,6 @@ const AnalysisEngine: React.FC = () => {
                         </div>
                     </div>
                     
-                    <div className="flex items-center justify-center gap-2 text-xs text-green-400 font-medium py-1">
-                        <Lock className="w-3 h-3" /> 256-bit Bank Level Encryption
-                    </div>
-
                     <button 
                         type="submit"
                         disabled={connectLoading || !connectForm.username || !connectForm.password}

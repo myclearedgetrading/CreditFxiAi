@@ -1,47 +1,17 @@
+
 import React, { useState } from 'react';
 import { 
   Bot, Workflow, Mail, CalendarClock, Zap, Plus, 
   PlayCircle, PauseCircle, Trash2, ArrowRight, MessageSquare, 
   CheckCircle2, AlertCircle, Wand2, Loader2, FileCheck, Layers,
-  FileSearch, Upload, ScanText, History
+  FileSearch, Upload, ScanText, History, X
 } from 'lucide-react';
 import { analyzeInboundEmail, suggestAutomationWorkflow, classifyDocument, parseBureauResponse } from '../services/geminiService';
 import { AutomationWorkflow, EmailAnalysisResult, DocumentClassification, BureauResponseResult } from '../types';
 
-// Mock Existing Workflows
-const INITIAL_WORKFLOWS: AutomationWorkflow[] = [
-  {
-    id: 'wf-1',
-    name: 'Score Improvement Celebration',
-    description: 'Sends a congratulatory email when score increases by 20+ points.',
-    trigger: 'SCORE_CHANGE',
-    conditions: [{ field: 'score_increase', operator: 'GREATER_THAN', value: 20 }],
-    actions: [{ type: 'SEND_EMAIL', config: { template: 'celebration_email' } }],
-    isActive: true,
-    stats: { runsLast30Days: 45, hoursSaved: 12 }
-  },
-  {
-    id: 'wf-2',
-    name: 'Dormant Client Re-engagement',
-    description: 'Nudges client if no login detected for 14 days.',
-    trigger: 'NO_LOGIN_DETECTED',
-    conditions: [{ field: 'days_inactive', operator: 'GREATER_THAN', value: 14 }],
-    actions: [{ type: 'SEND_EMAIL', config: { template: 'miss_you_email' } }, { type: 'CREATE_TASK', config: { title: 'Check inactive client' } }],
-    isActive: true,
-    stats: { runsLast30Days: 12, hoursSaved: 4 }
-  }
-];
-
-const MOCK_LOGS = [
-  { id: 1, time: '10:42 AM', action: 'Workflow Triggered', details: 'Score Improvement Celebration for Client #104', status: 'SUCCESS' },
-  { id: 2, time: '09:15 AM', action: 'Email Analyzed', details: 'Classified as "Inquiry" - High Priority', status: 'SUCCESS' },
-  { id: 3, time: 'Yesterday', action: 'Batch Scheduler', details: 'Scheduled 24 disputes for Equifax', status: 'SUCCESS' },
-  { id: 4, time: 'Yesterday', action: 'Document Upload', details: 'Failed to OCR "IMG_4421.jpg" - Low Resolution', status: 'FAILURE' },
-];
-
 const AutomationEngine: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'workflows' | 'email-ai' | 'scheduler' | 'doc-intelligence' | 'logs'>('workflows');
-  const [workflows, setWorkflows] = useState<AutomationWorkflow[]>(INITIAL_WORKFLOWS);
+  const [workflows, setWorkflows] = useState<AutomationWorkflow[]>([]);
   
   // Workflow Creator State
   const [isCreating, setIsCreating] = useState(false);
@@ -112,20 +82,11 @@ const AutomationEngine: React.FC = () => {
         const result = await classifyDocument(file.name);
         setDocClassification(result);
         
-        // If it's a bureau response, simulate parsing content
+        // Simulating parsing only if classified
         if (result.category === 'BUREAU_RESPONSE') {
           setIsParsingResponse(true);
-          // Mocking text content for the simulation since we don't actually upload
-          const mockContent = `
-            Equifax Information Services LLC
-            Date: 2024-02-15
-            
-            Results of your dispute:
-            1. Chase Bank - Account 1234 - DELETED
-            2. Midland Funding - Account 5678 - VERIFIED
-            3. Capital One - Account 9999 - UPDATED
-          `;
-          const responseResult = await parseBureauResponse(mockContent);
+          // In a real app, send actual file content
+          const responseResult = await parseBureauResponse("Sample content for demo parsing.");
           setBureauResponse(responseResult);
           setIsParsingResponse(false);
         }
@@ -143,6 +104,10 @@ const AutomationEngine: React.FC = () => {
     ));
   };
 
+  const deleteWorkflow = (id: string) => {
+    setWorkflows(workflows.filter(wf => wf.id !== id));
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -156,18 +121,6 @@ const AutomationEngine: React.FC = () => {
             Build intelligent workflows, automate responses, and schedule disputes efficiently.
           </p>
         </div>
-        
-        {/* Quick Stats */}
-        <div className="flex gap-4">
-          <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col items-center">
-             <span className="text-xs text-slate-400 uppercase font-bold">Hours Saved</span>
-             <span className="text-xl font-bold text-teal-600 dark:text-teal-400">142h</span>
-          </div>
-          <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col items-center">
-             <span className="text-xs text-slate-400 uppercase font-bold">Active Rules</span>
-             <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{workflows.filter(w => w.isActive).length}</span>
-          </div>
-        </div>
       </div>
 
       {/* Tabs */}
@@ -175,9 +128,7 @@ const AutomationEngine: React.FC = () => {
         {[
           { id: 'workflows', label: 'Workflow Builder', icon: Workflow },
           { id: 'email-ai', label: 'AI Email Assistant', icon: Mail },
-          { id: 'scheduler', label: 'Smart Scheduler', icon: CalendarClock },
           { id: 'doc-intelligence', label: 'Doc Intelligence', icon: FileSearch },
-          { id: 'logs', label: 'System Logs', icon: History },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -227,49 +178,52 @@ const AutomationEngine: React.FC = () => {
 
           {/* Workflow List */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {workflows.map((wf) => (
-              <div key={wf.id} className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border p-6 transition-all ${wf.isActive ? 'border-slate-200 dark:border-slate-700' : 'border-slate-100 dark:border-slate-800 opacity-75'}`}>
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h4 className="text-lg font-bold text-slate-800 dark:text-white">{wf.name}</h4>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{wf.description}</p>
-                  </div>
-                  <button onClick={() => toggleWorkflow(wf.id)} className={`transition-colors ${wf.isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-300 dark:text-slate-600'}`}>
-                    {wf.isActive ? <PlayCircle className="w-8 h-8" /> : <PauseCircle className="w-8 h-8" />}
-                  </button>
+            {workflows.length === 0 ? (
+                <div className="col-span-full text-center py-10 text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                    <Workflow className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                    <p>No active workflows. Generate one above to get started.</p>
                 </div>
-
-                {/* Visual Flow */}
-                <div className="bg-slate-50 dark:bg-slate-750 rounded-lg p-4 space-y-3 relative overflow-hidden border border-slate-100 dark:border-slate-700">
-                  <div className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300">
-                    <Zap className="w-4 h-4 mr-2 text-amber-500" />
-                    WHEN: {wf.trigger}
-                  </div>
-                  {wf.conditions.map((cond, i) => (
-                    <div key={i} className="flex items-center text-xs text-slate-500 dark:text-slate-400 ml-6">
-                      <ArrowRight className="w-3 h-3 mr-2" />
-                      IF {cond.field} is {cond.operator} {cond.value}
+            ) : (
+                workflows.map((wf) => (
+                <div key={wf.id} className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border p-6 transition-all ${wf.isActive ? 'border-slate-200 dark:border-slate-700' : 'border-slate-100 dark:border-slate-800 opacity-75'}`}>
+                    <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <h4 className="text-lg font-bold text-slate-800 dark:text-white">{wf.name}</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{wf.description}</p>
                     </div>
-                  ))}
-                  {wf.actions.map((act, i) => (
-                    <div key={i} className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 ml-6 pl-2 border-l-2 border-teal-200 dark:border-teal-800">
-                      <div className="w-2 h-2 rounded-full bg-teal-500 mr-2 -ml-[13px]" />
-                      THEN: {act.type}
+                    <button onClick={() => toggleWorkflow(wf.id)} className={`transition-colors ${wf.isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-300 dark:text-slate-600'}`}>
+                        {wf.isActive ? <PlayCircle className="w-8 h-8" /> : <PauseCircle className="w-8 h-8" />}
+                    </button>
                     </div>
-                  ))}
-                </div>
 
-                <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
-                  <div className="flex gap-3">
-                    <span>Runs: {wf.stats.runsLast30Days}</span>
-                    <span>Saved: {wf.stats.hoursSaved}h</span>
-                  </div>
-                  <button className="text-red-400 hover:text-red-600 flex items-center">
-                    <Trash2 className="w-3 h-3 mr-1" /> Delete
-                  </button>
+                    {/* Visual Flow */}
+                    <div className="bg-slate-50 dark:bg-slate-750 rounded-lg p-4 space-y-3 relative overflow-hidden border border-slate-100 dark:border-slate-700">
+                    <div className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <Zap className="w-4 h-4 mr-2 text-amber-500" />
+                        WHEN: {wf.trigger}
+                    </div>
+                    {wf.conditions.map((cond, i) => (
+                        <div key={i} className="flex items-center text-xs text-slate-500 dark:text-slate-400 ml-6">
+                        <ArrowRight className="w-3 h-3 mr-2" />
+                        IF {cond.field} is {cond.operator} {cond.value}
+                        </div>
+                    ))}
+                    {wf.actions.map((act, i) => (
+                        <div key={i} className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 ml-6 pl-2 border-l-2 border-teal-200 dark:border-teal-800">
+                        <div className="w-2 h-2 rounded-full bg-teal-500 mr-2 -ml-[13px]" />
+                        THEN: {act.type}
+                        </div>
+                    ))}
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-end text-xs text-slate-400">
+                    <button onClick={() => deleteWorkflow(wf.id)} className="text-red-400 hover:text-red-600 flex items-center">
+                        <Trash2 className="w-3 h-3 mr-1" /> Delete
+                    </button>
+                    </div>
                 </div>
-              </div>
-            ))}
+                ))
+            )}
           </div>
         </div>
       )}
@@ -331,10 +285,6 @@ const AutomationEngine: React.FC = () => {
                   <div className="p-4 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
                     {emailAnalysis.suggestedResponse}
                   </div>
-                  <div className="flex gap-2">
-                     <button className="text-xs text-blue-600 dark:text-blue-400 hover:underline">Copy to Clipboard</button>
-                     <button className="text-xs text-blue-600 dark:text-blue-400 hover:underline">Edit Draft</button>
-                  </div>
                 </div>
 
                 {/* Actions */}
@@ -351,45 +301,6 @@ const AutomationEngine: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* --- SCHEDULER TAB (Simple Visual) --- */}
-      {activeTab === 'scheduler' && (
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-8 text-center">
-          <CalendarClock className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-slate-800 dark:text-white">Smart Batch Scheduler</h3>
-          <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-lg mx-auto">
-            The system automatically batches disputes to avoid bureau red flags and optimize delivery times (avoiding weekends and holidays).
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 max-w-4xl mx-auto text-left">
-            {[0, 1, 2, 3, 4].map((day) => (
-              <div key={day} className={`border rounded-lg p-4 ${day === 2 ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20 dark:border-teal-700' : 'border-slate-200 dark:border-slate-700'}`}>
-                <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][day]}
-                </div>
-                {day === 2 ? (
-                  <div className="space-y-2">
-                     <div className="bg-white dark:bg-slate-750 p-2 rounded border border-teal-200 dark:border-teal-800 text-xs shadow-sm">
-                       <span className="font-bold text-teal-700 dark:text-teal-400">Batch #402</span>
-                       <div className="text-slate-500 dark:text-slate-400">24 Letters</div>
-                     </div>
-                     <div className="bg-white dark:bg-slate-750 p-2 rounded border border-teal-200 dark:border-teal-800 text-xs shadow-sm">
-                       <span className="font-bold text-teal-700 dark:text-teal-400">Batch #403</span>
-                       <div className="text-slate-500 dark:text-slate-400">12 Letters</div>
-                     </div>
-                  </div>
-                ) : day === 4 ? (
-                  <div className="text-xs text-slate-400 italic">No batches scheduled (Holiday)</div>
-                ) : (
-                  <div className="bg-slate-50 dark:bg-slate-700 p-2 rounded text-xs text-slate-400">
-                    Optimizing...
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         </div>
       )}
@@ -443,85 +354,9 @@ const AutomationEngine: React.FC = () => {
                   <p className="text-xs text-slate-400 uppercase font-bold mb-1">Detected Category</p>
                   <p className="text-lg font-bold text-slate-800 dark:text-white">{docClassification.category}</p>
                 </div>
-
-                {docClassification.category === 'BUREAU_RESPONSE' && (
-                  <div className="space-y-4">
-                     <h4 className="font-bold text-slate-700 dark:text-slate-300 flex items-center">
-                       <FileCheck className="w-4 h-4 mr-2 text-green-600 dark:text-green-400" />
-                       Automated Result Parsing
-                     </h4>
-                     
-                     {isParsingResponse ? (
-                       <div className="flex items-center text-sm text-slate-500">
-                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                         Extracting dispute outcomes...
-                       </div>
-                     ) : bureauResponse ? (
-                       <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-                         <div className="bg-slate-100 dark:bg-slate-750 px-4 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 flex justify-between">
-                            <span>{bureauResponse.bureau} Letter</span>
-                            <span>{bureauResponse.date}</span>
-                         </div>
-                         <div className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800">
-                            {bureauResponse.outcomes.map((item, i) => (
-                              <div key={i} className="p-3 flex justify-between items-center">
-                                <div>
-                                  <p className="text-sm font-medium text-slate-800 dark:text-white">{item.creditor}</p>
-                                  <p className="text-xs text-slate-500 dark:text-slate-400">#{item.accountNumber}</p>
-                                </div>
-                                <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                  item.outcome === 'DELETED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                                  item.outcome === 'VERIFIED' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                                  'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                }`}>
-                                  {item.outcome}
-                                </span>
-                              </div>
-                            ))}
-                         </div>
-                       </div>
-                     ) : null}
-                  </div>
-                )}
               </div>
             )}
           </div>
-        </div>
-      )}
-
-      {/* --- LOGS TAB --- */}
-      {activeTab === 'logs' && (
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-          <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-             <h3 className="font-bold text-slate-800 dark:text-white">Automation Execution Logs</h3>
-             <button className="text-sm text-indigo-600 dark:text-indigo-400 font-medium hover:underline">Export CSV</button>
-          </div>
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 dark:bg-slate-750 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700">
-              <tr>
-                <th className="px-6 py-3">Time</th>
-                <th className="px-6 py-3">Action</th>
-                <th className="px-6 py-3">Details</th>
-                <th className="px-6 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-              {MOCK_LOGS.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-750">
-                  <td className="px-6 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">{log.time}</td>
-                  <td className="px-6 py-3 font-medium text-slate-800 dark:text-white">{log.action}</td>
-                  <td className="px-6 py-3 text-slate-600 dark:text-slate-300">{log.details}</td>
-                  <td className="px-6 py-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      log.status === 'SUCCESS' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                    }`}>
-                      {log.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       )}
     </div>

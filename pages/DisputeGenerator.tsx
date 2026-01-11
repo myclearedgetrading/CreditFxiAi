@@ -5,12 +5,6 @@ import { Bureau, DisputeStrategy, NegativeItem } from '../types';
 import { generateDisputeLetter } from '../services/geminiService';
 import { Wand2, Send, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X } from 'lucide-react';
 
-// Mock negative items for the DIY user context
-const MY_NEGATIVE_ITEMS: NegativeItem[] = [
-  { id: '1', creditor: 'Chase Bank', type: 'Late Payment', accountNumber: '****4421', amount: 450, dateReported: '2023-05-15', bureau: [Bureau.EXPERIAN], status: 'Open' },
-  { id: '2', creditor: 'Midland Credit', type: 'Collection', accountNumber: '****9921', amount: 1250, dateReported: '2022-11-01', bureau: [Bureau.EQUIFAX, Bureau.TRANSUNION], status: 'Disputed' },
-];
-
 const DisputeGenerator: React.FC = () => {
   const { user } = useUser();
   const [selectedItemId, setSelectedItemId] = useState<string>('');
@@ -26,7 +20,8 @@ const DisputeGenerator: React.FC = () => {
   const [includeAddress, setIncludeAddress] = useState(true);
   const [additionalProof, setAdditionalProof] = useState<File | null>(null);
 
-  const selectedItem = MY_NEGATIVE_ITEMS.find(i => i.id === selectedItemId);
+  const myNegativeItems = user.negativeItems || [];
+  const selectedItem = myNegativeItems.find(i => i.id === selectedItemId);
 
   const handleGenerate = async () => {
     if (!selectedItem) return;
@@ -37,7 +32,7 @@ const DisputeGenerator: React.FC = () => {
 
     try {
       const letter = await generateDisputeLetter({
-        client: user as any, // Cast to any to fit types temporarily
+        client: user,
         item: selectedItem,
         strategy,
         targetBureau
@@ -57,7 +52,7 @@ const DisputeGenerator: React.FC = () => {
   };
 
   const calculateTotalPages = () => {
-    let pages = 1; // Letter itself
+    let pages = 1;
     if (includeID) pages++;
     if (includeSSN) pages++;
     if (includeAddress) pages++;
@@ -98,28 +93,35 @@ const DisputeGenerator: React.FC = () => {
             {/* Step 1 */}
             <div>
                 <h2 className="font-semibold text-white border-b border-slate-800 pb-2 mb-3">1. Select Item to Dispute</h2>
-                <div className="space-y-2">
-                {MY_NEGATIVE_ITEMS.map(item => (
-                    <div 
-                    key={item.id}
-                    onClick={() => setSelectedItemId(item.id)}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                        selectedItemId === item.id 
-                        ? 'border-orange-500 bg-orange-900/20' 
-                        : 'border-slate-800 hover:border-orange-500/50'
-                    }`}
-                    >
-                    <div className="flex justify-between items-center">
-                        <span className="font-bold text-sm text-white">{item.creditor}</span>
-                        {selectedItemId === item.id && <Check className="w-4 h-4 text-orange-500" />}
+                {myNegativeItems.length > 0 ? (
+                    <div className="space-y-2">
+                        {myNegativeItems.map(item => (
+                            <div 
+                            key={item.id}
+                            onClick={() => setSelectedItemId(item.id)}
+                            className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                                selectedItemId === item.id 
+                                ? 'border-orange-500 bg-orange-900/20' 
+                                : 'border-slate-800 hover:border-orange-500/50'
+                            }`}
+                            >
+                            <div className="flex justify-between items-center">
+                                <span className="font-bold text-sm text-white">{item.creditor}</span>
+                                {selectedItemId === item.id && <Check className="w-4 h-4 text-orange-500" />}
+                            </div>
+                            <div className="flex justify-between mt-1 text-xs text-slate-400">
+                                <span>{item.type}</span>
+                                <span>${item.amount}</span>
+                            </div>
+                            </div>
+                        ))}
                     </div>
-                    <div className="flex justify-between mt-1 text-xs text-slate-400">
-                        <span>{item.type}</span>
-                        <span>${item.amount}</span>
+                ) : (
+                    <div className="text-center py-4 bg-slate-900/50 rounded-lg border border-dashed border-slate-800">
+                        <p className="text-xs text-slate-500 mb-2">No negative items found.</p>
+                        <p className="text-[10px] text-slate-600">Import your credit report to begin.</p>
                     </div>
-                    </div>
-                ))}
-                </div>
+                )}
             </div>
 
             {/* Step 2 */}
@@ -264,7 +266,11 @@ const DisputeGenerator: React.FC = () => {
                  {!generatedLetter && !isLoading && !error && (
                     <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4 min-h-[400px]">
                        <FileCheck className="w-16 h-16 opacity-20" />
-                       <p className="text-center">Select an item to dispute on the left to begin.</p>
+                       <p className="text-center">
+                         {myNegativeItems.length > 0 
+                           ? "Select an item to dispute on the left to begin." 
+                           : "No negative items found on your profile."}
+                       </p>
                     </div>
                  )}
 
