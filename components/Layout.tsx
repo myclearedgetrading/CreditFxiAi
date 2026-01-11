@@ -45,25 +45,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden transition-colors duration-300">
+    <div className="flex h-screen bg-[#050505] text-white overflow-hidden transition-colors duration-300">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 z-40 bg-black bg-opacity-80 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 dark:bg-slate-950 text-white transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-64 bg-[#0A0A0A] border-r border-slate-900 text-white transform transition-transform duration-300 ease-in-out
         lg:translate-x-0 lg:static lg:inset-0
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="flex items-center justify-between h-16 px-6 bg-slate-950 dark:bg-black">
+        <div className="flex items-center justify-between h-20 px-6 bg-[#0A0A0A] border-b border-slate-900">
           <div className="flex items-center space-x-2">
-            <ShieldCheck className="w-8 h-8 text-indigo-500" />
-            <span className="text-xl font-bold tracking-tight">CreditFix DIY</span>
+            <ShieldCheck className="w-8 h-8 text-orange-500" />
+            <span className="text-xl font-bold tracking-tight text-white">CreditFix AI</span>
           </div>
           <button 
             className="lg:hidden text-slate-400 hover:text-white"
@@ -83,21 +83,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               key={item.path}
               to={item.path}
               onClick={() => setIsSidebarOpen(false)}
-              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 isActive(item.path)
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  ? 'bg-orange-600 text-white shadow-[0_0_15px_rgba(234,88,12,0.3)]'
+                  : 'text-slate-400 hover:bg-slate-900 hover:text-white'
               }`}
             >
-              <item.icon className="w-5 h-5 mr-3" />
+              <item.icon className={`w-5 h-5 mr-3 ${isActive(item.path) ? 'text-white' : 'text-slate-500 group-hover:text-white'}`} />
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-800 mb-safe lg:mb-0 space-y-2">
-          <div className="flex items-center px-4 py-3 mb-2 bg-slate-800 rounded-lg">
-             <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white mr-3">
+        <div className="p-4 border-t border-slate-900 mb-safe lg:mb-0 space-y-2">
+          <div className="flex items-center px-4 py-3 mb-2 bg-slate-900 rounded-xl border border-slate-800">
+             <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center font-bold text-white mr-3">
                {user.firstName.charAt(0)}
              </div>
              <div className="overflow-hidden">
@@ -108,13 +108,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           <button 
             onClick={toggleTheme}
-            className="flex items-center w-full px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="flex items-center w-full px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-900 rounded-lg transition-colors"
           >
             {theme === 'dark' ? <Sun className="w-5 h-5 mr-3" /> : <Moon className="w-5 h-5 mr-3" />}
             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           </button>
           
-          <Link to="/" className="flex items-center w-full px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+          <Link to="/" className="flex items-center w-full px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-900 rounded-lg transition-colors">
             <LogOut className="w-5 h-5 mr-3" />
             Sign Out
           </Link>
@@ -122,23 +122,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </aside>
 
       {/* Main Content */}
-      <div className="flex flex-col flex-1 overflow-hidden w-full">
+      <div className="flex flex-col flex-1 overflow-hidden w-full bg-[#050505]">
         {/* Header */}
-        <header className="flex items-center justify-between h-16 px-6 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0 transition-colors">
+        <header className="flex items-center justify-between h-20 px-6 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-slate-900 shadow-sm flex-shrink-0 transition-colors z-20">
           <div className="flex items-center gap-4">
             <button 
-              className="p-1 text-slate-500 dark:text-slate-400 rounded-md lg:hidden hover:bg-slate-100 dark:hover:bg-slate-700"
+              className="p-1 text-slate-400 rounded-md lg:hidden hover:bg-slate-800"
               onClick={() => setIsSidebarOpen(true)}
             >
               <Menu size={24} />
             </button>
-            <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100 lg:hidden">
-              {navItems.find(i => i.path === location.pathname)?.label || 'CreditFix DIY'}
+            <h1 className="text-lg font-semibold text-white lg:hidden">
+              {navItems.find(i => i.path === location.pathname)?.label || 'CreditFix AI'}
             </h1>
           </div>
           
           <div className="flex items-center ml-auto space-x-4">
-             <button className="hidden sm:flex items-center px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-bold dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+             <button className="hidden sm:flex items-center px-3 py-1.5 bg-orange-900/20 text-orange-400 border border-orange-900/30 rounded-full text-xs font-bold">
                <Briefcase className="w-3 h-3 mr-1.5" />
                Business Mode: Active
              </button>
@@ -146,7 +146,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-slate-900 p-4 lg:p-6 pb-20 lg:pb-6 transition-colors">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#050505] p-4 lg:p-6 pb-20 lg:pb-6 transition-colors">
           <div className="max-w-7xl mx-auto h-full">
             {children}
           </div>

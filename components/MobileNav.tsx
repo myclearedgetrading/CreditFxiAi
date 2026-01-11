@@ -12,12 +12,12 @@ const MobileNav: React.FC<MobileNavProps> = ({ onMenuClick }) => {
   const handleClick = () => vibrate(HAPTIC.LIGHT);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 lg:hidden pb-safe z-50 transition-colors">
+    <div className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A] border-t border-slate-800 lg:hidden pb-safe z-50 transition-colors">
       <div className="flex justify-around items-center h-16">
         <NavLink 
           to="/" 
           onClick={handleClick}
-          className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'}`}
+          className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-orange-500' : 'text-slate-500 hover:text-slate-300'}`}
         >
           <LayoutDashboard className="w-6 h-6" />
           <span className="text-[10px] font-medium">Home</span>
@@ -26,7 +26,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ onMenuClick }) => {
         <NavLink 
           to="/marketplace" 
           onClick={handleClick}
-          className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'}`}
+          className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-orange-500' : 'text-slate-500 hover:text-slate-300'}`}
         >
           <ShoppingBag className="w-6 h-6" />
           <span className="text-[10px] font-medium">Offers</span>
@@ -36,7 +36,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ onMenuClick }) => {
         <NavLink 
           to="/analysis" 
           onClick={handleClick}
-          className="relative -top-6 bg-indigo-600 dark:bg-indigo-500 rounded-full p-4 shadow-lg text-white transform transition-transform active:scale-95 border-4 border-slate-50 dark:border-slate-900"
+          className="relative -top-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full p-4 shadow-[0_0_15px_rgba(249,115,22,0.4)] text-white transform transition-transform active:scale-95 border-4 border-[#050505]"
         >
           <ScanLine className="w-6 h-6" />
         </NavLink>
@@ -44,7 +44,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ onMenuClick }) => {
         <NavLink 
           to="/disputes" 
           onClick={handleClick}
-          className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'}`}
+          className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-orange-500' : 'text-slate-500 hover:text-slate-300'}`}
         >
           <MessageCircle className="w-6 h-6" />
           <span className="text-[10px] font-medium">Action</span>
@@ -52,7 +52,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ onMenuClick }) => {
 
         <button 
           onClick={() => { handleClick(); onMenuClick(); }}
-          className="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+          className="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-500 hover:text-slate-300"
         >
           <Menu className="w-6 h-6" />
           <span className="text-[10px] font-medium">Menu</span>

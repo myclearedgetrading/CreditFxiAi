@@ -22,7 +22,7 @@ const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: numb
     <div className="flex flex-col items-center p-4">
       <div className="relative w-28 h-28 lg:w-32 lg:h-32 flex items-center justify-center mb-3">
         <svg className="absolute w-full h-full -rotate-90">
-          <circle cx="50%" cy="50%" r="45%" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100 dark:text-slate-700" />
+          <circle cx="50%" cy="50%" r="45%" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-800" />
           <circle 
             cx="50%" cy="50%" r="45%"
             stroke="currentColor" strokeWidth="8" fill="transparent" 
@@ -33,10 +33,10 @@ const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: numb
         </svg>
         <div className="text-center">
           <div className={`text-2xl lg:text-3xl font-bold ${color}`}>{score || '-'}</div>
-          <div className="text-[10px] lg:text-xs text-slate-400 uppercase font-bold">{bureau}</div>
+          <div className="text-[10px] lg:text-xs text-slate-500 uppercase font-bold">{bureau}</div>
         </div>
       </div>
-      <div className={`text-sm font-medium ${diff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+      <div className={`text-sm font-medium ${diff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
         {score ? `${diff > 0 ? '+' : ''}${diff} pts` : 'No Data'}
       </div>
     </div>
@@ -44,23 +44,23 @@ const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: numb
 };
 
 const FundingReadinessCard = ({ percentage }: { percentage: number }) => (
-  <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-xl p-6 text-white relative overflow-hidden">
-    <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+  <div className="bg-gradient-to-br from-orange-900/80 to-slate-900 rounded-xl p-6 text-white relative overflow-hidden border border-orange-900/30">
+    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500 opacity-5 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
     <div className="relative z-10 flex flex-col h-full justify-between">
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <Briefcase className="w-5 h-5 text-indigo-400" />
-          <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">Funding Readiness</span>
+          <Briefcase className="w-5 h-5 text-orange-400" />
+          <span className="text-xs font-bold uppercase tracking-wider text-orange-300">Funding Readiness</span>
         </div>
         <h3 className="text-2xl font-bold mb-1">{percentage}% Compliant</h3>
-        <p className="text-sm text-indigo-200">Your business is almost ready for Tier 2 Funding.</p>
+        <p className="text-sm text-slate-400">Your business is almost ready for Tier 2 Funding.</p>
       </div>
       
       <div className="mt-6">
-        <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
-          <div className="bg-indigo-400 h-2 rounded-full transition-all duration-1000" style={{ width: `${percentage}%` }}></div>
+        <div className="w-full bg-slate-800 rounded-full h-2 mb-2">
+          <div className="bg-orange-500 h-2 rounded-full transition-all duration-1000" style={{ width: `${percentage}%` }}></div>
         </div>
-        <div className="flex justify-between text-xs text-slate-400">
+        <div className="flex justify-between text-xs text-slate-500">
           <span>Tier 1 (Complete)</span>
           <span>Target: Tier 2</span>
         </div>
@@ -72,22 +72,22 @@ const FundingReadinessCard = ({ percentage }: { percentage: number }) => (
 const ActionCard = ({ title, desc, icon: Icon, onClick, cta, step }: any) => (
   <div 
     onClick={onClick}
-    className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-500 transition-all cursor-pointer group relative overflow-hidden"
+    className="bg-[#0A0A0A] p-5 rounded-xl border border-slate-800 shadow-sm hover:shadow-md hover:border-orange-500/50 transition-all cursor-pointer group relative overflow-hidden"
   >
     {step && (
-      <div className="absolute top-0 right-0 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+      <div className="absolute top-0 right-0 bg-slate-900 text-slate-500 text-[10px] font-bold px-2 py-1 rounded-bl-lg border-l border-b border-slate-800">
         {step}
       </div>
     )}
     <div className="flex justify-between items-start mb-3">
-      <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg group-hover:bg-indigo-600 transition-colors">
-        <Icon className="w-6 h-6 text-indigo-600 dark:text-indigo-400 group-hover:text-white" />
+      <div className="p-2 bg-slate-900 rounded-lg group-hover:bg-orange-600 transition-colors border border-slate-800 group-hover:border-orange-500">
+        <Icon className="w-6 h-6 text-orange-500 group-hover:text-white" />
       </div>
-      <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+      <ArrowRight className="w-5 h-5 text-slate-600 group-hover:text-orange-500 transition-colors" />
     </div>
-    <h4 className="font-bold text-slate-800 dark:text-white mb-1">{title}</h4>
-    <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{desc}</p>
-    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">{cta}</span>
+    <h4 className="font-bold text-white mb-1">{title}</h4>
+    <p className="text-xs text-slate-400 mb-3">{desc}</p>
+    <span className="text-xs font-bold text-orange-500 uppercase tracking-wide">{cta}</span>
   </div>
 );
 
@@ -108,16 +108,16 @@ const Dashboard: React.FC = () => {
       {/* Welcome Section */}
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+          <h1 className="text-2xl font-bold text-white">
             Hello, {user.firstName}!
           </h1>
-          <p className="text-slate-500 dark:text-slate-400">
+          <p className="text-slate-400">
             Follow the steps below to repair your credit.
           </p>
         </div>
         <button 
           onClick={() => navigate('/analysis')}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors text-sm flex items-center"
+          className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium shadow-lg shadow-orange-900/20 transition-colors text-sm flex items-center"
         >
           <CreditCard className="w-4 h-4 mr-2" />
           Update Report
@@ -128,19 +128,19 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Personal Credit Scores */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-4">
+        <div className="lg:col-span-2 bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-800 p-4">
           <div className="flex items-center justify-between mb-2 px-2">
-            <h3 className="font-bold text-slate-800 dark:text-white flex items-center">
+            <h3 className="font-bold text-white flex items-center">
               <ShieldCheck className="w-5 h-5 mr-2 text-green-500" />
               Personal Credit Profile
             </h3>
-            <span className="text-xs text-slate-400">Last updated: Today</span>
+            <span className="text-xs text-slate-500">Last updated: Today</span>
           </div>
           <div className="flex flex-col md:flex-row justify-around items-center">
             <ScoreCircle bureau="Equifax" score={user.creditScore.equifax} prevScore={630} />
-            <div className="hidden md:block w-px h-24 bg-slate-100 dark:bg-slate-700"></div>
+            <div className="hidden md:block w-px h-24 bg-slate-800"></div>
             <ScoreCircle bureau="Experian" score={user.creditScore.experian} prevScore={635} />
-            <div className="hidden md:block w-px h-24 bg-slate-100 dark:bg-slate-700"></div>
+            <div className="hidden md:block w-px h-24 bg-slate-800"></div>
             <ScoreCircle bureau="TransUnion" score={user.creditScore.transunion} prevScore={640} />
           </div>
         </div>
@@ -153,7 +153,7 @@ const Dashboard: React.FC = () => {
 
       {/* Quick Actions / Journey Path */}
       <div>
-        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Your Repair Journey</h3>
+        <h3 className="text-lg font-bold text-white mb-4">Your Repair Journey</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <ActionCard 
             step="STEP 1"
@@ -194,10 +194,10 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Score History Chart */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <div className="lg:col-span-2 bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-800">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-slate-800 dark:text-white">Credit Score Growth</h3>
-            <select className="text-xs border-slate-200 dark:border-slate-600 rounded-lg p-1 bg-white dark:bg-slate-700 dark:text-white">
+            <h3 className="font-bold text-white">Credit Score Growth</h3>
+            <select className="text-xs border-slate-700 rounded-lg p-1 bg-slate-900 text-white">
               <option>Last 6 Months</option>
             </select>
           </div>
@@ -206,54 +206,54 @@ const Dashboard: React.FC = () => {
               <AreaChart data={scoreHistory}>
                 <defs>
                   <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-700" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
-                <YAxis domain={['dataMin - 20', 'dataMax + 20']} axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
-                <RechartsTooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', color: '#fff' }} />
-                <Area type="monotone" dataKey="score" stroke="#4f46e5" fillOpacity={1} fill="url(#colorScore)" strokeWidth={3} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
+                <YAxis domain={['dataMin - 20', 'dataMax + 20']} axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
+                <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff', borderRadius: '8px' }} />
+                <Area type="monotone" dataKey="score" stroke="#f97316" fillOpacity={1} fill="url(#colorScore)" strokeWidth={3} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Priority Tasks */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col">
-          <div className="p-5 border-b border-slate-100 dark:border-slate-700">
-            <h3 className="font-bold text-slate-800 dark:text-white flex items-center">
+        <div className="lg:col-span-1 bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-800 flex flex-col">
+          <div className="p-5 border-b border-slate-800">
+            <h3 className="font-bold text-white flex items-center">
               <AlertTriangle className="w-5 h-5 mr-2 text-orange-500" />
               Action Required
             </h3>
           </div>
           <div className="p-4 space-y-3 flex-1 overflow-y-auto">
-            <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-750 rounded-lg border border-slate-100 dark:border-slate-700">
+            <div className="flex items-start gap-3 p-3 bg-slate-900/50 rounded-lg border border-slate-800 hover:border-orange-500/30 transition-colors">
               <div className="mt-1">
                 <Lock className="w-4 h-4 text-red-500" />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800 dark:text-white">Unfreeze Experian</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Required before applying for Chase Ink.</p>
+                <p className="text-sm font-bold text-white">Unfreeze Experian</p>
+                <p className="text-xs text-slate-400">Required before applying for Chase Ink.</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-700">
+            <div className="flex items-start gap-3 p-3 bg-slate-900/50 rounded-lg border border-slate-800 hover:border-orange-500/30 transition-colors">
               <div className="mt-1">
-                <Building2 className="w-4 h-4 text-indigo-500" />
+                <Building2 className="w-4 h-4 text-orange-500" />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800 dark:text-white">Get DUNS Number</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Step 2 of Business Foundation.</p>
+                <p className="text-sm font-bold text-white">Get DUNS Number</p>
+                <p className="text-xs text-slate-400">Step 2 of Business Foundation.</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-700">
+            <div className="flex items-start gap-3 p-3 bg-slate-900/50 rounded-lg border border-slate-800 hover:border-orange-500/30 transition-colors">
               <div className="mt-1">
                 <CheckCircle2 className="w-4 h-4 text-green-500" />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800 dark:text-white">Dispute Letter Ready</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Review and print for Equifax.</p>
+                <p className="text-sm font-bold text-white">Dispute Letter Ready</p>
+                <p className="text-xs text-slate-400">Review and print for Equifax.</p>
               </div>
             </div>
           </div>

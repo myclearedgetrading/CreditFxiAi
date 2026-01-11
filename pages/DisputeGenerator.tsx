@@ -81,23 +81,23 @@ const DisputeGenerator: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-3">
-        <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-            <Wand2 className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+        <div className="p-3 bg-orange-900/20 rounded-xl">
+            <Wand2 className="w-6 h-6 text-orange-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">DIY Dispute Generator</h1>
-          <p className="text-slate-500 dark:text-slate-400">Select an item from your report and let AI write the legal challenge.</p>
+          <h1 className="text-2xl font-bold text-white">DIY Dispute Generator</h1>
+          <p className="text-slate-400">Select an item from your report and let AI write the legal challenge.</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Configuration Panel */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-5 transition-colors">
+          <div className="bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-800 space-y-5 transition-colors">
             
             {/* Step 1 */}
             <div>
-                <h2 className="font-semibold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2 mb-3">1. Select Item to Dispute</h2>
+                <h2 className="font-semibold text-white border-b border-slate-800 pb-2 mb-3">1. Select Item to Dispute</h2>
                 <div className="space-y-2">
                 {MY_NEGATIVE_ITEMS.map(item => (
                     <div 
@@ -105,15 +105,15 @@ const DisputeGenerator: React.FC = () => {
                     onClick={() => setSelectedItemId(item.id)}
                     className={`p-3 rounded-lg border cursor-pointer transition-all ${
                         selectedItemId === item.id 
-                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500' 
-                        : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300'
+                        ? 'border-orange-500 bg-orange-900/20' 
+                        : 'border-slate-800 hover:border-orange-500/50'
                     }`}
                     >
                     <div className="flex justify-between items-center">
-                        <span className="font-bold text-sm text-slate-800 dark:text-white">{item.creditor}</span>
-                        {selectedItemId === item.id && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+                        <span className="font-bold text-sm text-white">{item.creditor}</span>
+                        {selectedItemId === item.id && <Check className="w-4 h-4 text-orange-500" />}
                     </div>
-                    <div className="flex justify-between mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    <div className="flex justify-between mt-1 text-xs text-slate-400">
                         <span>{item.type}</span>
                         <span>${item.amount}</span>
                     </div>
@@ -124,9 +124,9 @@ const DisputeGenerator: React.FC = () => {
 
             {/* Step 2 */}
             <div>
-              <label className="block text-sm font-semibold text-slate-800 dark:text-white mb-2">2. Choose Strategy</label>
+              <label className="block text-sm font-semibold text-white mb-2">2. Choose Strategy</label>
               <select 
-                className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white dark:bg-slate-700 dark:text-white text-sm"
+                className="w-full p-2.5 border border-slate-800 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none bg-slate-900 text-white text-sm"
                 value={strategy}
                 onChange={(e) => setStrategy(e.target.value as DisputeStrategy)}
               >
@@ -138,7 +138,7 @@ const DisputeGenerator: React.FC = () => {
 
              {/* Step 3 */}
              <div>
-              <label className="block text-sm font-semibold text-slate-800 dark:text-white mb-2">3. Target Bureau</label>
+              <label className="block text-sm font-semibold text-white mb-2">3. Target Bureau</label>
               <div className="flex space-x-2">
                 {Object.values(Bureau).map((b) => (
                   <button
@@ -146,8 +146,8 @@ const DisputeGenerator: React.FC = () => {
                     onClick={() => setTargetBureau(b)}
                     className={`flex-1 py-2 text-xs font-medium rounded-lg border transition-colors ${
                       targetBureau === b 
-                        ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-300' 
-                        : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600'
+                        ? 'bg-orange-900/30 border-orange-700 text-orange-300' 
+                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
                     }`}
                   >
                     {b}
@@ -158,40 +158,40 @@ const DisputeGenerator: React.FC = () => {
 
             {/* Step 4: Attachments */}
             <div>
-                <label className="block text-sm font-semibold text-slate-800 dark:text-white mb-2 flex justify-between">
+                <label className="block text-sm font-semibold text-white mb-2 flex justify-between">
                     4. Attach Evidence
                     <span className="text-xs text-slate-400 font-normal">Required for identification</span>
                 </label>
-                <div className="space-y-2 bg-slate-50 dark:bg-slate-750 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
-                    <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-                        <input type="checkbox" checked={includeID} onChange={e => setIncludeID(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500" />
+                <div className="space-y-2 bg-slate-900 p-3 rounded-lg border border-slate-800">
+                    <label className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer">
+                        <input type="checkbox" checked={includeID} onChange={e => setIncludeID(e.target.checked)} className="rounded text-orange-600 focus:ring-orange-500" />
                         <span className="flex-1">Government Photo ID</span>
-                        {includeID && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Attached</span>}
+                        {includeID && <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded">Attached</span>}
                     </label>
-                    <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-                        <input type="checkbox" checked={includeSSN} onChange={e => setIncludeSSN(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500" />
+                    <label className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer">
+                        <input type="checkbox" checked={includeSSN} onChange={e => setIncludeSSN(e.target.checked)} className="rounded text-orange-600 focus:ring-orange-500" />
                         <span className="flex-1">Social Security Card</span>
-                        {includeSSN && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Attached</span>}
+                        {includeSSN && <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded">Attached</span>}
                     </label>
-                    <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-                        <input type="checkbox" checked={includeAddress} onChange={e => setIncludeAddress(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500" />
+                    <label className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer">
+                        <input type="checkbox" checked={includeAddress} onChange={e => setIncludeAddress(e.target.checked)} className="rounded text-orange-600 focus:ring-orange-500" />
                         <span className="flex-1">Proof of Address</span>
-                        {includeAddress && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Attached</span>}
+                        {includeAddress && <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded">Attached</span>}
                     </label>
                     
-                    <div className="pt-2 border-t border-slate-200 dark:border-slate-600 mt-2">
+                    <div className="pt-2 border-t border-slate-800 mt-2">
                         {additionalProof ? (
-                            <div className="flex items-center justify-between bg-white dark:bg-slate-700 p-2 rounded border border-slate-200 dark:border-slate-600">
+                            <div className="flex items-center justify-between bg-slate-800 p-2 rounded border border-slate-700">
                                 <div className="flex items-center gap-2 overflow-hidden">
                                     <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                    <span className="text-xs text-slate-600 dark:text-slate-300 truncate">{additionalProof.name}</span>
+                                    <span className="text-xs text-slate-300 truncate">{additionalProof.name}</span>
                                 </div>
                                 <button onClick={() => setAdditionalProof(null)} className="text-slate-400 hover:text-red-500">
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
                         ) : (
-                            <label className="flex items-center justify-center gap-2 w-full py-2 border border-dashed border-slate-300 dark:border-slate-500 rounded text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors">
+                            <label className="flex items-center justify-center gap-2 w-full py-2 border border-dashed border-slate-700 rounded text-xs text-slate-400 hover:bg-slate-800 cursor-pointer transition-colors">
                                 <Paperclip className="w-3 h-3" /> Add Additional Proof
                                 <input type="file" className="hidden" onChange={handleFileUpload} />
                             </label>
@@ -203,7 +203,7 @@ const DisputeGenerator: React.FC = () => {
             <button 
               onClick={handleGenerate}
               disabled={!selectedItem || isLoading}
-              className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
                 <>
@@ -222,12 +222,12 @@ const DisputeGenerator: React.FC = () => {
 
         {/* Output Panel */}
         <div className="lg:col-span-2">
-           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 h-full flex flex-col transition-colors">
-              <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-750 rounded-t-xl">
+           <div className="bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-800 h-full flex flex-col transition-colors">
+              <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 rounded-t-xl">
                  <div className="flex items-center gap-2">
-                    <h2 className="font-semibold text-slate-700 dark:text-slate-200">Letter Preview</h2>
+                    <h2 className="font-semibold text-slate-200">Letter Preview</h2>
                     {generatedLetter && (
-                        <span className="text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">
+                        <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">
                             {calculateTotalPages()} Pages Total
                         </span>
                     )}
@@ -237,7 +237,7 @@ const DisputeGenerator: React.FC = () => {
                     <div className="flex space-x-2">
                        <button 
                          onClick={handleDownload}
-                         className="flex items-center px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-md transition-colors"
+                         className="flex items-center px-3 py-1.5 text-sm text-slate-300 hover:text-orange-400 hover:bg-slate-800 rounded-md transition-colors"
                        >
                           <Download className="w-4 h-4 mr-2" />
                           Download PDF
@@ -255,14 +255,14 @@ const DisputeGenerator: React.FC = () => {
               
               <div className="flex-1 p-6 relative">
                  {error && (
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 p-4 rounded-lg flex items-center">
+                    <div className="bg-red-900/20 border border-red-800 text-red-400 p-4 rounded-lg flex items-center">
                        <AlertCircle className="w-5 h-5 mr-3" />
                        {error}
                     </div>
                  )}
 
                  {!generatedLetter && !isLoading && !error && (
-                    <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4 min-h-[400px]">
+                    <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4 min-h-[400px]">
                        <FileCheck className="w-16 h-16 opacity-20" />
                        <p className="text-center">Select an item to dispute on the left to begin.</p>
                     </div>
@@ -270,14 +270,14 @@ const DisputeGenerator: React.FC = () => {
 
                  {isLoading && (
                     <div className="h-full flex flex-col items-center justify-center space-y-4 min-h-[400px]">
-                      <Loader2 className="w-10 h-10 text-indigo-600 dark:text-indigo-400 animate-spin" />
-                      <p className="text-slate-600 dark:text-slate-300 animate-pulse">Drafting legal challenge...</p>
+                      <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
+                      <p className="text-slate-300 animate-pulse">Drafting legal challenge...</p>
                     </div>
                  )}
 
                  {generatedLetter && (
                     <textarea 
-                      className="w-full h-full min-h-[500px] p-4 font-mono text-sm leading-relaxed text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 focus:outline-none resize-none"
+                      className="w-full h-full min-h-[500px] p-4 font-mono text-sm leading-relaxed text-slate-300 bg-[#0A0A0A] focus:outline-none resize-none"
                       value={generatedLetter}
                       onChange={(e) => setGeneratedLetter(e.target.value)}
                     />
