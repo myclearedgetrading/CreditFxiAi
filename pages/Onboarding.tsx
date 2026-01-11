@@ -56,7 +56,7 @@ const Onboarding: React.FC = () => {
 
   const startAnalysis = (mode: 'REAL' | 'DEMO') => {
     setDataMode(mode);
-    setStep(3);
+    setStep(4);
     setIsAnalyzing(true);
     
     // Simulate complex AI analysis
