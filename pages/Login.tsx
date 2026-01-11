@@ -48,7 +48,7 @@ const Login: React.FC = () => {
                 amount: 450,
                 dateReported: '2023-10-15',
                 bureau: ['Equifax' as any],
-                status: 'Open'
+                status: 'Open' as const
             }
         ]
       };
