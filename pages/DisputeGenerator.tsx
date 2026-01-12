@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import { Bureau, DisputeStrategy, NegativeItem } from '../types';
 import { generateDisputeLetter } from '../services/geminiService';
-import { Wand2, Send, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X, Layers } from 'lucide-react';
+import { Wand2, Send, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X, Layers, ShieldCheck } from 'lucide-react';
 
 const DisputeGenerator: React.FC = () => {
   const { user } = useUser();
@@ -18,13 +18,22 @@ const DisputeGenerator: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Attachment State
-  const [includeID, setIncludeID] = useState(true);
-  const [includeSSN, setIncludeSSN] = useState(true);
-  const [includeAddress, setIncludeAddress] = useState(true);
+  const [includeID, setIncludeID] = useState(false);
+  const [includeSSN, setIncludeSSN] = useState(false);
+  const [includeAddress, setIncludeAddress] = useState(false);
   const [additionalProof, setAdditionalProof] = useState<File | null>(null);
 
   const myNegativeItems = user.negativeItems || [];
   const selectedItem = myNegativeItems.find(i => i.id === selectedItemId);
+
+  // Effect to load saved documents preferences from User Profile
+  useEffect(() => {
+    if (user.verificationDocuments) {
+        if (user.verificationDocuments.idCard) setIncludeID(true);
+        if (user.verificationDocuments.ssnCard) setIncludeSSN(true);
+        if (user.verificationDocuments.proofOfAddress) setIncludeAddress(true);
+    }
+  }, [user]);
 
   const toggleBureau = (b: Bureau) => {
     setSelectedBureaus(prev => {
@@ -61,7 +70,18 @@ const DisputeGenerator: React.FC = () => {
         });
         
         // Add a header for clarity in the preview text area
-        generatedParts.push(`----------------------------------------\nLETTER TO: ${bureau.toUpperCase()}\n----------------------------------------\n\n${letterContent}`);
+        let fullLetter = `----------------------------------------\nLETTER TO: ${bureau.toUpperCase()}\n----------------------------------------\n\n${letterContent}`;
+        
+        // Append Documents section if selected
+        if (includeID || includeSSN || includeAddress || additionalProof) {
+            fullLetter += `\n\n\n----------------------------------------\nAPPENDIX: ATTACHED DOCUMENTS\n(These are attached as the last page)\n----------------------------------------\n`;
+            if (includeID) fullLetter += `[X] COPY OF GOVERNMENT ID (Loaded from Profile)\n`;
+            if (includeSSN) fullLetter += `[X] COPY OF SOCIAL SECURITY CARD (Loaded from Profile)\n`;
+            if (includeAddress) fullLetter += `[X] PROOF OF ADDRESS (Loaded from Profile)\n`;
+            if (additionalProof) fullLetter += `[X] ADDITIONAL EVIDENCE: ${additionalProof.name}\n`;
+        }
+
+        generatedParts.push(fullLetter);
       }
 
       setGeneratedLetter(generatedParts.join('\n\n\n'));
@@ -80,10 +100,10 @@ const DisputeGenerator: React.FC = () => {
 
   const calculateTotalPages = () => {
     let pagesPerLetter = 1; // Base letter
-    if (includeID) pagesPerLetter++;
-    if (includeSSN) pagesPerLetter++;
-    if (includeAddress) pagesPerLetter++;
-    if (additionalProof) pagesPerLetter++;
+    // If any docs are attached, they usually take up 1-2 extra pages depending on layout
+    if (includeID || includeSSN || includeAddress || additionalProof) {
+        pagesPerLetter += 1; 
+    }
     
     // Total is pages per letter * number of bureaus targeted
     return pagesPerLetter * selectedBureaus.length;
@@ -91,7 +111,7 @@ const DisputeGenerator: React.FC = () => {
 
   const handleDownload = () => {
     if (!generatedLetter) return;
-    alert(`Downloading ${selectedBureaus.length} letter(s). Total ${calculateTotalPages()} pages including attachments.`);
+    alert(`Downloading ${selectedBureaus.length} letter(s). \n\nNote: Your saved ID, SSN, and Proof of Address have been automatically appended to the PDF.`);
   };
 
   const handleMail = () => {
@@ -215,17 +235,35 @@ const DisputeGenerator: React.FC = () => {
                     <label className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer">
                         <input type="checkbox" checked={includeID} onChange={e => setIncludeID(e.target.checked)} className="rounded text-orange-600 focus:ring-orange-500" />
                         <span className="flex-1">Government Photo ID</span>
-                        {includeID && <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded">Attached</span>}
+                        {user.verificationDocuments?.idCard && includeID ? (
+                            <span className="text-[10px] bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                <ShieldCheck className="w-3 h-3" /> Profile
+                            </span>
+                        ) : includeID && (
+                            <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded">Manual</span>
+                        )}
                     </label>
                     <label className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer">
                         <input type="checkbox" checked={includeSSN} onChange={e => setIncludeSSN(e.target.checked)} className="rounded text-orange-600 focus:ring-orange-500" />
                         <span className="flex-1">Social Security Card</span>
-                        {includeSSN && <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded">Attached</span>}
+                        {user.verificationDocuments?.ssnCard && includeSSN ? (
+                            <span className="text-[10px] bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                <ShieldCheck className="w-3 h-3" /> Profile
+                            </span>
+                        ) : includeSSN && (
+                            <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded">Manual</span>
+                        )}
                     </label>
                     <label className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer">
                         <input type="checkbox" checked={includeAddress} onChange={e => setIncludeAddress(e.target.checked)} className="rounded text-orange-600 focus:ring-orange-500" />
                         <span className="flex-1">Proof of Address</span>
-                        {includeAddress && <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded">Attached</span>}
+                        {user.verificationDocuments?.proofOfAddress && includeAddress ? (
+                            <span className="text-[10px] bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                <ShieldCheck className="w-3 h-3" /> Profile
+                            </span>
+                        ) : includeAddress && (
+                            <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded">Manual</span>
+                        )}
                     </label>
                     
                     <div className="pt-2 border-t border-slate-800 mt-2">

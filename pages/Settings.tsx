@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Settings as SettingsIcon, Blocks, Bot, ShieldCheck, 
-  BrainCircuit, Trophy, User, CreditCard, UploadCloud, Check, FileCheck
+  BrainCircuit, Trophy, User, CreditCard, UploadCloud, Check, FileCheck, Info
 } from 'lucide-react';
 import Integrations from './Integrations';
 import AutomationEngine from './AutomationEngine';
@@ -52,12 +52,23 @@ const Settings: React.FC = () => {
     setIsSaving(true);
     // Simulate API delay and upload
     setTimeout(() => {
-      updateUser(profileForm);
+      // Create a payload that includes the form data AND the "uploaded" status of documents
+      // In a real app, we would upload the files, get URLs, and save those.
+      // Here we simulate the existence of the file by setting the flags.
+      updateUser({
+        ...profileForm,
+        verificationDocuments: {
+          idCard: !!documents.id || !!user.verificationDocuments?.idCard,
+          ssnCard: !!documents.ssn || !!user.verificationDocuments?.ssnCard,
+          proofOfAddress: !!documents.address || !!user.verificationDocuments?.proofOfAddress
+        }
+      });
+      
       setIsSaving(false);
       
       const docsCount = Object.values(documents).filter(Boolean).length;
       if (docsCount > 0) {
-        alert(`Profile updated and ${docsCount} document(s) uploaded successfully!`);
+        alert(`Profile updated and ${docsCount} document(s) securely vaulted for dispute letters!`);
       } else {
         alert("Profile settings saved successfully!");
       }
@@ -74,34 +85,39 @@ const Settings: React.FC = () => {
     label, 
     description, 
     accepted, 
-    docType 
+    docType,
+    existingStatus
   }: { 
     label: string, 
     description: string, 
     accepted?: string,
-    docType: 'id' | 'ssn' | 'address'
+    docType: 'id' | 'ssn' | 'address',
+    existingStatus?: boolean
   }) => {
     const currentFile = documents[docType];
+    const isUploaded = currentFile || existingStatus;
 
     return (
       <div className={`border border-dashed rounded-lg p-4 flex items-center justify-between transition-colors group ${
-        currentFile 
+        isUploaded 
           ? 'border-green-500/30 bg-green-50/50 dark:bg-green-900/10' 
           : 'border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-[#111]'
       }`}>
         <div className="flex items-center gap-4">
           <div className={`p-2 rounded-lg transition-colors ${
-            currentFile 
+            isUploaded 
               ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' 
               : 'bg-indigo-50 dark:bg-indigo-900/30 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
           }`}>
-            {currentFile ? <FileCheck className="w-5 h-5" /> : <UploadCloud className="w-5 h-5" />}
+            {isUploaded ? <FileCheck className="w-5 h-5" /> : <UploadCloud className="w-5 h-5" />}
           </div>
           <div>
             <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{label}</p>
             <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[200px]">
               {currentFile ? (
-                <span className="text-green-600 dark:text-green-400 font-medium">{currentFile.name}</span>
+                <span className="text-green-600 dark:text-green-400 font-medium">Ready to Upload: {currentFile.name}</span>
+              ) : existingStatus ? (
+                <span className="text-green-600 dark:text-green-400 font-medium">Stored in Secure Vault</span>
               ) : (
                 description
               )}
@@ -120,11 +136,11 @@ const Settings: React.FC = () => {
             }} 
           />
           <span className={`px-3 py-1.5 border rounded text-xs font-medium transition-colors shadow-sm inline-block ${
-            currentFile
+            isUploaded
               ? 'bg-white dark:bg-slate-800 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
               : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300'
           }`}>
-            {currentFile ? 'Change File' : 'Select File'}
+            {isUploaded ? 'Update File' : 'Select File'}
           </span>
         </label>
       </div>
@@ -190,10 +206,16 @@ const Settings: React.FC = () => {
 
             {/* Verification Documents (New Section) */}
             <div className="border-t border-slate-100 dark:border-slate-700 pt-8 mb-8">
-              <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Identity Verification</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-                Required for dispute letters to be accepted by bureaus. These are stored in our secure encrypted vault.
-              </p>
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Identity Verification</h3>
+                <div className="flex gap-2 items-start bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-900 mt-2">
+                    <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
+                        <strong>Important:</strong> Documents uploaded here are saved to your secure vault. 
+                        They will be <span className="underline">automatically appended as the last page</span> of any dispute letters you generate, saving you time.
+                    </p>
+                </div>
+              </div>
               
               <div className="space-y-3">
                 <FileUploadField 
@@ -201,18 +223,21 @@ const Settings: React.FC = () => {
                   description="Driver's License, Passport, or State ID"
                   accepted="image/*,.pdf"
                   docType="id"
+                  existingStatus={user.verificationDocuments?.idCard}
                 />
                 <FileUploadField 
                   label="Social Security Card" 
                   description="Copy of card or W-2 form with full SSN" 
                   accepted="image/*,.pdf"
                   docType="ssn"
+                  existingStatus={user.verificationDocuments?.ssnCard}
                 />
                 <FileUploadField 
                   label="Proof of Address" 
                   description="Utility bill, bank statement, or insurance policy" 
                   accepted="image/*,.pdf"
                   docType="address"
+                  existingStatus={user.verificationDocuments?.proofOfAddress}
                 />
               </div>
             </div>

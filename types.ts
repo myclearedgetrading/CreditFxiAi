@@ -46,6 +46,11 @@ export interface User {
   negativeItems: NegativeItem[];
   businessProfile?: BusinessProfile;
   role: 'USER' | 'ADMIN' | 'CLIENT';
+  verificationDocuments?: {
+    idCard: boolean;
+    ssnCard: boolean;
+    proofOfAddress: boolean;
+  };
 }
 
 export enum ClientStatus {
