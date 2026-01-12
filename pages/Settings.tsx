@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Settings as SettingsIcon, Blocks, Bot, ShieldCheck, 
-  BrainCircuit, Trophy, User, CreditCard, UploadCloud, Check
+  BrainCircuit, Trophy, User, CreditCard, UploadCloud, Check, FileCheck
 } from 'lucide-react';
 import Integrations from './Integrations';
 import AutomationEngine from './AutomationEngine';
@@ -23,6 +23,17 @@ const Settings: React.FC = () => {
     email: ''
   });
 
+  // Local state for document uploads
+  const [documents, setDocuments] = useState<{
+    id: File | null;
+    ssn: File | null;
+    address: File | null;
+  }>({
+    id: null,
+    ssn: null,
+    address: null
+  });
+
   // Sync local state with user context on load
   useEffect(() => {
     setProfileForm({
@@ -39,12 +50,18 @@ const Settings: React.FC = () => {
 
   const handleSaveProfile = () => {
     setIsSaving(true);
-    // Simulate API delay
+    // Simulate API delay and upload
     setTimeout(() => {
       updateUser(profileForm);
       setIsSaving(false);
-      alert("Profile settings saved successfully!");
-    }, 800);
+      
+      const docsCount = Object.values(documents).filter(Boolean).length;
+      if (docsCount > 0) {
+        alert(`Profile updated and ${docsCount} document(s) uploaded successfully!`);
+      } else {
+        alert("Profile settings saved successfully!");
+      }
+    }, 1500);
   };
 
   const clientTabs = [
@@ -53,25 +70,66 @@ const Settings: React.FC = () => {
     { id: 'security', label: 'Security', icon: ShieldCheck },
   ];
 
-  const FileUploadField = ({ label, description, accepted }: { label: string, description: string, accepted?: string }) => (
-    <div className="border border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-[#111] transition-colors group">
-      <div className="flex items-center gap-4">
-        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
-          <UploadCloud className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+  const FileUploadField = ({ 
+    label, 
+    description, 
+    accepted, 
+    docType 
+  }: { 
+    label: string, 
+    description: string, 
+    accepted?: string,
+    docType: 'id' | 'ssn' | 'address'
+  }) => {
+    const currentFile = documents[docType];
+
+    return (
+      <div className={`border border-dashed rounded-lg p-4 flex items-center justify-between transition-colors group ${
+        currentFile 
+          ? 'border-green-500/30 bg-green-50/50 dark:bg-green-900/10' 
+          : 'border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-[#111]'
+      }`}>
+        <div className="flex items-center gap-4">
+          <div className={`p-2 rounded-lg transition-colors ${
+            currentFile 
+              ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' 
+              : 'bg-indigo-50 dark:bg-indigo-900/30 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
+          }`}>
+            {currentFile ? <FileCheck className="w-5 h-5" /> : <UploadCloud className="w-5 h-5" />}
+          </div>
+          <div>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{label}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[200px]">
+              {currentFile ? (
+                <span className="text-green-600 dark:text-green-400 font-medium">{currentFile.name}</span>
+              ) : (
+                description
+              )}
+            </p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{label}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>
-        </div>
+        <label className="relative cursor-pointer">
+          <input 
+            type="file" 
+            className="hidden" 
+            accept={accepted} 
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                setDocuments(prev => ({ ...prev, [docType]: e.target.files![0] }));
+              }
+            }} 
+          />
+          <span className={`px-3 py-1.5 border rounded text-xs font-medium transition-colors shadow-sm inline-block ${
+            currentFile
+              ? 'bg-white dark:bg-slate-800 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300'
+          }`}>
+            {currentFile ? 'Change File' : 'Select File'}
+          </span>
+        </label>
       </div>
-      <label className="relative cursor-pointer">
-        <input type="file" className="hidden" accept={accepted} onChange={() => alert(`File selected for ${label}`)} />
-        <span className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 transition-colors shadow-sm">
-          Select File
-        </span>
-      </label>
-    </div>
-  );
+    );
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -142,16 +200,19 @@ const Settings: React.FC = () => {
                   label="Government Photo ID" 
                   description="Driver's License, Passport, or State ID"
                   accepted="image/*,.pdf"
+                  docType="id"
                 />
                 <FileUploadField 
                   label="Social Security Card" 
                   description="Copy of card or W-2 form with full SSN" 
                   accepted="image/*,.pdf"
+                  docType="ssn"
                 />
                 <FileUploadField 
                   label="Proof of Address" 
-                  description="Utility bill, bank statement, or insurance policy (last 60 days)" 
+                  description="Utility bill, bank statement, or insurance policy" 
                   accepted="image/*,.pdf"
+                  docType="address"
                 />
               </div>
             </div>
@@ -162,7 +223,7 @@ const Settings: React.FC = () => {
                  disabled={isSaving}
                  className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium shadow-sm transition-colors flex items-center disabled:opacity-70 disabled:cursor-not-allowed"
                >
-                 {isSaving ? 'Saving...' : 'Save Changes'}
+                 {isSaving ? 'Uploading & Saving...' : 'Save Changes'}
                </button>
             </div>
           </div>

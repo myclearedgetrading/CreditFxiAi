@@ -152,7 +152,7 @@ const Dashboard: React.FC = () => {
             title="Import Report" 
             desc="Pull latest data from monitoring." 
             icon={Download} 
-            onClick={() => navigate('/onboarding', { state: { step: 2 } })}
+            onClick={() => navigate('/analysis', { state: { openConnect: true } })}
             cta="Connect"
           />
           <ActionCard 

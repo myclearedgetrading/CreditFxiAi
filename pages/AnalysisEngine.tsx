@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   UploadCloud, FileText, AlertTriangle, CheckCircle2, BrainCircuit, 
   ArrowRight, TrendingUp, Scale, Loader2, ScanLine, Camera, Zap, 
@@ -10,6 +11,7 @@ import { CreditAnalysisResult, Discrepancy, StrategyRecommendation } from '../ty
 import { vibrate, HAPTIC } from '../services/mobileService';
 
 const AnalysisEngine: React.FC = () => {
+  const location = useLocation();
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -26,6 +28,13 @@ const AnalysisEngine: React.FC = () => {
     username: '',
     password: ''
   });
+
+  useEffect(() => {
+    if (location.state && (location.state as any).openConnect) {
+      setShowConnectModal(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
