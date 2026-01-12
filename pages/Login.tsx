@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, ArrowRight, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { loginWithEmail, getUserFromFirestore } from '../services/firebaseService';
 import { User } from '../types';
@@ -84,6 +84,17 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col justify-center items-center p-6 relative overflow-hidden">
+      {/* Back Button */}
+      <button 
+        onClick={() => navigate('/')}
+        className="absolute top-6 left-6 flex items-center text-slate-500 hover:text-white transition-colors z-20 group"
+      >
+        <div className="p-2 rounded-full bg-slate-900 border border-slate-800 group-hover:border-slate-600 mr-3 transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+        </div>
+        <span className="text-sm font-medium">Back to Home</span>
+      </button>
+
       {/* Background Ambience */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-orange-600/10 rounded-full blur-[100px] -z-10" />
       
