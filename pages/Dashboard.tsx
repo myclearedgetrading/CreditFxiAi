@@ -15,11 +15,11 @@ const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: numb
   // Handle empty/zero score
   if (!score) {
     return (
-        <div className="flex flex-col items-center p-4">
-            <div className="w-28 h-28 lg:w-32 lg:h-32 rounded-full border-4 border-slate-800 flex items-center justify-center mb-3">
-                <span className="text-slate-600 text-sm">No Data</span>
+        <div className="flex flex-col items-center p-2 sm:p-4">
+            <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full border-4 border-slate-800 flex items-center justify-center mb-2 sm:mb-3">
+                <span className="text-slate-600 text-xs sm:text-sm">No Data</span>
             </div>
-            <div className="text-[10px] lg:text-xs text-slate-500 uppercase font-bold">{bureau}</div>
+            <div className="text-[9px] sm:text-[10px] lg:text-xs text-slate-500 uppercase font-bold">{bureau}</div>
         </div>
     );
   }
@@ -30,8 +30,8 @@ const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: numb
   const percentage = (score / 850) * 100;
   
   return (
-    <div className="flex flex-col items-center p-4">
-      <div className="relative w-28 h-28 lg:w-32 lg:h-32 flex items-center justify-center mb-3">
+    <div className="flex flex-col items-center p-2 sm:p-4">
+      <div className="relative w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 flex items-center justify-center mb-2 sm:mb-3">
         <svg className="absolute w-full h-full -rotate-90">
           <circle cx="50%" cy="50%" r="45%" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-800" />
           <circle 
@@ -43,11 +43,11 @@ const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: numb
           />
         </svg>
         <div className="text-center">
-          <div className={`text-2xl lg:text-3xl font-bold ${color}`}>{score || '-'}</div>
-          <div className="text-[10px] lg:text-xs text-slate-500 uppercase font-bold">{bureau}</div>
+          <div className={`text-xl sm:text-2xl lg:text-3xl font-bold ${color}`}>{score || '-'}</div>
+          <div className="text-[9px] sm:text-[10px] lg:text-xs text-slate-500 uppercase font-bold">{bureau}</div>
         </div>
       </div>
-      <div className={`text-sm font-medium ${diff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+      <div className={`text-xs sm:text-sm font-medium ${diff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
         {score ? `${diff > 0 ? '+' : ''}${diff} pts` : ''}
       </div>
     </div>
@@ -57,22 +57,24 @@ const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: numb
 const ActionCard = ({ title, desc, icon: Icon, onClick, cta, step }: any) => (
   <div 
     onClick={onClick}
-    className="bg-[#0A0A0A] p-5 rounded-xl border border-slate-800 shadow-sm hover:shadow-md hover:border-orange-500/50 transition-all cursor-pointer group relative overflow-hidden"
+    className="bg-[#0A0A0A] p-4 sm:p-5 rounded-xl border border-slate-800 shadow-sm hover:shadow-md hover:border-orange-500/50 transition-all cursor-pointer group relative overflow-hidden h-full flex flex-col justify-between"
   >
     {step && (
       <div className="absolute top-0 right-0 bg-slate-900 text-slate-500 text-[10px] font-bold px-2 py-1 rounded-bl-lg border-l border-b border-slate-800">
         {step}
       </div>
     )}
-    <div className="flex justify-between items-start mb-3">
-      <div className="p-2 bg-slate-900 rounded-lg group-hover:bg-orange-600 transition-colors border border-slate-800 group-hover:border-orange-500">
-        <Icon className="w-6 h-6 text-orange-500 group-hover:text-white" />
+    <div>
+      <div className="flex justify-between items-start mb-3">
+        <div className="p-2 bg-slate-900 rounded-lg group-hover:bg-orange-600 transition-colors border border-slate-800 group-hover:border-orange-500">
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 group-hover:text-white" />
+        </div>
+        <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 group-hover:text-orange-500 transition-colors" />
       </div>
-      <ArrowRight className="w-5 h-5 text-slate-600 group-hover:text-orange-500 transition-colors" />
+      <h4 className="font-bold text-white mb-1 text-sm sm:text-base">{title}</h4>
+      <p className="text-xs text-slate-400 mb-3 leading-snug">{desc}</p>
     </div>
-    <h4 className="font-bold text-white mb-1">{title}</h4>
-    <p className="text-xs text-slate-400 mb-3">{desc}</p>
-    <span className="text-xs font-bold text-orange-500 uppercase tracking-wide">{cta}</span>
+    <span className="text-[10px] sm:text-xs font-bold text-orange-500 uppercase tracking-wide block">{cta}</span>
   </div>
 );
 
@@ -87,18 +89,18 @@ const Dashboard: React.FC = () => {
     <div className="space-y-6 animate-fade-in pb-10">
       
       {/* Welcome Section */}
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">
             {user.firstName ? `Hello, ${user.firstName}!` : 'Welcome back!'}
           </h1>
-          <p className="text-slate-400">
+          <p className="text-slate-400 text-sm sm:text-base">
             Track your credit repair journey and financial health.
           </p>
         </div>
         <button 
           onClick={() => navigate('/analysis')}
-          className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium shadow-lg shadow-orange-900/20 transition-colors text-sm flex items-center"
+          className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium shadow-lg shadow-orange-900/20 transition-colors text-sm flex items-center justify-center"
         >
           <CreditCard className="w-4 h-4 mr-2" />
           Update Report
@@ -119,7 +121,7 @@ const Dashboard: React.FC = () => {
           </div>
           
           {user.creditScore.experian > 0 ? (
-              <div className="flex flex-col md:flex-row justify-around items-center">
+              <div className="grid grid-cols-3 gap-2 md:flex md:flex-row md:justify-around md:items-center">
                 <ScoreCircle bureau="Equifax" score={user.creditScore.equifax} prevScore={user.creditScore.equifax} />
                 <div className="hidden md:block w-px h-24 bg-slate-800"></div>
                 <ScoreCircle bureau="Experian" score={user.creditScore.experian} prevScore={user.creditScore.experian} />
@@ -138,7 +140,7 @@ const Dashboard: React.FC = () => {
       {/* Quick Actions / Journey Path */}
       <div>
         <h3 className="text-lg font-bold text-white mb-4">Your Repair Journey</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <ActionCard 
             step="STEP 1"
             title="Update Profile" 

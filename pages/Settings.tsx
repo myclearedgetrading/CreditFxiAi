@@ -52,9 +52,6 @@ const Settings: React.FC = () => {
     setIsSaving(true);
     // Simulate API delay and upload
     setTimeout(() => {
-      // Create a payload that includes the form data AND the "uploaded" status of documents
-      // In a real app, we would upload the files, get URLs, and save those.
-      // Here we simulate the existence of the file by setting the flags.
       updateUser({
         ...profileForm,
         verificationDocuments: {
@@ -113,7 +110,7 @@ const Settings: React.FC = () => {
           </div>
           <div>
             <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{label}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[200px]">
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[180px] sm:max-w-[250px]">
               {currentFile ? (
                 <span className="text-green-600 dark:text-green-400 font-medium">Ready to Upload: {currentFile.name}</span>
               ) : existingStatus ? (
@@ -124,7 +121,7 @@ const Settings: React.FC = () => {
             </p>
           </div>
         </div>
-        <label className="relative cursor-pointer">
+        <label className="relative cursor-pointer hidden sm:block">
           <input 
             type="file" 
             className="hidden" 
@@ -143,6 +140,17 @@ const Settings: React.FC = () => {
             {isUploaded ? 'Update File' : 'Select File'}
           </span>
         </label>
+        {/* Mobile only tap area overlay */}
+        <input 
+            type="file" 
+            className="absolute inset-0 opacity-0 sm:hidden" 
+            accept={accepted} 
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                setDocuments(prev => ({ ...prev, [docType]: e.target.files![0] }));
+              }
+            }} 
+        />
       </div>
     );
   };
@@ -156,14 +164,14 @@ const Settings: React.FC = () => {
       case 'rewards': return <GamificationCenter />;
       case 'profile': 
         return (
-          <div className="bg-white dark:bg-[#0A0A0A] p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl animate-fade-in">
+          <div className="bg-white dark:bg-[#0A0A0A] p-6 lg:p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl animate-fade-in">
             <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
               Personal Information
             </h2>
             
             {/* Basic Info */}
             <div className="space-y-4 mb-8">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     First Name
@@ -255,7 +263,7 @@ const Settings: React.FC = () => {
         );
       case 'billing':
         return (
-          <div className="bg-white dark:bg-[#0A0A0A] p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl animate-fade-in">
+          <div className="bg-white dark:bg-[#0A0A0A] p-6 lg:p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl animate-fade-in">
             <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Subscription Plan</h2>
             <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl flex justify-between items-center mb-6">
               <div>
@@ -296,16 +304,16 @@ const Settings: React.FC = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row flex-1 gap-6 overflow-hidden">
-        {/* Sidebar Tabs */}
-        <div className="lg:w-64 flex-shrink-0 overflow-y-auto pr-2">
-          <div className="space-y-1">
+        {/* Sidebar Tabs - Horizontal scroll on mobile, vertical list on desktop */}
+        <div className="flex-none lg:w-64 flex-shrink-0 lg:overflow-y-auto lg:pr-2 overflow-x-auto pb-4 lg:pb-0 border-b lg:border-b-0 border-slate-800 no-scrollbar">
+          <div className="flex flex-row lg:flex-col space-x-2 lg:space-x-0 lg:space-y-1">
             {clientTabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
+                  className={`flex items-center px-4 py-2 lg:py-3 text-sm font-medium rounded-xl transition-all whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'bg-indigo-600 text-white shadow-md'
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -320,7 +328,7 @@ const Settings: React.FC = () => {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pb-20">
           {renderContent()}
         </div>
       </div>

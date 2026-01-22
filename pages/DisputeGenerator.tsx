@@ -126,7 +126,7 @@ const DisputeGenerator: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <div className="flex items-center space-x-3">
         <div className="p-3 bg-orange-900/20 rounded-xl">
             <Wand2 className="w-6 h-6 text-orange-500" />
@@ -146,7 +146,7 @@ const DisputeGenerator: React.FC = () => {
             <div>
                 <h2 className="font-semibold text-white border-b border-slate-800 pb-2 mb-3">1. Select Item to Dispute</h2>
                 {myNegativeItems.length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
                         {myNegativeItems.map(item => (
                             <div 
                             key={item.id}
@@ -318,7 +318,7 @@ const DisputeGenerator: React.FC = () => {
                             <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full flex items-center gap-1">
                                 <Layers className="w-3 h-3" /> {selectedBureaus.length} Versions
                             </span>
-                            <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">
+                            <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full hidden sm:block">
                                 {calculateTotalPages()} Pages Total
                             </span>
                         </div>
@@ -332,20 +332,22 @@ const DisputeGenerator: React.FC = () => {
                          className="flex items-center px-3 py-1.5 text-sm text-slate-300 hover:text-orange-400 hover:bg-slate-800 rounded-md transition-colors"
                        >
                           <Download className="w-4 h-4 mr-2" />
-                          Download PDF
+                          <span className="hidden sm:inline">Download PDF</span>
+                          <span className="sm:hidden">PDF</span>
                        </button>
                        <button 
                          onClick={handleMail}
                          className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white hover:bg-green-700 rounded-md transition-colors shadow-sm"
                        >
                           <Send className="w-4 h-4 mr-2" />
-                          Mail It For Me
+                          <span className="hidden sm:inline">Mail It For Me</span>
+                          <span className="sm:hidden">Mail</span>
                        </button>
                     </div>
                  )}
               </div>
               
-              <div className="flex-1 p-6 relative">
+              <div className="flex-1 p-4 sm:p-6 relative">
                  {error && (
                     <div className="bg-red-900/20 border border-red-800 text-red-400 p-4 rounded-lg flex items-center">
                        <AlertCircle className="w-5 h-5 mr-3" />
@@ -354,7 +356,7 @@ const DisputeGenerator: React.FC = () => {
                  )}
 
                  {!generatedLetter && !isLoading && !error && (
-                    <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4 min-h-[400px]">
+                    <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4 min-h-[300px] lg:min-h-[400px]">
                        <FileCheck className="w-16 h-16 opacity-20" />
                        <p className="text-center">
                          {myNegativeItems.length > 0 
@@ -365,7 +367,7 @@ const DisputeGenerator: React.FC = () => {
                  )}
 
                  {isLoading && (
-                    <div className="h-full flex flex-col items-center justify-center space-y-4 min-h-[400px]">
+                    <div className="h-full flex flex-col items-center justify-center space-y-4 min-h-[300px] lg:min-h-[400px]">
                       <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
                       <p className="text-slate-300 animate-pulse">Drafting legal challenge...</p>
                     </div>
@@ -373,7 +375,7 @@ const DisputeGenerator: React.FC = () => {
 
                  {generatedLetter && (
                     <textarea 
-                      className="w-full h-full min-h-[500px] p-4 font-mono text-sm leading-relaxed text-slate-300 bg-[#0A0A0A] focus:outline-none resize-none"
+                      className="w-full h-full min-h-[300px] lg:min-h-[500px] p-4 font-mono text-sm leading-relaxed text-slate-300 bg-[#0A0A0A] focus:outline-none resize-none"
                       value={generatedLetter}
                       onChange={(e) => setGeneratedLetter(e.target.value)}
                     />
