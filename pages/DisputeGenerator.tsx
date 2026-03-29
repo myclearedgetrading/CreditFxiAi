@@ -3,7 +3,29 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import { Bureau, DisputeStrategy, NegativeItem } from '../types';
 import { generateDisputeLetter } from '../services/geminiService';
-import { Wand2, Send, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X, Layers, ShieldCheck } from 'lucide-react';
+import { Wand2, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X, Layers, ShieldCheck, Printer, ExternalLink, Mail } from 'lucide-react';
+
+/** Escape text for safe insertion into a print HTML document */
+const escapeHtml = (s: string) =>
+  s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+/** Consumer-facing print-and-mail services (CreditFix AI is not affiliated; links open in a new tab). */
+const MAILING_PARTNER_OPTIONS: { name: string; description: string; url: string }[] = [
+  {
+    name: 'Click2Mail',
+    description: 'Upload your letter, choose USPS options (including certified), and have them print and mail it.',
+    url: 'https://www.click2mail.com',
+  },
+  {
+    name: 'LetterStream',
+    description: 'Send letters and documents online with tracking and mailing options.',
+    url: 'https://www.letterstream.com',
+  },
+];
 
 const DisputeGenerator: React.FC = () => {
   const { user } = useUser();
@@ -109,20 +131,64 @@ const DisputeGenerator: React.FC = () => {
     return pagesPerLetter * selectedBureaus.length;
   };
 
-  const handleDownload = () => {
+  const handlePrintLetters = () => {
     if (!generatedLetter) return;
-    alert(`Downloading ${selectedBureaus.length} letter(s). \n\nNote: Your saved ID, SSN, and Proof of Address have been automatically appended to the PDF.`);
+    const w = window.open('', '_blank', 'noopener,noreferrer');
+    if (!w) {
+      setError('Pop-up blocked. Allow pop-ups for this site to print, or use Download instead.');
+      return;
+    }
+    const body = escapeHtml(generatedLetter);
+    const fromName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Your name';
+    const addr = user.address;
+    const addrLine = addr
+      ? [addr.street, [addr.city, addr.state, addr.zip].filter(Boolean).join(', ')].filter(Boolean).join(' · ')
+      : 'Add your return address before mailing.';
+    w.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dispute letter — print</title>
+  <style>
+    body { font-family: Georgia, 'Times New Roman', serif; padding: 0.75in; max-width: 8.5in; margin: 0 auto; color: #111; }
+    .meta { font-size: 11px; color: #444; border-bottom: 1px solid #ccc; padding-bottom: 12px; margin-bottom: 16px; }
+    pre { white-space: pre-wrap; word-wrap: break-word; font-family: inherit; font-size: 12px; line-height: 1.5; margin: 0; }
+    @media print {
+      body { padding: 0.5in; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <p class="no-print meta"><strong>Tip:</strong> Use your browser’s Print dialog (Ctrl/Cmd+P). Add correct bureau mailing addresses on the envelope or in the letter header if needed.</p>
+  <div class="meta">
+    <div><strong>From:</strong> ${escapeHtml(fromName)}</div>
+    <div>${escapeHtml(addrLine)}</div>
+  </div>
+  <pre>${body}</pre>
+  <script>window.onload = function() { window.focus(); }</script>
+</body>
+</html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => {
+      try {
+        w.print();
+      } catch {
+        /* user can print manually from the new tab */
+      }
+    }, 250);
   };
 
-  const handleMail = () => {
+  const handleDownloadTxt = () => {
     if (!generatedLetter) return;
-    // Base cost $2.00 + $0.50 per additional page
-    const costPerLetter = 2 + ((calculateTotalPages() / selectedBureaus.length) - 1) * 0.5;
-    const totalCost = costPerLetter * selectedBureaus.length;
-    
-    if(confirm(`Send ${selectedBureaus.length} Certified Letter(s)?\n\nTargeting: ${selectedBureaus.join(', ')}\nTotal Pages: ${calculateTotalPages()}\nEstimated Cost: $${totalCost.toFixed(2)}`)) {
-        alert("Letters queued for mailing!");
-    }
+    const blob = new Blob([generatedLetter], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dispute-letters-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -326,22 +392,24 @@ const DisputeGenerator: React.FC = () => {
                  </div>
                  
                  {generatedLetter && (
-                    <div className="flex space-x-2">
+                    <div className="flex flex-wrap gap-2 justify-end">
                        <button 
-                         onClick={handleDownload}
+                         type="button"
+                         onClick={handlePrintLetters}
+                         className="flex items-center px-3 py-1.5 text-sm text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md transition-colors"
+                       >
+                          <Printer className="w-4 h-4 mr-2" />
+                          <span className="hidden sm:inline">Print to mail</span>
+                          <span className="sm:hidden">Print</span>
+                       </button>
+                       <button 
+                         type="button"
+                         onClick={handleDownloadTxt}
                          className="flex items-center px-3 py-1.5 text-sm text-slate-300 hover:text-orange-400 hover:bg-slate-800 rounded-md transition-colors"
                        >
                           <Download className="w-4 h-4 mr-2" />
-                          <span className="hidden sm:inline">Download PDF</span>
-                          <span className="sm:hidden">PDF</span>
-                       </button>
-                       <button 
-                         onClick={handleMail}
-                         className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white hover:bg-green-700 rounded-md transition-colors shadow-sm"
-                       >
-                          <Send className="w-4 h-4 mr-2" />
-                          <span className="hidden sm:inline">Mail It For Me</span>
-                          <span className="sm:hidden">Mail</span>
+                          <span className="hidden sm:inline">Download (.txt)</span>
+                          <span className="sm:hidden">Save</span>
                        </button>
                     </div>
                  )}
@@ -374,11 +442,75 @@ const DisputeGenerator: React.FC = () => {
                  )}
 
                  {generatedLetter && (
+                    <>
                     <textarea 
-                      className="w-full h-full min-h-[300px] lg:min-h-[500px] p-4 font-mono text-sm leading-relaxed text-slate-300 bg-[#0A0A0A] focus:outline-none resize-none"
+                      className="w-full h-full min-h-[300px] lg:min-h-[420px] p-4 font-mono text-sm leading-relaxed text-slate-300 bg-[#0A0A0A] focus:outline-none resize-none"
                       value={generatedLetter}
                       onChange={(e) => setGeneratedLetter(e.target.value)}
                     />
+
+                    <div className="mt-6 space-y-4 border-t border-slate-800 pt-6">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-orange-500" />
+                        Send your dispute by mail
+                      </h3>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+                          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Option 1 — You mail it</p>
+                          <p className="text-sm text-slate-400 leading-relaxed">
+                            Print the letter, sign if needed, attach copies of ID or documents you selected, and send to the correct bureau or furnisher address (use certified mail if you want proof of delivery).
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={handlePrintLetters}
+                              className="inline-flex items-center px-3 py-2 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-500 rounded-lg"
+                            >
+                              <Printer className="w-4 h-4 mr-2" />
+                              Print letters
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleDownloadTxt}
+                              className="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-300 border border-slate-700 hover:bg-slate-800 rounded-lg"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Download .txt
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+                          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Option 2 — Third-party mailing</p>
+                          <p className="text-sm text-slate-400 leading-relaxed">
+                            CreditFix AI does not mail letters for you. These independent services can print and mail for a fee — you upload your letter (e.g. after downloading), choose mailing options, and pay them directly.
+                          </p>
+                          <ul className="space-y-2">
+                            {MAILING_PARTNER_OPTIONS.map((p) => (
+                              <li key={p.name}>
+                                <a
+                                  href={p.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="group flex items-start gap-2 rounded-lg border border-slate-800 bg-[#0A0A0A] p-3 hover:border-orange-900/50 transition-colors"
+                                >
+                                  <ExternalLink className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                                  <span>
+                                    <span className="font-semibold text-white group-hover:text-orange-400">{p.name}</span>
+                                    <span className="block text-xs text-slate-500 mt-0.5">{p.description}</span>
+                                  </span>
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                          <p className="text-[11px] text-slate-600 leading-snug">
+                            We are not affiliated with these providers. Compare pricing, certified-mail options, and privacy policies before you send personal information.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    </>
                  )}
               </div>
            </div>
