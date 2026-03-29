@@ -51,10 +51,23 @@ The app calls **`/api/gemini`** on the server so your Gemini key is **never** em
 3. Enable **Firestore Database**.
 4. Enable **Storage**.
 5. Copy the configuration object to `.env.local`.
-6. Deploy security rules:
-   ```bash
-   firebase deploy --only firestore:rules,storage
-   ```
+
+### Data model (Path A — multi-tenant)
+
+- Root collections: `users`, `companies`, `clients`, `disputes`, `tickets`, `activityLogs`.
+- Every tenant has a **`companyId`**. Solo DIY users use **`companyId === their Firebase uid`** (the app sets this on register and when bootstrapping profiles).
+- Agency staff share the same **`companyId`**; **`role`** distinguishes `USER` / `ADMIN` / `SPECIALIST` / etc.
+- Documents in `clients`, `disputes`, `tickets`, and `activityLogs` must include **`companyId`** matching the signed-in user’s profile (see `firestore.rules`).
+
+### Deploy rules and indexes
+
+From the project root (with Firebase CLI linked to this project):
+
+```bash
+firebase deploy --only firestore:rules,firestore:indexes,storage
+```
+
+Composite indexes for tenant queries are defined in **`firestore.indexes.json`** (`tickets` by `companyId` + `updatedAt`, `disputes` by `companyId` + `clientId`). If the CLI reports missing indexes, you can also create them from the error link in the browser console.
 
 ## Folder Structure
 

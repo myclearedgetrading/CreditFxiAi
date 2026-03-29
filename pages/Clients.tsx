@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Filter, MoreVertical, Loader2 } from 'lucide-react';
 import { ClientStatus, Client } from '../types';
-import { getClients } from '../services/firebaseService';
+import { getClients, tenantCompanyId } from '../services/firebaseService';
 import { useUser } from '../context/UserContext';
 
 const Clients: React.FC = () => {
@@ -10,7 +10,7 @@ const Clients: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const companyId = user.companyId || user.id;
+  const companyId = tenantCompanyId(user);
 
   useEffect(() => {
     const fetchClients = async () => {

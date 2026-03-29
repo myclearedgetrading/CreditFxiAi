@@ -15,6 +15,8 @@ const Onboarding: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useUser();
   const [step, setStep] = useState(1);
+  /** User chose to explore the app without connecting/uploading a report */
+  const [skippedCreditImport, setSkippedCreditImport] = useState(false);
   
   // Detailed Profile State
   const [formData, setFormData] = useState({
@@ -45,6 +47,12 @@ const Onboarding: React.FC = () => {
   const [isConnecting, setIsConnecting] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const skipImportAndFinish = () => {
+    vibrate(HAPTIC.LIGHT);
+    setSkippedCreditImport(true);
+    setStep(4);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -124,33 +132,37 @@ const Onboarding: React.FC = () => {
           state: formData.state,
           zip: formData.zip
         },
-        creditScore: {
-          equifax: 524,
-          experian: 538,
-          transunion: 515
-        },
-        negativeItems: [
-          { 
-            id: 'item-1', 
-            type: 'Collection', 
-            creditor: 'Midland Funding', 
-            accountNumber: '****4921', 
-            amount: 1250, 
-            dateReported: '2023-05-15', 
-            bureau: ['Equifax' as any, 'Experian' as any], 
-            status: 'Open' as const
-          },
-          { 
-            id: 'item-2', 
-            type: 'Late Payment', 
-            creditor: 'Capital One', 
-            accountNumber: '****9999', 
-            amount: 0, 
-            dateReported: '2023-01-20', 
-            bureau: ['TransUnion' as any], 
-            status: 'Open' as const 
-          }
-        ]
+        creditScore: skippedCreditImport
+          ? { equifax: 0, experian: 0, transunion: 0 }
+          : {
+              equifax: 524,
+              experian: 538,
+              transunion: 515
+            },
+        negativeItems: skippedCreditImport
+          ? []
+          : [
+              {
+                id: 'item-1',
+                type: 'Collection',
+                creditor: 'Midland Funding',
+                accountNumber: '****4921',
+                amount: 1250,
+                dateReported: '2023-05-15',
+                bureau: ['Equifax' as any, 'Experian' as any],
+                status: 'Open' as const
+              },
+              {
+                id: 'item-2',
+                type: 'Late Payment',
+                creditor: 'Capital One',
+                accountNumber: '****9999',
+                amount: 0,
+                dateReported: '2023-01-20',
+                bureau: ['TransUnion' as any],
+                status: 'Open' as const
+              }
+            ]
       };
 
       // Create Firebase Auth User & Save to Firestore
@@ -439,6 +451,19 @@ const Onboarding: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <div className="pt-6 border-t border-slate-800/80 mt-4">
+        <button
+          type="button"
+          onClick={skipImportAndFinish}
+          className="w-full py-3.5 text-slate-400 hover:text-white text-sm font-semibold rounded-2xl border border-slate-800 hover:border-slate-600 bg-[#0A0A0A] transition-all"
+        >
+          Skip for now — explore the app
+        </button>
+        <p className="text-center text-[11px] text-slate-600 mt-2 px-2">
+          You can import or connect a report anytime from the dashboard or Credit Audit.
+        </p>
+      </div>
     </div>
   );
 
@@ -459,6 +484,35 @@ const Onboarding: React.FC = () => {
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Analyzing Profile</h2>
           <p className="text-slate-400 text-sm animate-pulse">{analysisStep}</p>
+        </div>
+      ) : skippedCreditImport ? (
+        <div className="max-w-sm w-full animate-scale-in">
+          <div className="w-20 h-20 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-orange-900/20">
+            <Sparkles className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">You&apos;re all set</h1>
+          <p className="text-slate-400 mb-8 text-sm leading-relaxed">
+            Create your account to open the dashboard. Add a credit report when you&apos;re ready — nothing is required to look around.
+          </p>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-900/20 border border-red-900 rounded-lg text-red-400 text-sm flex items-center">
+              <AlertCircle className="w-4 h-4 mr-2" />
+              {error}
+            </div>
+          )}
+
+          <button
+            onClick={completeOnboarding}
+            disabled={isRegistering}
+            className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white rounded-2xl font-bold text-lg shadow-lg shadow-orange-900/20 transition-all hover:scale-[1.02] hover:shadow-orange-900/30 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isRegistering ? (
+                <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating Account...
+                </>
+            ) : "Create account & go to dashboard"}
+          </button>
         </div>
       ) : (
         <div className="max-w-sm w-full animate-scale-in">

@@ -5,7 +5,7 @@ import {
   Loader2, Sparkles
 } from 'lucide-react';
 import { analyzeSupportTicket } from '../services/geminiService';
-import { subscribeToTickets, createTicket } from '../services/firebaseService';
+import { subscribeToTickets, createTicket, tenantCompanyId } from '../services/firebaseService';
 import { SupportTicket, TicketPriority } from '../types';
 import { useUser } from '../context/UserContext';
 
@@ -22,21 +22,27 @@ const SupportCenter: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  const companyId = tenantCompanyId(user);
+
   useEffect(() => {
-    // Subscribe to real tickets
-    const unsubscribe = subscribeToTickets((realTickets) => {
-        setTickets(realTickets);
-        setIsLoading(false);
+    if (!companyId) {
+      setTickets([]);
+      setIsLoading(false);
+      return;
+    }
+    const unsubscribe = subscribeToTickets(companyId, (realTickets) => {
+      setTickets(realTickets);
+      setIsLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [companyId]);
 
   const handleCreateTicket = async () => {
-    if (!newSubject || !newMessage) return;
+    if (!newSubject || !newMessage || !companyId) return;
     setIsAnalyzing(true);
     try {
       const analysis = await analyzeSupportTicket(newSubject, newMessage);
-      await createTicket({
+      await createTicket(companyId, {
         clientId: user.id,
         clientName: `${user.firstName} ${user.lastName}`, 
         subject: newSubject,

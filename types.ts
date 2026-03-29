@@ -168,6 +168,8 @@ export interface Task {
 
 export interface ActivityLog {
   id: string;
+  /** Tenant id — required for Path A Firestore rules */
+  companyId?: string;
   action: string;
   description: string;
   timestamp: any;
@@ -441,6 +443,8 @@ export type TicketStatus = 'OPEN' | 'PENDING' | 'RESOLVED' | 'CLOSED';
 
 export interface SupportTicket {
   id: string;
+  /** Tenant id — required for Path A Firestore rules */
+  companyId?: string;
   clientId: string;
   clientName: string;
   subject: string;

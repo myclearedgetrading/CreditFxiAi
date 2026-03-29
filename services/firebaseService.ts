@@ -11,6 +11,18 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage, googleProvider } from './firebaseConfig';
 import { Client, SupportTicket, ActivityLog, User } from '../types';
 
+/** Resolves tenant id for queries and writes (Path A). */
+export const tenantCompanyId = (user: Pick<User, 'id' | 'companyId'>): string =>
+  user.companyId || user.id;
+
+/** DIY users without legacy `companyId` still map to their personal tenant. */
+export const normalizeTenantUser = (u: User): User => {
+  if (!u.companyId && u.id) {
+    return { ...u, companyId: u.id };
+  }
+  return u;
+};
+
 export const isFirebaseAuthAvailable = (): boolean =>
   typeof auth?.onAuthStateChanged === 'function';
 
@@ -81,7 +93,7 @@ export const logoutUser = async () => {
 
 export const saveUserToFirestore = async (user: User) => {
   if (!db.app) return;
-  await setDoc(doc(db, 'users', user.id), user);
+  await setDoc(doc(db, 'users', user.id), normalizeTenantUser(user));
 };
 
 export const getUserFromFirestore = async (uid: string): Promise<User | null> => {
@@ -90,10 +102,9 @@ export const getUserFromFirestore = async (uid: string): Promise<User | null> =>
   const docSnap = await getDoc(docRef);
   
   if (docSnap.exists()) {
-    return docSnap.data() as User;
-  } else {
-    return null;
+    return normalizeTenantUser(docSnap.data() as User);
   }
+  return null;
 };
 
 export const subscribeToAuth = (callback: (user: FirebaseUser | null) => void) => {
@@ -110,10 +121,12 @@ export const getClients = async (companyId: string): Promise<Client[]> => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
 };
 
-export const createClient = async (clientData: Partial<Client>) => {
+/** Create a client under the given tenant (`companyId`). */
+export const createClient = async (companyId: string, clientData: Partial<Client>) => {
   if (!db.app) throw new Error("Database not configured");
   return await addDoc(collection(db, 'clients'), {
     ...clientData,
+    companyId,
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now()
   });
@@ -130,37 +143,50 @@ export const updateClient = async (clientId: string, data: Partial<Client>) => {
 
 // --- DISPUTES ---
 
-export const createDispute = async (disputeData: any) => {
+export const createDispute = async (companyId: string, disputeData: Record<string, unknown>) => {
   if (!db.app) return { id: 'mock-id' };
   return await addDoc(collection(db, 'disputes'), {
     ...disputeData,
+    companyId,
     status: 'DRAFT',
     createdAt: Timestamp.now()
   });
 };
 
-export const getClientDisputes = async (clientId: string) => {
+export const getClientDisputes = async (companyId: string, clientId: string) => {
   if (!db.app) return [];
-  const q = query(collection(db, 'disputes'), where('clientId', '==', clientId));
+  const q = query(
+    collection(db, 'disputes'),
+    where('companyId', '==', companyId),
+    where('clientId', '==', clientId)
+  );
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
 // --- SUPPORT TICKETS ---
 
-export const createTicket = async (ticket: Partial<SupportTicket>) => {
+export const createTicket = async (companyId: string, ticket: Partial<SupportTicket>) => {
   if (!db.app) return { id: 'mock-ticket-id' };
   return await addDoc(collection(db, 'tickets'), {
     ...ticket,
+    companyId,
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
-    status: 'OPEN'
+    status: ticket.status || 'OPEN'
   });
 };
 
-export const subscribeToTickets = (callback: (tickets: SupportTicket[]) => void) => {
+export const subscribeToTickets = (
+  companyId: string,
+  callback: (tickets: SupportTicket[]) => void
+) => {
   if (!db.app) return () => {};
-  const q = query(collection(db, 'tickets'), orderBy('updatedAt', 'desc'));
+  const q = query(
+    collection(db, 'tickets'),
+    where('companyId', '==', companyId),
+    orderBy('updatedAt', 'desc')
+  );
   return onSnapshot(q, (snapshot) => {
     const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SupportTicket));
     callback(tickets);
@@ -178,10 +204,11 @@ export const uploadDocument = async (file: File, path: string) => {
 
 // --- LOGGING ---
 
-export const logActivity = async (log: Partial<ActivityLog>) => {
+export const logActivity = async (companyId: string, log: Partial<ActivityLog>) => {
   if (!db.app) return;
   await addDoc(collection(db, 'activityLogs'), {
     ...log,
+    companyId,
     timestamp: Timestamp.now()
   });
 };

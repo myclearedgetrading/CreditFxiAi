@@ -1,83 +1,15 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    function userDoc() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid));
-    }
-    
-    function getUserData() {
-      return userDoc().data;
-    }
-    
-    function hasUserProfile() {
-      return userDoc().exists;
-    }
-    
-    function hasRole(role) {
-      return isAuthenticated() && hasUserProfile() && getUserData().role == role;
-    }
-    
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
 
-    function isCompanyMember(companyId) {
-      return isAuthenticated() && hasUserProfile() && getUserData().companyId == companyId;
-    }
-
-    function canManageClientsForCompany(companyId) {
-      return isAuthenticated() && hasUserProfile() && isCompanyMember(companyId)
-        && (getUserData().role == 'USER' || getUserData().role == 'ADMIN'
-            || getUserData().role == 'SPECIALIST' || getUserData().role == 'SUPER_ADMIN');
-    }
-
-    // Users Collection
+    // Users can only read/write their own profile doc
     match /users/{userId} {
-      allow read: if isAuthenticated() && (isOwner(userId) || hasRole('ADMIN') || hasRole('SUPER_ADMIN'));
-      allow create: if isAuthenticated() && isOwner(userId);
-      allow update: if isAuthenticated() && (isOwner(userId) || hasRole('SUPER_ADMIN'));
-      allow delete: if hasRole('SUPER_ADMIN');
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Companies Collection
-    match /companies/{companyId} {
-      allow read: if isCompanyMember(companyId);
-      allow write: if hasRole('SUPER_ADMIN');
-    }
-
-    // Clients Collection
-    match /clients/{clientId} {
-      allow read: if isAuthenticated() && isCompanyMember(resource.data.companyId);
-      allow create: if canManageClientsForCompany(request.resource.data.companyId);
-      allow update: if canManageClientsForCompany(resource.data.companyId)
-        && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if canManageClientsForCompany(resource.data.companyId);
-    }
-
-    // Disputes Collection
-    match /disputes/{disputeId} {
-      allow read: if isAuthenticated() && isCompanyMember(resource.data.companyId);
-      allow create: if isAuthenticated() && isCompanyMember(request.resource.data.companyId);
-      allow update, delete: if isAuthenticated() && isCompanyMember(resource.data.companyId);
-    }
-
-    // Tickets Collection
-    match /tickets/{ticketId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (hasRole('ADMIN') || hasRole('SPECIALIST'));
-    }
-
-    // Activity Logs
-    match /activityLogs/{logId} {
-      allow read: if isAuthenticated() && (hasRole('ADMIN') || hasRole('AUDITOR'));
-      allow create: if isAuthenticated(); // Systems logs created by server
+    // Each user can only access their own credit data
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }

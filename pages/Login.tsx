@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, Mail, Lock, ArrowRight, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useUser } from '../context/UserContext';
-import { loginWithEmail, getUserFromFirestore, buildUserProfileFromAuthUser, saveUserToFirestore } from '../services/firebaseService';
+import {
+  loginWithEmail,
+  getUserFromFirestore,
+  buildUserProfileFromAuthUser,
+  saveUserToFirestore,
+  isFirebaseAuthAvailable,
+} from '../services/firebaseService';
 import { User } from '../types';
 
 const Login: React.FC = () => {
@@ -62,6 +68,24 @@ const Login: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  const exploreDemoLocal = () => {
+    const demo: User = {
+      id: 'demo-local-preview',
+      firstName: 'Demo',
+      lastName: 'User',
+      email: 'demo@preview.local',
+      phone: '',
+      role: 'USER',
+      companyId: 'demo-local-preview',
+      creditScore: { equifax: 0, experian: 0, transunion: 0 },
+      negativeItems: [],
+    };
+    login(demo);
+    navigate('/dashboard');
+  };
+
+  const showLocalDemo = !isFirebaseAuthAvailable();
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col justify-center items-center p-6 relative overflow-hidden">
@@ -156,13 +180,33 @@ const Login: React.FC = () => {
             </button>
           </form>
 
+          {showLocalDemo && (
+            <div className="mt-6 pt-6 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={exploreDemoLocal}
+                className="w-full py-3 text-sm font-semibold text-slate-400 hover:text-white border border-slate-700 rounded-xl hover:border-slate-500 transition-colors"
+              >
+                Explore the app (demo, no sign-in)
+              </button>
+              <p className="text-[11px] text-slate-600 text-center mt-2">
+                Firebase isn&apos;t configured — this only saves a local preview session in your browser.
+              </p>
+            </div>
+          )}
+
           <div className="mt-8 text-center">
             <p className="text-slate-500 text-sm">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link to="/onboarding" className="font-bold text-orange-500 hover:text-orange-400 transition-colors">
                 Start Free Trial
               </Link>
             </p>
+            {showLocalDemo === false && (
+              <p className="text-slate-600 text-[11px] mt-2">
+                You can skip the credit-import step during sign-up to browse first.
+              </p>
+            )}
           </div>
         </div>
         
