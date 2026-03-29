@@ -25,6 +25,15 @@ export interface NegativeItem {
   status: 'Open' | 'Disputed' | 'Deleted' | 'Verified';
 }
 
+/** Aligns with `firestore.rules` role checks (DIY users typically `USER`). */
+export type UserRole =
+  | 'USER'
+  | 'ADMIN'
+  | 'CLIENT'
+  | 'SUPER_ADMIN'
+  | 'SPECIALIST'
+  | 'AUDITOR';
+
 // User now represents the DIY User / Business Owner
 export interface User {
   id: string;
@@ -32,6 +41,8 @@ export interface User {
   lastName: string;
   email: string;
   phone: string;
+  /** Firestore tenant id: solo DIY often uses `id` (see `firebaseService.registerWithEmail`). */
+  companyId?: string;
   address?: {
     street: string;
     city: string;
@@ -45,7 +56,7 @@ export interface User {
   };
   negativeItems: NegativeItem[];
   businessProfile?: BusinessProfile;
-  role: 'USER' | 'ADMIN' | 'CLIENT';
+  role: UserRole;
   verificationDocuments?: {
     idCard: boolean;
     ssnCard: boolean;

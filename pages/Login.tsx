@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, Mail, Lock, ArrowRight, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useUser } from '../context/UserContext';
-import { loginWithEmail, getUserFromFirestore } from '../services/firebaseService';
+import { loginWithEmail, getUserFromFirestore, buildUserProfileFromAuthUser, saveUserToFirestore } from '../services/firebaseService';
 import { User } from '../types';
 
 const Login: React.FC = () => {
@@ -23,49 +23,30 @@ const Login: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
-    // --- ADMIN OVERRIDE FOR ABEL MELENDEZ ---
-    if (email.toLowerCase() === 'hello@abelmelendez.com') {
-      const adminUser: User = {
-          id: 'admin-abel-melendez',
-          firstName: 'Abel',
-          lastName: 'Melendez',
-          email: 'hello@abelmelendez.com',
-          phone: '555-0199',
-          role: 'ADMIN',
-          creditScore: {
-              equifax: 815,
-              experian: 820,
-              transunion: 810
-          },
-          negativeItems: []
-      };
-      
-      // Simulate authenticating
-      setTimeout(() => {
-          login(adminUser);
-          setIsLoading(false);
-          navigate('/dashboard');
-      }, 800);
-      return;
-    }
-    // ----------------------------------------
-
     try {
       // 1. Authenticate with Firebase Auth
       const credential = await loginWithEmail(email, password);
       
-      // 2. Fetch User Profile from Firestore
-      const userProfile = await getUserFromFirestore(credential.user.uid);
+      // 2. Fetch User Profile from Firestore (or bootstrap a minimal profile)
+      const existingProfile = await getUserFromFirestore(credential.user.uid);
+      const userProfile = existingProfile ?? buildUserProfileFromAuthUser(credential.user);
 
-      if (userProfile) {
-        login(userProfile);
-        navigate('/dashboard');
-      } else {
-        // Fallback if profile doesn't exist (e.g. created via console or old method)
-        // In a production app, we might redirect to a 'profile setup' page here.
-        setError("Account exists but profile data is missing. Please contact support.");
+      if (!userProfile.id) {
+        setError('Could not load account profile.');
         setIsLoading(false);
+        return;
       }
+
+      if (!existingProfile) {
+        try {
+          await saveUserToFirestore(userProfile);
+        } catch (persistErr) {
+          console.warn('Could not save initial user profile:', persistErr);
+        }
+      }
+
+      login(userProfile);
+      navigate('/dashboard');
 
     } catch (err: any) {
       console.error(err);

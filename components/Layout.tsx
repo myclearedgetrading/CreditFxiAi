@@ -10,6 +10,7 @@ import {
 import MobileNav from './MobileNav';
 import { isMobileDevice } from '../services/mobileService';
 import { useUser } from '../context/UserContext';
+import { logoutUser } from '../services/firebaseService';
 
 interface LayoutProps {
   children: ReactNode;
@@ -28,7 +29,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', () => setIsMobile(isMobileDevice()));
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      /* still clear local session */
+    }
     logout();
     navigate('/login');
   };

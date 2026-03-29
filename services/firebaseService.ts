@@ -11,6 +11,27 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage, googleProvider } from './firebaseConfig';
 import { Client, SupportTicket, ActivityLog, User } from '../types';
 
+export const isFirebaseAuthAvailable = (): boolean =>
+  typeof auth?.onAuthStateChanged === 'function';
+
+/** Minimal profile when Firestore has no `users/{uid}` doc yet (syncs with rules + DIY `companyId`). */
+export const buildUserProfileFromAuthUser = (fbUser: FirebaseUser): User => {
+  const parts = (fbUser.displayName || '').trim().split(/\s+/);
+  const firstName = parts[0] || '';
+  const lastName = parts.slice(1).join(' ') || '';
+  return {
+    id: fbUser.uid,
+    email: fbUser.email || '',
+    firstName,
+    lastName,
+    phone: fbUser.phoneNumber || '',
+    role: 'USER',
+    companyId: fbUser.uid,
+    creditScore: { equifax: 0, experian: 0, transunion: 0 },
+    negativeItems: [],
+  };
+};
+
 // --- AUTHENTICATION & USER MANAGEMENT ---
 
 export const registerWithEmail = async (email: string, pass: string, userData: Partial<User>) => {
@@ -21,11 +42,13 @@ export const registerWithEmail = async (email: string, pass: string, userData: P
   const uid = credential.user.uid;
 
   // 2. Create User Document in Firestore
+  const merged = userData as User;
   const userProfile: User = {
-    ...userData as User,
+    ...merged,
     id: uid,
-    email: email,
-    role: 'USER'
+    email,
+    role: merged.role || 'USER',
+    companyId: merged.companyId ?? uid,
   };
 
   await saveUserToFirestore(userProfile);

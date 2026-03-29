@@ -11,8 +11,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      // Polyfill process.env for specific variables used in the app
-      'process.env.API_KEY': JSON.stringify(env.API_KEY),
+      // Gemini API key is server-only (Vercel `API_KEY` / `GEMINI_API_KEY`); never bundle into the client.
       'process.env.VITE_FIREBASE_API_KEY': JSON.stringify(env.VITE_FIREBASE_API_KEY),
       'process.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(env.VITE_FIREBASE_AUTH_DOMAIN),
       'process.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(env.VITE_FIREBASE_PROJECT_ID),

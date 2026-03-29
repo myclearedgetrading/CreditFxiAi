@@ -3,16 +3,24 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, Filter, MoreVertical, Loader2 } from 'lucide-react';
 import { ClientStatus, Client } from '../types';
 import { getClients } from '../services/firebaseService';
+import { useUser } from '../context/UserContext';
 
 const Clients: React.FC = () => {
+  const { user } = useUser();
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const companyId = user.companyId || user.id;
+
   useEffect(() => {
     const fetchClients = async () => {
+      if (!companyId) {
+        setClients([]);
+        setIsLoading(false);
+        return;
+      }
       try {
-        // Fetching for a default company ID or the user's company ID
-        const data = await getClients('default-company-id');
+        const data = await getClients(companyId);
         setClients(data);
       } catch (e) {
         console.error("Failed to fetch clients", e);
@@ -21,7 +29,7 @@ const Clients: React.FC = () => {
       }
     };
     fetchClients();
-  }, []);
+  }, [companyId]);
 
   const getStatusColor = (status: ClientStatus) => {
     switch (status) {

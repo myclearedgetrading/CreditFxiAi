@@ -1,6 +1,13 @@
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { User } from '../types';
+import {
+  subscribeToAuth,
+  getUserFromFirestore,
+  buildUserProfileFromAuthUser,
+  saveUserToFirestore,
+  isFirebaseAuthAvailable,
+} from '../services/firebaseService';
 
 interface UserContextType {
   user: User;
@@ -32,52 +39,83 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user from local storage (Session Persistence)
+  const persistSessionUser = useCallback((next: User) => {
+    setUser(next);
+    setIsAuthenticated(true);
+    localStorage.setItem('creditfix_user', JSON.stringify(next));
+  }, []);
+
+  const login = useCallback((userData: User) => {
+    persistSessionUser(userData);
+  }, [persistSessionUser]);
+
+  const logout = useCallback(() => {
+    setUser(DEFAULT_USER);
+    setIsAuthenticated(false);
+    localStorage.removeItem('creditfix_user');
+    localStorage.removeItem('creditfix_onboarding_state');
+  }, []);
+
+  // Firebase Auth is source of truth when configured; otherwise demo/localStorage only.
   useEffect(() => {
-    const savedUser = localStorage.getItem('creditfix_user');
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser);
-        if (parsed.email) {
+    if (!isFirebaseAuthAvailable()) {
+      const savedUser = localStorage.getItem('creditfix_user');
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser) as User;
+          if (parsed.email) {
             setUser(parsed);
             setIsAuthenticated(true);
+          }
+        } catch (e) {
+          console.error('Failed to load user', e);
+          localStorage.removeItem('creditfix_user');
         }
-      } catch (e) {
-        console.error("Failed to load user", e);
-        localStorage.removeItem('creditfix_user');
       }
+      setIsLoading(false);
+      return;
     }
-    setIsLoading(false);
-  }, []);
+
+    const unsubscribe = subscribeToAuth((fbUser) => {
+      void (async () => {
+        if (!fbUser) {
+          logout();
+          setIsLoading(false);
+          return;
+        }
+
+        try {
+          const profile = await getUserFromFirestore(fbUser.uid);
+          const next = profile ?? buildUserProfileFromAuthUser(fbUser);
+          if (!profile) {
+            try {
+              await saveUserToFirestore(next);
+            } catch (e) {
+              console.warn('Could not persist new user profile to Firestore:', e);
+            }
+          }
+          persistSessionUser(next);
+        } catch (e) {
+          console.error('Failed to load user profile', e);
+          persistSessionUser(buildUserProfileFromAuthUser(fbUser));
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+    });
+
+    return () => unsubscribe();
+  }, [logout, persistSessionUser]);
 
   const updateUser = (data: Partial<User>) => {
     setUser(prev => {
       const updated = { ...prev, ...data };
-      
-      // 1. Update Session Storage (Current Login)
       localStorage.setItem('creditfix_user', JSON.stringify(updated));
-      
-      // 2. Update Persistent "Database" Storage (Survives Logout)
       if (updated.email) {
         localStorage.setItem(`creditfix_db_${updated.email}`, JSON.stringify(updated));
       }
-      
       return updated;
     });
-  };
-
-  const login = (userData: User) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem('creditfix_user', JSON.stringify(userData));
-  };
-
-  const logout = () => {
-    setUser(DEFAULT_USER);
-    setIsAuthenticated(false);
-    // Only clear session data, not the "database" data
-    localStorage.removeItem('creditfix_user');
-    localStorage.removeItem('creditfix_onboarding_state');
   };
 
   return (

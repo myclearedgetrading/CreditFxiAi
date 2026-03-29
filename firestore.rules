@@ -7,12 +7,20 @@ service cloud.firestore {
       return request.auth != null;
     }
     
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    
     function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return userDoc().data;
+    }
+    
+    function hasUserProfile() {
+      return userDoc().exists;
     }
     
     function hasRole(role) {
-      return isAuthenticated() && getUserData().role == role;
+      return isAuthenticated() && hasUserProfile() && getUserData().role == role;
     }
     
     function isOwner(userId) {
@@ -20,13 +28,21 @@ service cloud.firestore {
     }
 
     function isCompanyMember(companyId) {
-      return isAuthenticated() && getUserData().companyId == companyId;
+      return isAuthenticated() && hasUserProfile() && getUserData().companyId == companyId;
+    }
+
+    function canManageClientsForCompany(companyId) {
+      return isAuthenticated() && hasUserProfile() && isCompanyMember(companyId)
+        && (getUserData().role == 'USER' || getUserData().role == 'ADMIN'
+            || getUserData().role == 'SPECIALIST' || getUserData().role == 'SUPER_ADMIN');
     }
 
     // Users Collection
     match /users/{userId} {
-      allow read: if isAuthenticated() && (isOwner(userId) || hasRole('ADMIN'));
-      allow write: if hasRole('SUPER_ADMIN'); // Only super admins can create users directly via client
+      allow read: if isAuthenticated() && (isOwner(userId) || hasRole('ADMIN') || hasRole('SUPER_ADMIN'));
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isAuthenticated() && (isOwner(userId) || hasRole('SUPER_ADMIN'));
+      allow delete: if hasRole('SUPER_ADMIN');
     }
 
     // Companies Collection
@@ -38,12 +54,17 @@ service cloud.firestore {
     // Clients Collection
     match /clients/{clientId} {
       allow read: if isAuthenticated() && isCompanyMember(resource.data.companyId);
-      allow write: if isAuthenticated() && isCompanyMember(request.resource.data.companyId) && (hasRole('ADMIN') || hasRole('SPECIALIST'));
+      allow create: if canManageClientsForCompany(request.resource.data.companyId);
+      allow update: if canManageClientsForCompany(resource.data.companyId)
+        && request.resource.data.companyId == resource.data.companyId;
+      allow delete: if canManageClientsForCompany(resource.data.companyId);
     }
 
     // Disputes Collection
     match /disputes/{disputeId} {
-      allow read, write: if isAuthenticated() && isCompanyMember(resource.data.companyId);
+      allow read: if isAuthenticated() && isCompanyMember(resource.data.companyId);
+      allow create: if isAuthenticated() && isCompanyMember(request.resource.data.companyId);
+      allow update, delete: if isAuthenticated() && isCompanyMember(resource.data.companyId);
     }
 
     // Tickets Collection

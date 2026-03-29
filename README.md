@@ -19,28 +19,30 @@ A comprehensive, AI-powered Credit Repair Business CRM built with React, Firebas
 - **AI**: Google Gemini API (`@google/genai`)
 - **Build Tool**: Vite
 
-## API Key Setup
+## API key setup (Gemini)
 
-To enable real AI features (instead of Demo Mode), you need a Google Gemini API Key.
+The app calls **`/api/gemini`** on the server so your Gemini key is **never** embedded in the Vite client bundle.
 
-1.  Go to [Google AI Studio](https://aistudio.google.com/).
-2.  Click **"Get API key"**.
-3.  Create a key in a new or existing Google Cloud project.
-4.  Create a file named `.env` in the root directory.
-5.  Add your key:
-    ```env
-    API_KEY=your_api_key_here
-    ```
+1. Get a key from [Google AI Studio](https://aistudio.google.com/).
+2. **Local:** add to `.env` or `.env.local` (loaded by Vite for Firebase vars; Vercel CLI also reads `.env` for serverless):
+   ```env
+   API_KEY=your_api_key_here
+   ```
+   You can use `GEMINI_API_KEY` instead of `API_KEY` if you prefer.
+3. **Vercel:** set `API_KEY` or `GEMINI_API_KEY` in the project **Environment Variables** (Production / Preview).
+4. **Local AI routes:** plain `npm run dev` does not run Vercel functions. Use **`npm run dev:vercel`** (requires [Vercel CLI](https://vercel.com/docs/cli)) so `/api/gemini` is available, or test AI after deploy.
 
 ## Setup
 
 1. **Clone the repository**
 2. **Install dependencies**: `npm install`
-3. **Environment Setup**:
-   - Copy `.env.example` to `.env.local` or `.env`
-   - Add your Firebase Config keys
-   - Add your Google Gemini API key (`API_KEY`)
-4. **Run Development Server**: `npm run dev`
+3. **Environment**
+   - Add Firebase client keys: `VITE_FIREBASE_*` (see below).
+   - Add **`API_KEY`** (or `GEMINI_API_KEY`) for Gemini on the **server** (see above).
+   - Optional: `FIREBASE_SERVICE_ACCOUNT_KEY` (JSON string) for `/api/admin` user provisioning.
+4. **Run app**
+   - UI only: `npm run dev`
+   - UI + API routes: `npm run dev:vercel`
 
 ## Firebase Setup
 
@@ -59,10 +61,9 @@ To enable real AI features (instead of Demo Mode), you need a Google Gemini API 
 - `/pages`: React components for each route.
 - `/components`: Reusable UI components.
 - `/services`: API wrappers (Gemini, Firebase, Integration).
-- `/api`: Next.js API routes (Admin SDK).
-- `/types`: TypeScript interfaces.
+- `/api`: Vercel serverless handlers (e.g. Gemini proxy, Admin SDK).
+- `/types`: Shared TypeScript types.
 
 ## Testing
 
-- Unit tests: `npm test`
-- Manual testing: Use the `SupportCenter` or `AnalysisEngine` with sample data provided in `constants.ts` or upload real files.
+- Manual: use `SupportCenter`, `AnalysisEngine`, or sample data in `constants.ts`.
