@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Settings, LogOut, Menu, X,
   ShieldCheck, ScanSearch, LineChart, Trophy,
-  Briefcase, GraduationCap, Building2,
+  GraduationCap, Building2,
   ShoppingBag
 } from 'lucide-react';
 import MobileNav from './MobileNav';
@@ -39,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate('/login');
   };
 
-  // Reordered Navigation Items: Credit Repair -> Business Funding
+  // DIY-first: personal credit repair flows (no agency/business-mode UI)
   const navItems = [
     { path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { path: '/analysis', label: 'Credit Audit', icon: ScanSearch },
@@ -84,7 +84,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
 
         <div className="px-6 pt-6 pb-2">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">My Journey</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">DIY credit repair</p>
         </div>
 
         <nav className="flex-1 px-4 space-y-2 overflow-y-auto pb-24 lg:pb-6">
@@ -112,7 +112,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
              </div>
              <div className="overflow-hidden">
                <p className="text-sm font-bold text-white truncate">{user.firstName} {user.lastName}</p>
-               <p className="text-xs text-slate-400 truncate">DIY Member</p>
+               <p className="text-xs text-slate-400 truncate">Personal account</p>
              </div>
           </div>
 
@@ -140,13 +140,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <h1 className="text-lg font-semibold text-white lg:hidden">
               {navItems.find(i => i.path === location.pathname)?.label || 'CreditFix AI'}
             </h1>
-          </div>
-          
-          <div className="flex items-center ml-auto space-x-4">
-             <button className="hidden sm:flex items-center px-3 py-1.5 bg-orange-900/20 text-orange-400 border border-orange-900/30 rounded-full text-xs font-bold">
-               <Briefcase className="w-3 h-3 mr-1.5" />
-               Business Mode: Active
-             </button>
           </div>
         </header>
 

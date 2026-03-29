@@ -15,7 +15,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ onMenuClick }) => {
     <div className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A] border-t border-slate-800 lg:hidden pb-safe z-50 transition-colors">
       <div className="flex justify-around items-center h-16">
         <NavLink 
-          to="/" 
+          to="/dashboard" 
           onClick={handleClick}
           className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-orange-500' : 'text-slate-500 hover:text-slate-300'}`}
         >
