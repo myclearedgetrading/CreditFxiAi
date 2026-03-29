@@ -2,14 +2,100 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users can only read/write their own profile doc
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // Each user can only access their own credit data
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function hasUserProfile() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userData() {
+      return userDoc().data;
+    }
+
+    function isPlatformAdmin() {
+      return isSignedIn() && hasUserProfile()
+        && (userData().role == 'ADMIN' || userData().role == 'SUPER_ADMIN');
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isCompanyMember(companyId) {
+      return isSignedIn() && hasUserProfile() && userData().companyId == companyId;
+    }
+
+    function canManageClientsForCompany(companyId) {
+      return isSignedIn() && hasUserProfile() && isCompanyMember(companyId)
+        && (userData().role == 'USER' || userData().role == 'ADMIN'
+            || userData().role == 'SPECIALIST' || userData().role == 'SUPER_ADMIN');
+    }
+
+    function isTenantStaff() {
+      return hasUserProfile()
+        && (userData().role == 'USER' || userData().role == 'ADMIN'
+            || userData().role == 'SPECIALIST' || userData().role == 'SUPER_ADMIN');
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (isOwner(userId) || isPlatformAdmin());
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && (isOwner(userId) || isPlatformAdmin());
+      allow delete: if isPlatformAdmin();
+    }
+
     match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /companies/{companyId} {
+      allow read: if isCompanyMember(companyId) || isPlatformAdmin();
+      allow create: if isPlatformAdmin();
+      allow update: if isSignedIn() && hasUserProfile() && isCompanyMember(companyId)
+        && (userData().role == 'ADMIN' || userData().role == 'SUPER_ADMIN');
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /clients/{clientId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if canManageClientsForCompany(request.resource.data.companyId);
+      allow update: if canManageClientsForCompany(resource.data.companyId)
+        && request.resource.data.companyId == resource.data.companyId;
+      allow delete: if canManageClientsForCompany(resource.data.companyId);
+    }
+
+    match /disputes/{disputeId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId);
+      allow update, delete: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(resource.data.companyId);
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
+      allow update: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId)
+            && (userData().role == 'ADMIN' || userData().role == 'SPECIALIST' || userData().role == 'SUPER_ADMIN'));
+    }
+
+    match /activityLogs/{logId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId)
+            && (userData().role == 'ADMIN' || userData().role == 'AUDITOR' || userData().role == 'SUPER_ADMIN'));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
     }
   }
 }

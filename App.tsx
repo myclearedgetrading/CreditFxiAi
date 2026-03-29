@@ -19,6 +19,8 @@ import BusinessFunding from './pages/BusinessFunding';
 import Marketplace from './pages/Marketplace';
 import Onboarding from './pages/Onboarding';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
+import AdminPortal from './pages/AdminPortal';
 import { requestNotificationPermission } from './services/mobileService';
 import { ThemeProvider } from './context/ThemeContext';
 import { UserProvider } from './context/UserContext';
@@ -117,6 +119,14 @@ const App: React.FC = () => {
                     <Route path="/support" element={<SupportCenter />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/rewards" element={<GamificationCenter />} />
+                    <Route
+                      path="/admin"
+                      element={
+                        <AdminRoute>
+                          <AdminPortal />
+                        </AdminRoute>
+                      }
+                    />
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                   </Routes>
                 </Layout>

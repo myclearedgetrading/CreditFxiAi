@@ -11,6 +11,9 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage, googleProvider } from './firebaseConfig';
 import { Client, SupportTicket, ActivityLog, User } from '../types';
 
+export const isPlatformAdmin = (user: Pick<User, 'role'> | null | undefined): boolean =>
+  !!user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN');
+
 /** Resolves tenant id for queries and writes (Path A). */
 export const tenantCompanyId = (user: Pick<User, 'id' | 'companyId'>): string =>
   user.companyId || user.id;
@@ -39,6 +42,7 @@ export const buildUserProfileFromAuthUser = (fbUser: FirebaseUser): User => {
     phone: fbUser.phoneNumber || '',
     role: 'USER',
     companyId: fbUser.uid,
+    createdAt: new Date().toISOString(),
     creditScore: { equifax: 0, experian: 0, transunion: 0 },
     negativeItems: [],
   };
@@ -61,6 +65,7 @@ export const registerWithEmail = async (email: string, pass: string, userData: P
     email,
     role: merged.role || 'USER',
     companyId: merged.companyId ?? uid,
+    createdAt: merged.createdAt ?? new Date().toISOString(),
   };
 
   await saveUserToFirestore(userProfile);
@@ -211,4 +216,38 @@ export const logActivity = async (companyId: string, log: Partial<ActivityLog>) 
     companyId,
     timestamp: Timestamp.now()
   });
+};
+
+// --- PLATFORM ADMIN (requires Firestore rules: platform admins may list `users`) ---
+
+export const adminFetchAllUsers = async (): Promise<User[]> => {
+  if (!db.app) return [];
+  const snapshot = await getDocs(collection(db, 'users'));
+  return snapshot.docs.map((d) => {
+    const data = d.data() as User;
+    return normalizeTenantUser({ ...data, id: data.id || d.id });
+  });
+};
+
+/** Best-effort ticket count for admin KPIs (fails silently if rules deny). */
+export const adminTryCountOpenTickets = async (): Promise<number | null> => {
+  if (!db.app) return null;
+  try {
+    const q = query(collection(db, 'tickets'), where('status', '==', 'OPEN'));
+    const snapshot = await getDocs(q);
+    return snapshot.size;
+  } catch {
+    return null;
+  }
+};
+
+/** Best-effort total clients across tenants (fails silently if rules deny). */
+export const adminTryCountClients = async (): Promise<number | null> => {
+  if (!db.app) return null;
+  try {
+    const snapshot = await getDocs(collection(db, 'clients'));
+    return snapshot.size;
+  } catch {
+    return null;
+  }
 };

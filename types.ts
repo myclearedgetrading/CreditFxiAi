@@ -57,6 +57,8 @@ export interface User {
   negativeItems: NegativeItem[];
   businessProfile?: BusinessProfile;
   role: UserRole;
+  /** ISO timestamp — set on first registration for admin growth KPIs */
+  createdAt?: string;
   verificationDocuments?: {
     idCard: boolean;
     ssnCard: boolean;

@@ -5,12 +5,12 @@ import {
   LayoutDashboard, Settings, LogOut, Menu, X,
   ShieldCheck, ScanSearch, LineChart, Trophy,
   GraduationCap, Building2,
-  ShoppingBag
+  ShoppingBag, BarChart3
 } from 'lucide-react';
 import MobileNav from './MobileNav';
 import { isMobileDevice } from '../services/mobileService';
 import { useUser } from '../context/UserContext';
-import { logoutUser } from '../services/firebaseService';
+import { logoutUser, isPlatformAdmin } from '../services/firebaseService';
 
 interface LayoutProps {
   children: ReactNode;
@@ -103,6 +103,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {item.label}
             </Link>
           ))}
+          {isPlatformAdmin(user) && (
+            <Link
+              to="/admin"
+              onClick={() => setIsSidebarOpen(false)}
+              className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all border border-dashed ${
+                isActive('/admin')
+                  ? 'bg-amber-900/40 text-amber-200 border-amber-800/50'
+                  : 'text-amber-500/90 border-amber-900/30 hover:bg-amber-950/40 hover:text-amber-400'
+              }`}
+            >
+              <BarChart3 className="w-5 h-5 mr-3" />
+              Admin portal
+            </Link>
+          )}
         </nav>
 
         <div className="p-4 border-t border-slate-900 mb-safe lg:mb-0 space-y-2">
