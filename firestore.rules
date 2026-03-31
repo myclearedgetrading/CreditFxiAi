@@ -76,7 +76,12 @@ service cloud.firestore {
       allow delete: if isPlatformAdmin();
     }
 
-    match /users/{userId}/{document=**} {
+    // User-owned nested documents only (explicitly excludes the root `/users/{userId}` profile doc).
+    match /users/{userId}/{subCollection}/{docId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/{subCollection}/{docId}/{nestedPath=**} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
