@@ -32,6 +32,11 @@ const ALLOWED_ACTIONS = new Set([
   'suggestAutomationWorkflow',
   'classifyDocument',
   'parseBureauResponse',
+  'analyzeBureauResponseLetter',
+  'determineDisputeNextActions',
+  'estimateDisputeScoreImpact',
+  'generateStrategyTemplateByTarget',
+  'orchestrateClosedLoopCreditRepair',
   'generateExecutiveSummary',
   'generateChatResponse',
   'analyzeSupportTicket',
@@ -83,6 +88,76 @@ function validatePayload(action: string, payload: unknown): string | null {
       || (Array.isArray(chatPayload.history) && chatPayload.history.length > 50)
     ) {
       return 'Invalid payload for generateChatResponse';
+    }
+  }
+
+  if (action === 'analyzeBureauResponseLetter') {
+    const p = payload as { responseText?: string };
+    if (typeof p?.responseText !== 'string' || p.responseText.length < 50 || p.responseText.length > 350000) {
+      return 'Invalid payload for analyzeBureauResponseLetter';
+    }
+  }
+
+  if (action === 'determineDisputeNextActions') {
+    const p = payload as { currentRoundNumber?: number; outcomes?: unknown[] };
+    if (
+      typeof p?.currentRoundNumber !== 'number'
+      || p.currentRoundNumber < 1
+      || p.currentRoundNumber > 6
+      || !Array.isArray(p.outcomes)
+    ) {
+      return 'Invalid payload for determineDisputeNextActions';
+    }
+  }
+
+  if (action === 'estimateDisputeScoreImpact') {
+    const p = payload as { currentScore?: number; negativeItemsRemaining?: number };
+    if (
+      typeof p?.currentScore !== 'number'
+      || p.currentScore < 300
+      || p.currentScore > 850
+      || typeof p?.negativeItemsRemaining !== 'number'
+    ) {
+      return 'Invalid payload for estimateDisputeScoreImpact';
+    }
+  }
+
+  if (action === 'generateStrategyTemplateByTarget') {
+    const p = payload as { strategy?: string; bureau?: string; roundNumber?: number; clientName?: string };
+    if (
+      typeof p?.strategy !== 'string'
+      || typeof p?.bureau !== 'string'
+      || typeof p?.roundNumber !== 'number'
+      || p.roundNumber < 1
+      || p.roundNumber > 6
+      || typeof p?.clientName !== 'string'
+      || p.clientName.trim().length < 1
+    ) {
+      return 'Invalid payload for generateStrategyTemplateByTarget';
+    }
+  }
+
+  if (action === 'orchestrateClosedLoopCreditRepair') {
+    const p = payload as {
+      responseText?: string;
+      currentRoundNumber?: number;
+      status?: string;
+      currentScore?: number;
+      negativeItemsRemaining?: number;
+      strategy?: string;
+      clientName?: string;
+    };
+    if (
+      typeof p?.responseText !== 'string'
+      || p.responseText.length < 50
+      || typeof p?.currentRoundNumber !== 'number'
+      || typeof p?.status !== 'string'
+      || typeof p?.currentScore !== 'number'
+      || typeof p?.negativeItemsRemaining !== 'number'
+      || typeof p?.strategy !== 'string'
+      || typeof p?.clientName !== 'string'
+    ) {
+      return 'Invalid payload for orchestrateClosedLoopCreditRepair';
     }
   }
 

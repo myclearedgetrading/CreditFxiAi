@@ -168,6 +168,187 @@ export interface Task {
   category: 'PERSONAL' | 'BUSINESS';
 }
 
+export type DisputeStatus =
+  | 'DRAFT'
+  | 'SENT'
+  | 'RESPONDED'
+  | 'ESCALATED'
+  | 'CLOSED';
+
+export type DisputeRoundStatus =
+  | 'DRAFT'
+  | 'READY_TO_SEND'
+  | 'SENT'
+  | 'RESPONSE_RECEIVED'
+  | 'ESCALATED'
+  | 'CLOSED';
+
+export type DisputeOutcome =
+  | 'PENDING'
+  | 'DELETED'
+  | 'VERIFIED'
+  | 'UPDATED'
+  | 'PARTIAL'
+  | 'NO_CHANGE';
+
+export interface Dispute {
+  id: string;
+  companyId?: string;
+  clientId: string;
+  negativeItemId?: string;
+  strategy: DisputeStrategy;
+  targetBureaus: Bureau[];
+  furnisher?: string;
+  currentRoundNumber: number;
+  overallStatus: DisputeStatus;
+  outcome: DisputeOutcome;
+  estimatedScoreImpact?: number;
+  nextAction?: string;
+  nextActionDueAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DisputeRound {
+  id: string;
+  companyId?: string;
+  clientId: string;
+  disputeId: string;
+  roundNumber: number;
+  strategy: DisputeStrategy;
+  targetBureaus: Bureau[];
+  templateVariantId?: string;
+  status: DisputeRoundStatus;
+  sentAt?: string;
+  responseDueAt?: string;
+  responseReceivedAt?: string;
+  outcome: DisputeOutcome;
+  generatedLetter?: string;
+  summary?: string;
+  createdByUserId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type RepairTaskType =
+  | 'DISPUTE_SEND'
+  | 'DISPUTE_FOLLOW_UP'
+  | 'DOC_REQUEST'
+  | 'DOC_UPLOAD'
+  | 'CREDIT_OPTIMIZATION'
+  | 'RESPONSE_REVIEW';
+
+export type RepairTaskStatus = 'OPEN' | 'IN_PROGRESS' | 'BLOCKED' | 'DONE';
+
+export interface RepairTask {
+  id: string;
+  companyId?: string;
+  clientId: string;
+  disputeId?: string;
+  disputeRoundId?: string;
+  title: string;
+  description: string;
+  taskType: RepairTaskType;
+  status: RepairTaskStatus;
+  dueAt?: string;
+  priorityLabel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  estimatedScoreImpact: number;
+  confidenceScoreImpact: number;
+  urgencyScore: number;
+  effortScore: number;
+  priorityScore: number;
+  linkedEntityType?: string;
+  linkedEntityId?: string;
+  assigneeUserId?: string;
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
+}
+
+export type DeadlineType =
+  | 'BUREAU_RESPONSE'
+  | 'FOLLOW_UP'
+  | 'DOC_SUBMISSION'
+  | 'TASK_DUE';
+
+export interface Deadline {
+  id: string;
+  companyId?: string;
+  clientId: string;
+  entityType: 'DISPUTE' | 'DISPUTE_ROUND' | 'TASK' | 'INGESTION';
+  entityId: string;
+  deadlineType: DeadlineType;
+  dueAt: string;
+  status: 'OPEN' | 'AT_RISK' | 'MISSED' | 'COMPLETED';
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  ownerUserId?: string;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResponseIngestion {
+  id: string;
+  companyId?: string;
+  clientId: string;
+  disputeId: string;
+  disputeRoundId: string;
+  source: 'UPLOAD' | 'EMAIL' | 'MAIL_SCAN' | 'API';
+  fileName: string;
+  mimeType: string;
+  documentStoragePath?: string;
+  documentUrl?: string;
+  ocrStatus: 'PENDING' | 'SUCCESS' | 'FAILED';
+  parseStatus: 'PENDING' | 'SUCCESS' | 'PARTIAL' | 'FAILED';
+  parseConfidence: number;
+  summary?: string;
+  outcomes: { bureau: string; creditor: string; accountNumber: string; outcome: DisputeOutcome }[];
+  errors: string[];
+  processedAt?: string;
+  createdAt: string;
+}
+
+export interface DisputeTemplate {
+  id: string;
+  companyId?: string;
+  name: string;
+  strategy: DisputeStrategy;
+  roundType: 'INITIAL' | 'FOLLOW_UP' | 'ESCALATION';
+  bureau?: Bureau | 'ANY';
+  furnisher?: string;
+  content: string;
+  version: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TemplateExperiment {
+  id: string;
+  companyId?: string;
+  name: string;
+  goalMetric: 'DELETE_RATE' | 'RESPONSE_RATE' | 'TIME_TO_RESOLUTION';
+  status: 'DRAFT' | 'RUNNING' | 'PAUSED' | 'COMPLETED';
+  startAt?: string;
+  endAt?: string;
+  variants: { variantId: string; templateId: string; trafficPct: number }[];
+  createdAt: string;
+}
+
+export interface TemplateExposure {
+  id: string;
+  companyId?: string;
+  experimentId: string;
+  variantId: string;
+  templateId: string;
+  disputeId: string;
+  disputeRoundId: string;
+  clientId: string;
+  assignedAt: string;
+  resultAt?: string;
+  resultOutcome?: DisputeOutcome;
+}
+
 export interface ActivityLog {
   id: string;
   /** Tenant id — required for Path A Firestore rules */

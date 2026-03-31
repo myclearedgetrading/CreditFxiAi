@@ -44,6 +44,17 @@ The app calls **`/api/gemini`** on the server so your Gemini key is **never** em
    - UI only: `npm run dev`
    - UI + API routes: `npm run dev:vercel`
 
+### Feature flags (staged rollout)
+
+Set in `.env.local`:
+
+```env
+VITE_ENABLE_NEXT_LEVEL_DIY=false
+VITE_ENABLE_TEMPLATE_EXPERIMENTS=false
+```
+
+Set both to `true` when you are ready to enable the full closed-loop DIY workflows.
+
 ## Firebase Setup
 
 1. Create a project in the Firebase Console.
@@ -65,6 +76,18 @@ From the project root (with Firebase CLI linked to this project):
 
 ```bash
 firebase deploy --only firestore:rules,firestore:indexes,storage
+```
+
+Pre-flight check before deploy:
+
+```bash
+npm run check:firebase:ready
+```
+
+Seed baseline template experiment data (server key required):
+
+```bash
+npm run seed:template-experiment -- <companyId>
 ```
 
 Composite indexes for tenant queries are defined in **`firestore.indexes.json`** (`tickets` by `companyId` + `updatedAt`, `disputes` by `companyId` + `clientId`). If the CLI reports missing indexes, you can also create them from the error link in the browser console.

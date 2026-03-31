@@ -124,3 +124,111 @@ describe('firestore rules: users profile security', () => {
     await assertSucceeds(updateDoc(targetRef, { role: 'SPECIALIST' }));
   });
 });
+
+describe('firestore rules: dispute workflow collections', () => {
+  test('tenant member can create task in their company', async () => {
+    await seedUserDoc('taskUserA', {
+      id: 'taskUserA',
+      email: 'taskA@example.com',
+      role: 'USER',
+      companyId: 'tenantA',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      firstName: 'Task',
+      lastName: 'UserA',
+      creditScore: { equifax: 0, experian: 0, transunion: 0 },
+      negativeItems: [],
+    });
+
+    const db = testEnv.authenticatedContext('taskUserA').firestore();
+    await assertSucceeds(setDoc(doc(db, 'tasks', 'task-1'), {
+      companyId: 'tenantA',
+      clientId: 'taskUserA',
+      title: 'Send dispute round 1',
+      description: 'Mail generated letter.',
+      taskType: 'DISPUTE_SEND',
+      status: 'OPEN',
+      priorityLabel: 'HIGH',
+      estimatedScoreImpact: 30,
+      confidenceScoreImpact: 0.65,
+      urgencyScore: 75,
+      effortScore: 35,
+      priorityScore: 60,
+      createdAt: '2026-01-02T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    }));
+  });
+
+  test('tenant member cannot create task for different company', async () => {
+    await seedUserDoc('taskUserB', {
+      id: 'taskUserB',
+      email: 'taskB@example.com',
+      role: 'USER',
+      companyId: 'tenantB',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      firstName: 'Task',
+      lastName: 'UserB',
+      creditScore: { equifax: 0, experian: 0, transunion: 0 },
+      negativeItems: [],
+    });
+
+    const db = testEnv.authenticatedContext('taskUserB').firestore();
+    await assertFails(setDoc(doc(db, 'tasks', 'task-2'), {
+      companyId: 'tenantA',
+      clientId: 'taskUserB',
+      title: 'Cross tenant injection',
+      description: 'Should be denied.',
+      taskType: 'DISPUTE_SEND',
+      status: 'OPEN',
+      priorityLabel: 'HIGH',
+      estimatedScoreImpact: 10,
+      confidenceScoreImpact: 0.5,
+      urgencyScore: 50,
+      effortScore: 50,
+      priorityScore: 25,
+      createdAt: '2026-01-02T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    }));
+  });
+
+  test('tenant member cannot read another company dispute round', async () => {
+    await seedUserDoc('readerA', {
+      id: 'readerA',
+      email: 'readerA@example.com',
+      role: 'USER',
+      companyId: 'tenantA',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      firstName: 'Reader',
+      lastName: 'A',
+      creditScore: { equifax: 0, experian: 0, transunion: 0 },
+      negativeItems: [],
+    });
+    await seedUserDoc('writerB', {
+      id: 'writerB',
+      email: 'writerB@example.com',
+      role: 'USER',
+      companyId: 'tenantB',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      firstName: 'Writer',
+      lastName: 'B',
+      creditScore: { equifax: 0, experian: 0, transunion: 0 },
+      negativeItems: [],
+    });
+
+    const writerDb = testEnv.authenticatedContext('writerB').firestore();
+    await assertSucceeds(setDoc(doc(writerDb, 'disputeRounds', 'round-tenant-b'), {
+      companyId: 'tenantB',
+      clientId: 'writerB',
+      disputeId: 'd1',
+      roundNumber: 1,
+      strategy: 'Factual Dispute',
+      targetBureaus: ['Equifax'],
+      status: 'SENT',
+      outcome: 'PENDING',
+      createdAt: '2026-01-02T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    }));
+
+    const readerDb = testEnv.authenticatedContext('readerA').firestore();
+    await assertFails(getDoc(doc(readerDb, 'disputeRounds', 'round-tenant-b')));
+  });
+});

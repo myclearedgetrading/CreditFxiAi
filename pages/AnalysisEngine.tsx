@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   UploadCloud, FileText, AlertTriangle, CheckCircle2, BrainCircuit, 
   ArrowRight, TrendingUp, Scale, Loader2, ScanLine, Camera, Zap, 
@@ -12,6 +12,7 @@ import { vibrate, HAPTIC } from '../services/mobileService';
 
 const AnalysisEngine: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -380,7 +381,16 @@ const AnalysisEngine: React.FC = () => {
                       </div>
 
                       <div className="flex gap-2 mt-4">
-                        <button className="flex-1 py-3 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition-colors active:bg-orange-800">
+                        <button
+                          onClick={() => navigate('/disputes', {
+                            state: {
+                              prefillStrategy: rec.recommendedStrategy,
+                              prefillBureau: rec.bureauToTarget,
+                              prefillCreditor: rec.creditorName,
+                            },
+                          })}
+                          className="flex-1 py-3 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition-colors active:bg-orange-800"
+                        >
                           Generate {rec.recommendedStrategy} Letter
                         </button>
                       </div>

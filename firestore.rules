@@ -123,5 +123,87 @@ service cloud.firestore {
       allow create: if isSignedIn() && hasUserProfile()
         && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
     }
+
+    match /disputeRounds/{roundId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
+      allow update: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId) && isTenantStaff());
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /tasks/{taskId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
+      allow update: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId) && isTenantStaff());
+      allow delete: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId)
+            && (userData().role == 'ADMIN' || userData().role == 'SUPER_ADMIN'));
+    }
+
+    match /deadlines/{deadlineId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
+      allow update: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId) && isTenantStaff());
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /responseIngestions/{ingestionId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
+      allow update: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId) && isTenantStaff());
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /disputeTemplates/{templateId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile() && (
+        isPlatformAdmin()
+        || (isCompanyMember(request.resource.data.companyId)
+            && (userData().role == 'ADMIN' || userData().role == 'SUPER_ADMIN'))
+      );
+      allow update, delete: if isSignedIn() && hasUserProfile() && (
+        isPlatformAdmin()
+        || (isCompanyMember(resource.data.companyId)
+            && (userData().role == 'ADMIN' || userData().role == 'SUPER_ADMIN'))
+      );
+    }
+
+    match /templateExperiments/{experimentId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create, update, delete: if isSignedIn() && hasUserProfile() && (
+        isPlatformAdmin()
+        || (isCompanyMember(
+              request.resource.data.companyId != null
+              ? request.resource.data.companyId
+              : resource.data.companyId
+            )
+            && (userData().role == 'ADMIN' || userData().role == 'SUPER_ADMIN'))
+      );
+    }
+
+    match /templateExposures/{exposureId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
+      allow update: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId)
+            && (userData().role == 'ADMIN' || userData().role == 'SUPER_ADMIN'));
+      allow delete: if isPlatformAdmin();
+    }
   }
 }

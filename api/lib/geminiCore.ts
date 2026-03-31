@@ -295,6 +295,157 @@ export async function runParseBureauResponse(content: string): Promise<BureauRes
   return JSON.parse(response.text || '{}');
 }
 
+export async function runAnalyzeBureauResponseLetter(payload: {
+  responseText: string;
+  bureau?: string;
+  furnisher?: string;
+}): Promise<{
+  summary: string;
+  confidence: number;
+  outcomes: { bureau: string; creditor: string; accountNumber: string; outcome: string }[];
+}> {
+  const ai = getClient();
+  const prompt = `
+    Analyze this credit bureau or furnisher response letter and extract outcomes.
+    Return JSON only with:
+    {
+      "summary": string,
+      "confidence": number,
+      "outcomes": [
+        { "bureau": string, "creditor": string, "accountNumber": string, "outcome": "DELETED"|"VERIFIED"|"UPDATED"|"PARTIAL"|"NO_CHANGE" }
+      ]
+    }
+
+    Optional context:
+    Bureau: ${payload.bureau || 'Unknown'}
+    Furnisher: ${payload.furnisher || 'Unknown'}
+  `;
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.0-flash',
+    contents: `${prompt}\n\nLETTER:\n${payload.responseText}`,
+    config: { responseMimeType: 'application/json' },
+  });
+  const text = (response.text || '{}').replace(/```json/g, '').replace(/```/g, '').trim();
+  return JSON.parse(text);
+}
+
+export async function runDetermineDisputeNextActions(payload: {
+  currentRoundNumber: number;
+  status: string;
+  parsedSummary: string;
+  outcomes: { outcome: string; creditor?: string }[];
+}): Promise<{
+  nextStatus: string;
+  shouldAdvanceRound: boolean;
+  nextActions: { type: string; label: string; rationale: string; urgency: number }[];
+}> {
+  const ai = getClient();
+  const prompt = `
+    You are a dispute workflow strategist.
+    Determine the best next actions from this response state.
+    Return JSON only:
+    {
+      "nextStatus": "RESPONDED"|"ESCALATED"|"CLOSED"|"SENT",
+      "shouldAdvanceRound": boolean,
+      "nextActions": [{ "type": string, "label": string, "rationale": string, "urgency": number }]
+    }
+  `;
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.0-flash',
+    contents: `${prompt}\n\nDATA:\n${JSON.stringify(payload)}`,
+    config: { responseMimeType: 'application/json' },
+  });
+  return JSON.parse(response.text || '{}');
+}
+
+export async function runEstimateDisputeScoreImpact(payload: {
+  currentScore: number;
+  outcomes: { outcome: string }[];
+  negativeItemsRemaining: number;
+}): Promise<{ bestCase: number; likelyCase: number; worstCase: number; explanation: string }> {
+  const ai = getClient();
+  const prompt = `
+    Estimate likely score impact based on dispute outcomes.
+    Return JSON only:
+    { "bestCase": number, "likelyCase": number, "worstCase": number, "explanation": string }
+  `;
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.0-flash',
+    contents: `${prompt}\n\nDATA:\n${JSON.stringify(payload)}`,
+    config: { responseMimeType: 'application/json' },
+  });
+  return JSON.parse(response.text || '{}');
+}
+
+export async function runGenerateStrategyTemplateByTarget(payload: {
+  strategy: string;
+  bureau: string;
+  furnisher?: string;
+  roundNumber: number;
+  clientName: string;
+}): Promise<{ subject: string; body: string; checklist: string[] }> {
+  const ai = getClient();
+  const prompt = `
+    Generate a concise dispute template tailored for this target.
+    Return JSON only:
+    { "subject": string, "body": string, "checklist": string[] }
+  `;
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.0-flash',
+    contents: `${prompt}\n\nDATA:\n${JSON.stringify(payload)}`,
+    config: { responseMimeType: 'application/json' },
+  });
+  return JSON.parse(response.text || '{}');
+}
+
+export async function runOrchestrateClosedLoopCreditRepair(payload: {
+  responseText: string;
+  bureau?: string;
+  furnisher?: string;
+  currentRoundNumber: number;
+  status: string;
+  currentScore: number;
+  negativeItemsRemaining: number;
+  strategy: string;
+  clientName: string;
+}): Promise<{
+  parsedResponse: unknown;
+  workflow: unknown;
+  scoreImpact: unknown;
+  template: unknown;
+}> {
+  const parsedResponse = await runAnalyzeBureauResponseLetter({
+    responseText: payload.responseText,
+    bureau: payload.bureau,
+    furnisher: payload.furnisher,
+  });
+  const workflow = await runDetermineDisputeNextActions({
+    currentRoundNumber: payload.currentRoundNumber,
+    status: payload.status,
+    parsedSummary: parsedResponse.summary,
+    outcomes: parsedResponse.outcomes,
+  });
+  const scoreImpact = await runEstimateDisputeScoreImpact({
+    currentScore: payload.currentScore,
+    outcomes: parsedResponse.outcomes,
+    negativeItemsRemaining: payload.negativeItemsRemaining,
+  });
+  const template = await runGenerateStrategyTemplateByTarget({
+    strategy: payload.strategy,
+    bureau: payload.bureau || 'Unknown',
+    furnisher: payload.furnisher,
+    roundNumber: payload.currentRoundNumber + (workflow.shouldAdvanceRound ? 1 : 0),
+    clientName: payload.clientName,
+  });
+
+  return {
+    parsedResponse,
+    workflow,
+    scoreImpact,
+    template,
+  };
+}
+
 export async function runGenerateExecutiveSummary(data: unknown): Promise<string> {
   const ai = getClient();
   const response = await ai.models.generateContent({
@@ -359,6 +510,16 @@ export async function dispatchGeminiAction(action: string, payload: unknown): Pr
       return runClassifyDocument(payload as string);
     case 'parseBureauResponse':
       return runParseBureauResponse(payload as string);
+    case 'analyzeBureauResponseLetter':
+      return runAnalyzeBureauResponseLetter(payload as Parameters<typeof runAnalyzeBureauResponseLetter>[0]);
+    case 'determineDisputeNextActions':
+      return runDetermineDisputeNextActions(payload as Parameters<typeof runDetermineDisputeNextActions>[0]);
+    case 'estimateDisputeScoreImpact':
+      return runEstimateDisputeScoreImpact(payload as Parameters<typeof runEstimateDisputeScoreImpact>[0]);
+    case 'generateStrategyTemplateByTarget':
+      return runGenerateStrategyTemplateByTarget(payload as Parameters<typeof runGenerateStrategyTemplateByTarget>[0]);
+    case 'orchestrateClosedLoopCreditRepair':
+      return runOrchestrateClosedLoopCreditRepair(payload as Parameters<typeof runOrchestrateClosedLoopCreditRepair>[0]);
     case 'generateExecutiveSummary':
       return runGenerateExecutiveSummary(payload);
     case 'generateChatResponse':

@@ -127,6 +127,55 @@ export const parseBureauResponse = async (content: string): Promise<BureauRespon
   return callGeminiApi<BureauResponseResult>('parseBureauResponse', content);
 };
 
+export const analyzeBureauResponseLetter = async (payload: {
+  responseText: string;
+  bureau?: string;
+  furnisher?: string;
+}) => {
+  return callGeminiApi<{
+    summary: string;
+    confidence: number;
+    outcomes: { bureau: string; creditor: string; accountNumber: string; outcome: string }[];
+  }>('analyzeBureauResponseLetter', payload);
+};
+
+export const determineDisputeNextActions = async (payload: {
+  currentRoundNumber: number;
+  status: string;
+  parsedSummary: string;
+  outcomes: { outcome: string; creditor?: string }[];
+}) => {
+  return callGeminiApi<{
+    nextStatus: string;
+    shouldAdvanceRound: boolean;
+    nextActions: { type: string; label: string; rationale: string; urgency: number }[];
+  }>('determineDisputeNextActions', payload);
+};
+
+export const estimateDisputeScoreImpact = async (payload: {
+  currentScore: number;
+  outcomes: { outcome: string }[];
+  negativeItemsRemaining: number;
+}) => {
+  return callGeminiApi<{ bestCase: number; likelyCase: number; worstCase: number; explanation: string }>(
+    'estimateDisputeScoreImpact',
+    payload
+  );
+};
+
+export const generateStrategyTemplateByTarget = async (payload: {
+  strategy: string;
+  bureau: string;
+  furnisher?: string;
+  roundNumber: number;
+  clientName: string;
+}) => {
+  return callGeminiApi<{ subject: string; body: string; checklist: string[] }>(
+    'generateStrategyTemplateByTarget',
+    payload
+  );
+};
+
 export const generateExecutiveSummary = async (data: unknown): Promise<string> => {
   return callGeminiApi<string>('generateExecutiveSummary', data);
 };

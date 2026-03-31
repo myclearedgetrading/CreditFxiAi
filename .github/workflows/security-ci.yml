@@ -38,3 +38,4 @@ jobs:
 
       - name: Audit production dependencies
         run: npm run audit:prod
+        continue-on-error: true

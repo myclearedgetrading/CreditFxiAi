@@ -1,9 +1,26 @@
 
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { Bureau, DisputeStrategy, NegativeItem } from '../types';
+import { Bureau, DisputeStrategy, DisputeRound, DisputeStatus, NegativeItem, ResponseIngestion } from '../types';
 import { generateDisputeLetter } from '../services/geminiService';
 import { Wand2, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X, Layers, ShieldCheck, Printer, ExternalLink, Mail } from 'lucide-react';
+import {
+  createDeadline,
+  createDisputeRecord,
+  createDisputeRound,
+  createResponseIngestion,
+  createRepairTask,
+  createTemplateExposure,
+  getDisputeTemplates,
+  getDisputeRounds,
+  getResponseIngestions,
+  getTemplateExperiments,
+  tenantCompanyId,
+  updateDisputeRound,
+} from '../services/firebaseService';
+import { runDisputeOrchestration } from '../services/disputeOrchestratorService';
+import { featureFlags } from '../services/featureFlags';
 
 /** Escape text for safe insertion into a print HTML document */
 const escapeHtml = (s: string) =>
@@ -28,6 +45,7 @@ const MAILING_PARTNER_OPTIONS: { name: string; description: string; url: string 
 ];
 
 const DisputeGenerator: React.FC = () => {
+  const location = useLocation();
   const { user } = useUser();
   const [selectedItemId, setSelectedItemId] = useState<string>('');
   const [strategy, setStrategy] = useState<DisputeStrategy>(DisputeStrategy.FACTUAL);
@@ -44,6 +62,21 @@ const DisputeGenerator: React.FC = () => {
   const [includeSSN, setIncludeSSN] = useState(false);
   const [includeAddress, setIncludeAddress] = useState(false);
   const [additionalProof, setAdditionalProof] = useState<File | null>(null);
+  const [disputeId, setDisputeId] = useState<string>('');
+  const [currentRound, setCurrentRound] = useState(1);
+  const [roundStatus, setRoundStatus] = useState<DisputeStatus>('DRAFT');
+  const [roundDueDate, setRoundDueDate] = useState('');
+  const [timeline, setTimeline] = useState<DisputeRound[]>([]);
+  const [responseIngestions, setResponseIngestions] = useState<ResponseIngestion[]>([]);
+  const [responseFile, setResponseFile] = useState<File | null>(null);
+  const [responseText, setResponseText] = useState('');
+  const [orchestrationLoading, setOrchestrationLoading] = useState(false);
+  const [orchestrationResult, setOrchestrationResult] = useState<null | {
+    nextStatus: string;
+    nextAction: string;
+    likelyImpact: number;
+    parsedSummary: string;
+  }>(null);
 
   const myNegativeItems = user.negativeItems || [];
   const selectedItem = myNegativeItems.find(i => i.id === selectedItemId);
@@ -56,6 +89,35 @@ const DisputeGenerator: React.FC = () => {
         if (user.verificationDocuments.proofOfAddress) setIncludeAddress(true);
     }
   }, [user]);
+
+  useEffect(() => {
+    const navState = (location.state || {}) as {
+      prefillStrategy?: string;
+      prefillBureau?: string;
+      prefillCreditor?: string;
+    };
+    if (navState.prefillStrategy) {
+      const matchedStrategy = Object.values(DisputeStrategy).find((s) => s === navState.prefillStrategy);
+      if (matchedStrategy) setStrategy(matchedStrategy);
+    }
+    if (navState.prefillBureau) {
+      const matchedBureau = Object.values(Bureau).find((b) => b === navState.prefillBureau);
+      if (matchedBureau) setSelectedBureaus([matchedBureau]);
+    }
+    if (navState.prefillCreditor && myNegativeItems.length) {
+      const matchItem = myNegativeItems.find((i) =>
+        i.creditor.toLowerCase().includes(navState.prefillCreditor!.toLowerCase())
+      );
+      if (matchItem) setSelectedItemId(matchItem.id);
+    }
+  }, [location.state, myNegativeItems]);
+
+  useEffect(() => {
+    if (!featureFlags.nextLevelDIY || !disputeId || !user.id) return;
+    const companyId = tenantCompanyId(user);
+    void getDisputeRounds(companyId, disputeId).then(setTimeline).catch(() => setTimeline([]));
+    void getResponseIngestions(companyId, disputeId).then(setResponseIngestions).catch(() => setResponseIngestions([]));
+  }, [disputeId, user, featureFlags.nextLevelDIY]);
 
   const toggleBureau = (b: Bureau) => {
     setSelectedBureaus(prev => {
@@ -106,7 +168,134 @@ const DisputeGenerator: React.FC = () => {
         generatedParts.push(fullLetter);
       }
 
-      setGeneratedLetter(generatedParts.join('\n\n\n'));
+      const fullBundle = generatedParts.join('\n\n\n');
+      setGeneratedLetter(fullBundle);
+
+      if (featureFlags.nextLevelDIY) {
+        // Create or update dispute + current round records for closed-loop tracking.
+        const companyId = tenantCompanyId(user);
+        const dueIn30 = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        setRoundDueDate(dueIn30);
+
+        let activeDisputeId = disputeId;
+        if (!activeDisputeId) {
+          const disputeRef = await createDisputeRecord(companyId, {
+            clientId: user.id,
+            negativeItemId: selectedItem.id,
+            strategy,
+            targetBureaus: selectedBureaus,
+            furnisher: selectedItem.creditor,
+            currentRoundNumber: currentRound,
+            overallStatus: 'DRAFT',
+            outcome: 'PENDING',
+            estimatedScoreImpact: 25,
+            nextAction: 'Print, sign, and mail round 1 dispute letter.',
+            nextActionDueAt: dueIn30,
+          });
+          activeDisputeId = disputeRef.id;
+          setDisputeId(activeDisputeId);
+        }
+
+        const roundRef = await createDisputeRound(companyId, {
+          clientId: user.id,
+          disputeId: activeDisputeId,
+          roundNumber: currentRound,
+          strategy,
+          targetBureaus: selectedBureaus,
+          status: 'READY_TO_SEND',
+          responseDueAt: dueIn30,
+          outcome: 'PENDING',
+          generatedLetter: fullBundle,
+          summary: `Round ${currentRound} ready for delivery`,
+          createdByUserId: user.id,
+        });
+
+        // Template intelligence: assign active experiment variant when available.
+        if (featureFlags.templateExperiments) {
+          const experiments = await getTemplateExperiments(companyId);
+          const runningExperiment = experiments.find((e) => e.status === 'RUNNING' && e.variants.length > 0);
+          if (runningExperiment) {
+            const random = Math.random() * 100;
+            let cumulative = 0;
+            const selectedVariant = runningExperiment.variants.find((v) => {
+              cumulative += v.trafficPct;
+              return random <= cumulative;
+            }) || runningExperiment.variants[0];
+            await createTemplateExposure(companyId, {
+              experimentId: runningExperiment.id,
+              variantId: selectedVariant.variantId,
+              templateId: selectedVariant.templateId,
+              disputeId: activeDisputeId,
+              disputeRoundId: roundRef.id,
+              clientId: user.id,
+              assignedAt: new Date().toISOString(),
+            });
+          } else {
+            const templates = await getDisputeTemplates(companyId);
+            const firstTemplate = templates.find((t) =>
+              t.strategy === strategy && (t.bureau === 'ANY' || t.bureau === selectedBureaus[0])
+            );
+            if (firstTemplate) {
+              await createTemplateExposure(companyId, {
+                experimentId: 'baseline',
+                variantId: 'A',
+                templateId: firstTemplate.id,
+                disputeId: activeDisputeId,
+                disputeRoundId: roundRef.id,
+                clientId: user.id,
+                assignedAt: new Date().toISOString(),
+              });
+            }
+          }
+        }
+
+        await createRepairTask(companyId, {
+          clientId: user.id,
+          disputeId: activeDisputeId,
+          disputeRoundId: roundRef.id,
+          title: `Send dispute round ${currentRound}`,
+          description: `Send ${selectedBureaus.length} letter(s) for ${selectedItem.creditor} and retain delivery proof.`,
+          taskType: 'DISPUTE_SEND',
+          status: 'OPEN',
+          dueAt: dueIn30,
+          priorityLabel: 'HIGH',
+          estimatedScoreImpact: 30,
+          confidenceScoreImpact: 0.65,
+          urgencyScore: 78,
+          effortScore: 35,
+        });
+        await createDeadline(companyId, {
+          clientId: user.id,
+          entityType: 'DISPUTE_ROUND',
+          entityId: roundRef.id,
+          deadlineType: 'BUREAU_RESPONSE',
+          dueAt: dueIn30,
+          status: 'OPEN',
+          severity: 'HIGH',
+        });
+        setRoundStatus('SENT');
+        await updateDisputeRound(roundRef.id, { status: 'SENT', sentAt: new Date().toISOString() });
+        setTimeline((prev) => ([
+          ...prev,
+          {
+            id: roundRef.id,
+            companyId,
+            clientId: user.id,
+            disputeId: activeDisputeId,
+            roundNumber: currentRound,
+            strategy,
+            targetBureaus: selectedBureaus,
+            status: 'SENT',
+            sentAt: new Date().toISOString(),
+            responseDueAt: dueIn30,
+            outcome: 'PENDING',
+            generatedLetter: fullBundle,
+            summary: `Round ${currentRound} sent`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ]));
+      }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
     } finally {
@@ -117,6 +306,82 @@ const DisputeGenerator: React.FC = () => {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setAdditionalProof(e.target.files[0]);
+    }
+  };
+
+  const handleResponseUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setResponseFile(e.target.files[0]);
+    }
+  };
+
+  const handleRunOrchestration = async () => {
+    if (!featureFlags.nextLevelDIY) {
+      setError('Closed-loop orchestration is currently disabled for this environment.');
+      return;
+    }
+    if (!disputeId || !user.id || !responseText.trim()) {
+      setError('Upload or paste a bureau response before running next-step orchestration.');
+      return;
+    }
+
+    setOrchestrationLoading(true);
+    setError(null);
+    try {
+      const companyId = tenantCompanyId(user);
+      const latestRound = timeline[timeline.length - 1];
+      if (!latestRound) {
+        throw new Error('Generate and send a dispute round first.');
+      }
+      const orchestration = await runDisputeOrchestration({
+        disputeId,
+        companyId,
+        clientId: user.id,
+        disputeRoundId: latestRound.id,
+        currentStatus: roundStatus,
+        currentRoundNumber: latestRound.roundNumber,
+        responseText,
+        bureau: selectedBureaus[0],
+        furnisher: selectedItem?.creditor,
+        currentScore: user.creditScore.experian || 620,
+        negativeItemsRemaining: myNegativeItems.length,
+        strategy,
+        clientName: `${user.firstName} ${user.lastName}`.trim() || 'Client',
+      });
+
+      await createResponseIngestion(companyId, {
+        clientId: user.id,
+        disputeId,
+        disputeRoundId: latestRound.id,
+        source: 'UPLOAD',
+        fileName: responseFile?.name || 'response-text',
+        mimeType: responseFile?.type || 'text/plain',
+        parseStatus: 'SUCCESS',
+        ocrStatus: 'SUCCESS',
+        parseConfidence: orchestration.orchestration.parsedResponse.confidence || 0,
+        summary: orchestration.orchestration.parsedResponse.summary,
+        outcomes: (orchestration.orchestration as any).parsedResponse.outcomes || [],
+        errors: [],
+        processedAt: new Date().toISOString(),
+      });
+
+      setOrchestrationResult({
+        nextStatus: orchestration.orchestration.workflow.nextStatus,
+        nextAction: orchestration.orchestration.workflow.nextActions?.[0]?.label || 'Review workflow recommendations',
+        likelyImpact: orchestration.orchestration.scoreImpact.likelyCase || 0,
+        parsedSummary: orchestration.orchestration.parsedResponse.summary,
+      });
+      setRoundStatus(orchestration.orchestration.workflow.nextStatus as DisputeStatus);
+      setCurrentRound(orchestration.nextRoundNumber);
+
+      const refreshedRounds = await getDisputeRounds(companyId, disputeId);
+      setTimeline(refreshedRounds);
+      const refreshedIngestions = await getResponseIngestions(companyId, disputeId);
+      setResponseIngestions(refreshedIngestions);
+    } catch (err: any) {
+      setError(err.message || 'Failed to process response orchestration.');
+    } finally {
+      setOrchestrationLoading(false);
     }
   };
 
@@ -291,10 +556,43 @@ const DisputeGenerator: React.FC = () => {
               </div>
             </div>
 
-            {/* Step 4: Attachments */}
+            {featureFlags.nextLevelDIY && (
+              <div>
+                  <label className="block text-sm font-semibold text-white mb-2">4. Round Lifecycle</label>
+                  <div className="space-y-2 bg-slate-900 p-3 rounded-lg border border-slate-800">
+                      <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-400 uppercase tracking-wide">Current round</span>
+                          <span className="text-sm font-bold text-white">Round {currentRound}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-400 uppercase tracking-wide">Status</span>
+                          <span className="text-xs font-bold bg-orange-900/30 text-orange-400 px-2 py-1 rounded">
+                            {roundStatus}
+                          </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-400 uppercase tracking-wide">Response due</span>
+                          <span className="text-xs text-slate-200">
+                            {roundDueDate ? new Date(roundDueDate).toLocaleDateString() : 'Set after generation'}
+                          </span>
+                      </div>
+                      {orchestrationResult && (
+                        <div className="border-t border-slate-800 pt-2 mt-2">
+                          <p className="text-[11px] text-slate-400">Next-best action</p>
+                          <p className="text-xs text-white font-semibold">{orchestrationResult.nextAction}</p>
+                          <p className="text-[11px] text-green-400 mt-1">
+                            Estimated likely impact: +{orchestrationResult.likelyImpact} pts
+                          </p>
+                        </div>
+                      )}
+                  </div>
+              </div>
+            )}
+
+            {/* Step 5: Attachments */}
             <div>
                 <label className="block text-sm font-semibold text-white mb-2 flex justify-between">
-                    4. Attach Evidence
+                    {featureFlags.nextLevelDIY ? '5. Attach Evidence' : '4. Attach Evidence'}
                     <span className="text-xs text-slate-400 font-normal">Required for identification</span>
                 </label>
                 <div className="space-y-2 bg-slate-900 p-3 rounded-lg border border-slate-800">
@@ -509,6 +807,80 @@ const DisputeGenerator: React.FC = () => {
                           </p>
                         </div>
                       </div>
+
+                      {featureFlags.nextLevelDIY && (
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+                          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Response Ingestion</p>
+                          <p className="text-sm text-slate-400">
+                            Upload or paste bureau/furnisher response text to auto-determine the next round actions.
+                          </p>
+                          {responseFile ? (
+                            <div className="text-xs text-slate-300 bg-slate-800 rounded px-2 py-1">{responseFile.name}</div>
+                          ) : (
+                            <label className="flex items-center justify-center gap-2 w-full py-2 border border-dashed border-slate-700 rounded text-xs text-slate-400 hover:bg-slate-800 cursor-pointer transition-colors">
+                              <Paperclip className="w-3 h-3" /> Upload Response File
+                              <input type="file" className="hidden" onChange={handleResponseUpload} />
+                            </label>
+                          )}
+                          <textarea
+                            value={responseText}
+                            onChange={(e) => setResponseText(e.target.value)}
+                            placeholder="Paste bureau response text here (or OCR output) ..."
+                            className="w-full min-h-[120px] text-xs bg-[#0A0A0A] border border-slate-800 rounded p-2 text-slate-200"
+                          />
+                          <button
+                            onClick={handleRunOrchestration}
+                            disabled={orchestrationLoading || !responseText.trim()}
+                            className="w-full py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-sm font-semibold disabled:opacity-50"
+                          >
+                            {orchestrationLoading ? 'Analyzing Response...' : 'Run Next-Step Orchestration'}
+                          </button>
+                          {orchestrationResult && (
+                            <div className="text-xs text-slate-300 border border-slate-800 rounded p-2 bg-[#0A0A0A]">
+                              <p className="font-bold text-orange-400">Status: {orchestrationResult.nextStatus}</p>
+                              <p className="mt-1">{orchestrationResult.parsedSummary}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+                          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Packet + Timeline</p>
+                          <div className="text-sm text-slate-400 space-y-1">
+                            <p>Packet checklist:</p>
+                            <ul className="list-disc list-inside text-xs text-slate-300 space-y-1">
+                              <li>Signed dispute letter(s)</li>
+                              <li>Government ID copy</li>
+                              <li>SSN card copy</li>
+                              <li>Proof of address</li>
+                              <li>Supporting evidence documents</li>
+                            </ul>
+                          </div>
+                          <div className="pt-2 border-t border-slate-800">
+                            <p className="text-xs text-slate-500 mb-2">Dispute timeline</p>
+                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                              {timeline.length === 0 && (
+                                <p className="text-xs text-slate-500">No rounds yet. Generate your first round to begin.</p>
+                              )}
+                              {timeline.map((round) => (
+                                <div key={round.id} className="text-xs border border-slate-800 rounded p-2 bg-[#0A0A0A]">
+                                  <p className="text-white font-semibold">Round {round.roundNumber} - {round.status}</p>
+                                  <p className="text-slate-500">Outcome: {round.outcome}</p>
+                                  <p className="text-slate-500">
+                                    {round.sentAt ? `Sent ${new Date(round.sentAt).toLocaleDateString()}` : 'Not sent yet'}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                            {responseIngestions.length > 0 && (
+                              <p className="text-[11px] text-slate-500 mt-2">
+                                Response ingestions: {responseIngestions.length}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      )}
                     </div>
                     </>
                  )}

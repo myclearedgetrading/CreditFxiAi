@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   ShieldCheck, TrendingUp, DollarSign, Building2, 
   CheckCircle2, ArrowRight, AlertTriangle, Briefcase, 
@@ -10,6 +10,9 @@ import {
 } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import { RepairTask, Deadline } from '../types';
+import { getUpcomingDeadlines, subscribeToRepairTasks, tenantCompanyId } from '../services/firebaseService';
+import { featureFlags } from '../services/featureFlags';
 
 const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: number, prevScore: number }) => {
   // Handle empty/zero score
@@ -81,9 +84,19 @@ const ActionCard = ({ title, desc, icon: Icon, onClick, cta, step }: any) => (
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUser();
+  const [todayTasks, setTodayTasks] = useState<RepairTask[]>([]);
+  const [upcomingDeadlines, setUpcomingDeadlines] = useState<Deadline[]>([]);
 
   // Empty default history
   const scoreHistory: any[] = [];
+
+  useEffect(() => {
+    if (!featureFlags.nextLevelDIY || !user.id) return;
+    const companyId = tenantCompanyId(user);
+    const unsubscribe = subscribeToRepairTasks(companyId, setTodayTasks);
+    void getUpcomingDeadlines(companyId).then(setUpcomingDeadlines).catch(() => setUpcomingDeadlines([]));
+    return () => unsubscribe();
+  }, [user, featureFlags.nextLevelDIY]);
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
@@ -219,14 +232,59 @@ const Dashboard: React.FC = () => {
             </h3>
           </div>
           <div className="p-4 space-y-3 flex-1 overflow-y-auto min-h-[200px]">
-             {/* Empty State for Tasks */}
-             <div className="h-full flex flex-col items-center justify-center text-slate-500">
-                <CheckCircle2 className="w-8 h-8 mb-2 opacity-20" />
-                <p className="text-sm">You're all caught up!</p>
-                <button onClick={() => navigate('/analysis')} className="mt-2 text-xs text-orange-500 font-bold hover:underline flex items-center">
-                    <Plus className="w-3 h-3 mr-1" /> Scan for Issues
-                </button>
-             </div>
+            {featureFlags.nextLevelDIY && todayTasks.length > 0 ? (
+              <div className="space-y-3">
+                {todayTasks.slice(0, 6).map((task) => (
+                  <div key={task.id} className="rounded-lg border border-slate-800 bg-slate-900/40 p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold text-white">{task.title}</p>
+                        <p className="text-xs text-slate-400 mt-1">{task.description}</p>
+                      </div>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                        task.priorityLabel === 'CRITICAL' ? 'bg-red-900/40 text-red-400' :
+                        task.priorityLabel === 'HIGH' ? 'bg-orange-900/40 text-orange-400' :
+                        task.priorityLabel === 'MEDIUM' ? 'bg-yellow-900/40 text-yellow-400' :
+                        'bg-slate-800 text-slate-300'
+                      }`}>
+                        {task.priorityLabel}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-[11px] text-green-400 font-bold">
+                        Est. impact: +{task.estimatedScoreImpact} pts
+                      </span>
+                      <button
+                        onClick={() => navigate('/disputes')}
+                        className="text-xs text-orange-500 font-bold hover:underline"
+                      >
+                        Do now
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {upcomingDeadlines.length > 0 && (
+                  <div className="pt-3 border-t border-slate-800">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-2 font-bold">
+                      Upcoming Deadlines
+                    </p>
+                    {upcomingDeadlines.slice(0, 2).map((d) => (
+                      <p key={d.id} className="text-xs text-slate-400">
+                        {new Date(d.dueAt).toLocaleDateString()} - {d.deadlineType}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-slate-500">
+                  <CheckCircle2 className="w-8 h-8 mb-2 opacity-20" />
+                  <p className="text-sm">You're all caught up!</p>
+                  <button onClick={() => navigate('/analysis')} className="mt-2 text-xs text-orange-500 font-bold hover:underline flex items-center">
+                      <Plus className="w-3 h-3 mr-1" /> Scan for Issues
+                  </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -10,16 +10,26 @@ import {
 } from 'lucide-react';
 import { generateExecutiveSummary } from '../services/geminiService';
 import { useUser } from '../context/UserContext';
+import { getTemplateExperiments, getTemplateOutcomeSummary, tenantCompanyId } from '../services/firebaseService';
+import { TemplateExperiment } from '../types';
+import { featureFlags } from '../services/featureFlags';
 
 const Reports: React.FC = () => {
   const [aiSummary, setAiSummary] = useState<string>('');
   const [loadingSummary, setLoadingSummary] = useState(false);
+  const [experiments, setExperiments] = useState<TemplateExperiment[]>([]);
+  const [variantPerformance, setVariantPerformance] = useState<{ variantId: string; total: number; deletedRate: number }[]>([]);
   const { user } = useUser();
 
   useEffect(() => {
     // Only load summary if there is meaningful data
     if (user.creditScore.equifax > 0) {
       loadPersonalSummary();
+    }
+    if (featureFlags.templateExperiments && user.id) {
+      const companyId = tenantCompanyId(user);
+      void getTemplateExperiments(companyId).then(setExperiments).catch(() => setExperiments([]));
+      void getTemplateOutcomeSummary(companyId).then(setVariantPerformance).catch(() => setVariantPerformance([]));
     }
   }, [user]);
 
@@ -129,6 +139,55 @@ const Reports: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {featureFlags.templateExperiments && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+          <h3 className="font-bold text-slate-800 dark:text-white mb-4">Template Experiment Performance</h3>
+          {variantPerformance.length > 0 ? (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={variantPerformance}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="variantId" />
+                  <YAxis />
+                  <RechartsTooltip />
+                  <Bar dataKey="deletedRate" fill="#f97316" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500">No experiment outcomes yet. Launch a template experiment to track delete rates.</p>
+          )}
+        </div>
+
+        <div className="bg-white dark:bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+          <h3 className="font-bold text-slate-800 dark:text-white mb-4">Active Template Experiments</h3>
+          <div className="space-y-3">
+            {experiments.length === 0 && (
+              <p className="text-sm text-slate-500">No experiments configured yet.</p>
+            )}
+            {experiments.slice(0, 6).map((experiment) => (
+              <div key={experiment.id} className="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-slate-800 dark:text-white text-sm">{experiment.name}</p>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    experiment.status === 'RUNNING' ? 'bg-green-900/30 text-green-500' :
+                    experiment.status === 'COMPLETED' ? 'bg-blue-900/30 text-blue-500' :
+                    'bg-slate-200 dark:bg-slate-800 text-slate-500'
+                  }`}>
+                    {experiment.status}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Goal: {experiment.goalMetric} - Variants: {experiment.variants.length}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      )}
     </div>
   );
 };
