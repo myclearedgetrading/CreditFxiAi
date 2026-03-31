@@ -6,7 +6,6 @@ import {
   initializeTestEnvironment,
 } from '@firebase/rules-unit-testing';
 import { doc, setDoc } from 'firebase/firestore';
-import { getDownloadURL, getStorage, ref, uploadString } from 'firebase/storage';
 
 const PROJECT_ID = 'creditfix-security-storage-tests';
 const firestoreRules = fs.readFileSync('firestore.rules', 'utf8');
@@ -30,8 +29,10 @@ async function seedUserDoc(userId, companyId) {
 }
 
 function storageForUser(uid) {
-  const app = testEnv.authenticatedContext(uid).app;
-  return getStorage(app, `gs://${PROJECT_ID}.appspot.com`);
+  const companyId = uid.startsWith('companyA') ? 'companyA' : uid.startsWith('companyB') ? 'companyB' : uid;
+  return testEnv
+    .authenticatedContext(uid, { companyId })
+    .storage(`gs://${PROJECT_ID}.appspot.com`);
 }
 
 before(async () => {
@@ -51,17 +52,14 @@ describe('storage rules: tenant document isolation', () => {
     await seedUserDoc('companyAUser', 'companyA');
 
     const storage = storageForUser('companyAUser');
-    const fileRef = ref(
-      storage,
-      'companies/companyA/clients/client1/documents/report.pdf'
-    );
+    const fileRef = storage.ref('companies/companyA/clients/client1/documents/report.pdf');
 
     await assertSucceeds(
-      uploadString(fileRef, 'test-report', 'raw', {
+      fileRef.putString('test-report', 'raw', {
         contentType: 'application/pdf',
       })
     );
-    await assertSucceeds(getDownloadURL(fileRef));
+    await assertSucceeds(fileRef.getDownloadURL());
   });
 
   test('user from another company cannot read cross-tenant document', async () => {
@@ -69,21 +67,15 @@ describe('storage rules: tenant document isolation', () => {
     await seedUserDoc('companyBUser', 'companyB');
 
     const ownerStorage = storageForUser('companyAOwner');
-    const crossTenantRef = ref(
-      ownerStorage,
-      'companies/companyA/clients/client2/documents/statement.pdf'
-    );
+    const crossTenantRef = ownerStorage.ref('companies/companyA/clients/client2/documents/statement.pdf');
     await assertSucceeds(
-      uploadString(crossTenantRef, 'tenant-a-doc', 'raw', {
+      crossTenantRef.putString('tenant-a-doc', 'raw', {
         contentType: 'application/pdf',
       })
     );
 
     const attackerStorage = storageForUser('companyBUser');
-    const attackerRef = ref(
-      attackerStorage,
-      'companies/companyA/clients/client2/documents/statement.pdf'
-    );
-    await assertFails(getDownloadURL(attackerRef));
+    const attackerRef = attackerStorage.ref('companies/companyA/clients/client2/documents/statement.pdf');
+    await assertFails(attackerRef.getDownloadURL());
   });
 });

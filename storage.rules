@@ -7,17 +7,14 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    function userDoc() {
-      return get(/databases/(default)/documents/users/$(request.auth.uid));
-    }
-
-    function hasUserProfile() {
-      return isAuthenticated()
-        && exists(/databases/(default)/documents/users/$(request.auth.uid));
-    }
-
     function isCompanyMember(companyId) {
-      return hasUserProfile() && userDoc().data.companyId == companyId;
+      return isAuthenticated()
+        && (
+          // Preferred: tenant claim set via Firebase Auth custom claims.
+          request.auth.token.companyId == companyId
+          // DIY fallback: single-tenant user where companyId is uid.
+          || request.auth.uid == companyId
+        );
     }
 
     // User avatars
