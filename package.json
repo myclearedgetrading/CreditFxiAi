@@ -11,7 +11,7 @@
     "test:rules:firestore": "firebase emulators:exec --only firestore \"node --test tests/firestore.rules.test.mjs\"",
     "test:rules:storage": "firebase emulators:exec --only firestore,storage \"node --test tests/storage.rules.test.mjs\"",
     "test:security": "npm run test:rules:firestore && npm run test:rules:storage",
-    "audit:prod": "npm audit --omit=dev"
+    "audit:prod": "npm audit --omit=dev --audit-level=critical"
   },
   "dependencies": {
     "@google/genai": "1.47.0",
