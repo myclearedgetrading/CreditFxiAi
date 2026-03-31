@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, Shield, Zap, TrendingUp, CheckCircle2, 
   Upload, FileText, Loader2, Sparkles, User, Lock, AlertCircle,
@@ -13,7 +13,7 @@ import { User as UserType } from '../types';
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { login, isAuthenticated } = useUser();
   const [step, setStep] = useState(1);
   /** User chose to explore the app without connecting/uploading a report */
   const [skippedCreditImport, setSkippedCreditImport] = useState(false);
@@ -47,6 +47,10 @@ const Onboarding: React.FC = () => {
   const [isConnecting, setIsConnecting] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const skipImportAndFinish = () => {
     vibrate(HAPTIC.LIGHT);

@@ -131,7 +131,7 @@ const Dashboard: React.FC = () => {
           ) : (
               <div className="py-10 text-center">
                   <p className="text-slate-400 mb-4">Connect your credit report to see your scores.</p>
-                  <button onClick={() => navigate('/onboarding')} className="text-orange-500 hover:underline text-sm font-bold">Connect Report Now</button>
+                  <button onClick={() => navigate('/analysis', { state: { openConnect: true } })} className="text-orange-500 hover:underline text-sm font-bold">Connect Report Now</button>
               </div>
           )}
         </div>
