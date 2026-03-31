@@ -9,6 +9,8 @@ import {
   isFirebaseAuthAvailable,
 } from '../services/firebaseService';
 
+const SESSION_STORAGE_KEY = 'creditfix_session';
+
 interface UserContextType {
   user: User;
   updateUser: (data: Partial<User>) => void;
@@ -32,6 +34,22 @@ const DEFAULT_USER: User = {
   negativeItems: []
 };
 
+type SessionSnapshot = Pick<User, 'id' | 'email' | 'role' | 'companyId' | 'firstName' | 'lastName'>;
+
+const toSessionSnapshot = (user: User): SessionSnapshot => ({
+  id: user.id,
+  email: user.email,
+  role: user.role,
+  companyId: user.companyId,
+  firstName: user.firstName,
+  lastName: user.lastName,
+});
+
+const fromSessionSnapshot = (snapshot: SessionSnapshot): User => ({
+  ...DEFAULT_USER,
+  ...snapshot,
+});
+
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -42,7 +60,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const persistSessionUser = useCallback((next: User) => {
     setUser(next);
     setIsAuthenticated(true);
-    localStorage.setItem('creditfix_user', JSON.stringify(next));
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(toSessionSnapshot(next)));
   }, []);
 
   const login = useCallback((userData: User) => {
@@ -52,6 +70,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = useCallback(() => {
     setUser(DEFAULT_USER);
     setIsAuthenticated(false);
+    localStorage.removeItem(SESSION_STORAGE_KEY);
     localStorage.removeItem('creditfix_user');
     localStorage.removeItem('creditfix_onboarding_state');
   }, []);
@@ -59,16 +78,26 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Firebase Auth is source of truth when configured; otherwise demo/localStorage only.
   useEffect(() => {
     if (!isFirebaseAuthAvailable()) {
-      const savedUser = localStorage.getItem('creditfix_user');
+      const savedUser = localStorage.getItem(SESSION_STORAGE_KEY)
+        || localStorage.getItem('creditfix_user');
       if (savedUser) {
         try {
-          const parsed = JSON.parse(savedUser) as User;
+          const parsed = JSON.parse(savedUser) as Partial<User>;
           if (parsed.email) {
-            setUser(parsed);
+            const hydrated = fromSessionSnapshot({
+              id: parsed.id || '',
+              email: parsed.email,
+              role: parsed.role || 'USER',
+              companyId: parsed.companyId || parsed.id || '',
+              firstName: parsed.firstName || '',
+              lastName: parsed.lastName || '',
+            });
+            setUser(hydrated);
             setIsAuthenticated(true);
           }
         } catch (e) {
           console.error('Failed to load user', e);
+          localStorage.removeItem(SESSION_STORAGE_KEY);
           localStorage.removeItem('creditfix_user');
         }
       }
@@ -110,10 +139,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateUser = (data: Partial<User>) => {
     setUser(prev => {
       const updated = { ...prev, ...data };
-      localStorage.setItem('creditfix_user', JSON.stringify(updated));
-      if (updated.email) {
-        localStorage.setItem(`creditfix_db_${updated.email}`, JSON.stringify(updated));
-      }
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(toSessionSnapshot(updated)));
       return updated;
     });
   };

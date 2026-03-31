@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist',
-      sourcemap: true
+      sourcemap: mode !== 'production'
     },
     server: {
       port: 3000

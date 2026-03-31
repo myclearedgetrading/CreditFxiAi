@@ -14,12 +14,22 @@ import {
   KnowledgeArticle,
   TicketAnalysis,
 } from '../types';
+import { auth } from './firebaseConfig';
 
 /** Calls Vercel `/api/gemini` — key stays server-side. Use `vercel dev` locally for AI routes. */
 async function callGeminiApi<T>(action: string, payload: unknown): Promise<T> {
+  const tokenProvider = auth?.currentUser?.getIdToken;
+  if (typeof tokenProvider !== 'function') {
+    throw new Error('You must be signed in to use AI features.');
+  }
+  const idToken = await tokenProvider.call(auth.currentUser);
+
   const res = await fetch('/api/gemini', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${idToken}`,
+    },
     body: JSON.stringify({ action, payload }),
   });
   const data = (await res.json().catch(() => ({}))) as { result?: T; error?: string };

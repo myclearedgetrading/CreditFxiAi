@@ -27,6 +27,27 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    function ownerProfileEditableFieldsOnly() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'firstName',
+        'lastName',
+        'phone',
+        'address',
+        'creditScore',
+        'negativeItems',
+        'avatarUrl',
+        'updatedAt'
+      ]);
+    }
+
+    function ownerSecurityFieldsUnchanged() {
+      return request.resource.data.id == resource.data.id
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.companyId == resource.data.companyId
+        && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
     function isCompanyMember(companyId) {
       return isSignedIn() && hasUserProfile() && userData().companyId == companyId;
     }
@@ -46,7 +67,12 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isSignedIn() && (isOwner(userId) || isPlatformAdmin());
       allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && (isOwner(userId) || isPlatformAdmin());
+      allow update: if isSignedIn() && (
+        isPlatformAdmin()
+        || (isOwner(userId)
+            && ownerProfileEditableFieldsOnly()
+            && ownerSecurityFieldsUnchanged())
+      );
       allow delete: if isPlatformAdmin();
     }
 

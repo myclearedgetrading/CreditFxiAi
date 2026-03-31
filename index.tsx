@@ -2,6 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './styles.css';
 
 // NOTE: Service Worker registration has been disabled to prevent "invalid state" errors 
 // in preview environments. To enable PWA features later, uncomment this block when 
