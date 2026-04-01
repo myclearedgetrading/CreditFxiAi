@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   UploadCloud, FileText, AlertTriangle, CheckCircle2, BrainCircuit, 
   ArrowRight, TrendingUp, Scale, Loader2, ScanLine, Camera, Zap, 
-  ChevronRight, Lock, X, ExternalLink, Shield
+  ChevronRight, Lock, X, ExternalLink, Shield, Crown
 } from 'lucide-react';
 import { analyzeCreditReportImage, analyzeCreditReportPdf } from '../services/geminiService';
 import { Bureau, CreditAnalysisResult, NegativeItem } from '../types';
@@ -62,6 +62,12 @@ const AnalysisEngine: React.FC = () => {
     username: '',
     password: ''
   });
+  const hasPremiumAccess =
+    user.role === 'ADMIN'
+    || user.role === 'SUPER_ADMIN'
+    || user.subscriptionTier === 'PRO'
+    || user.subscriptionStatus === 'ACTIVE'
+    || user.subscriptionStatus === 'TRIAL';
 
   const persistAnalysisToProfile = async (
     analysisResult: CreditAnalysisResult,
@@ -425,12 +431,22 @@ const AnalysisEngine: React.FC = () => {
               </p>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => navigate('/disputes')}
-                className="px-4 py-2 text-sm bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-semibold"
-              >
-                Generate Dispute Letters
-              </button>
+              {hasPremiumAccess ? (
+                <button
+                  onClick={() => navigate('/disputes')}
+                  className="px-4 py-2 text-sm bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-semibold"
+                >
+                  Generate Dispute Letters
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate('/settings')}
+                  className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-black rounded-lg font-semibold inline-flex items-center gap-2"
+                >
+                  <Crown className="w-4 h-4" />
+                  Upgrade to Unlock Letters
+                </button>
+              )}
               <button
                 onClick={() => navigate('/dashboard')}
                 className="px-4 py-2 text-sm border border-slate-700 hover:bg-slate-800 text-slate-200 rounded-lg font-semibold"

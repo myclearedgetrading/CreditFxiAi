@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { Bureau, DisputeStrategy, DisputeRound, DisputeStatus, NegativeItem, ResponseIngestion, DisputeTemplate } from '../types';
 import { generateDisputeLetter } from '../services/geminiService';
-import { Wand2, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X, Layers, ShieldCheck, Printer, ExternalLink, Mail } from 'lucide-react';
+import { Wand2, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X, Layers, ShieldCheck, Printer, ExternalLink, Mail, Crown } from 'lucide-react';
 import {
   createDeadline,
   createDisputeRecord,
@@ -225,6 +225,7 @@ const inferTemplateCategory = (template: DisputeTemplate): LetterLibraryCategory
 
 const DisputeGenerator: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useUser();
   const [selectedItemId, setSelectedItemId] = useState<string>('');
   const [strategy, setStrategy] = useState<DisputeStrategy>(DisputeStrategy.FACTUAL);
@@ -268,6 +269,12 @@ const DisputeGenerator: React.FC = () => {
 
   const myNegativeItems = user.negativeItems || [];
   const selectedItem = myNegativeItems.find(i => i.id === selectedItemId);
+  const hasPremiumAccess =
+    user.role === 'ADMIN'
+    || user.role === 'SUPER_ADMIN'
+    || user.subscriptionTier === 'PRO'
+    || user.subscriptionStatus === 'ACTIVE'
+    || user.subscriptionStatus === 'TRIAL';
 
   // Effect to load saved documents preferences from User Profile
   useEffect(() => {
@@ -498,6 +505,10 @@ const DisputeGenerator: React.FC = () => {
 
   const handleGenerate = async () => {
     if (!selectedItem || selectedBureaus.length === 0) return;
+    if (!hasPremiumAccess) {
+      setError('Premium membership required to generate dispute letters. Upgrade to activate unlimited letter generation and workflow automation.');
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -1134,7 +1145,7 @@ const DisputeGenerator: React.FC = () => {
 
             <button 
               onClick={handleGenerate}
-              disabled={!selectedItem || isLoading || selectedBureaus.length === 0}
+              disabled={!selectedItem || isLoading || selectedBureaus.length === 0 || !hasPremiumAccess}
               className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
@@ -1149,6 +1160,25 @@ const DisputeGenerator: React.FC = () => {
                 </>
               )}
             </button>
+
+            {!hasPremiumAccess && (
+              <div className="rounded-lg border border-amber-700/40 bg-amber-900/20 p-3 mt-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-amber-300 flex items-center gap-2">
+                  <Crown className="w-3.5 h-3.5" />
+                  Premium Activation Required
+                </p>
+                <p className="text-xs text-amber-100/80 mt-1 leading-relaxed">
+                  You can analyze reports for free. Activate Pro to generate dispute letters, save templates, and run full workflow orchestration.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/settings')}
+                  className="mt-2 w-full py-2 text-xs font-semibold rounded bg-amber-500 hover:bg-amber-400 text-black"
+                >
+                  Upgrade to Pro - $49/mo
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

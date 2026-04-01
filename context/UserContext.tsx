@@ -26,6 +26,8 @@ const DEFAULT_USER: User = {
   email: '',
   phone: '',
   role: 'USER',
+  subscriptionTier: 'FREE',
+  subscriptionStatus: 'NONE',
   creditScore: {
     equifax: 0,
     experian: 0,

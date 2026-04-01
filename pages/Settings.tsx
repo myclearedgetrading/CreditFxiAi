@@ -15,6 +15,12 @@ const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const { user, updateUser } = useUser();
   const [isSaving, setIsSaving] = useState(false);
+  const hasPremiumAccess =
+    user.role === 'ADMIN'
+    || user.role === 'SUPER_ADMIN'
+    || user.subscriptionTier === 'PRO'
+    || user.subscriptionStatus === 'ACTIVE'
+    || user.subscriptionStatus === 'TRIAL';
 
   // Local state for form management
   const [profileForm, setProfileForm] = useState({
@@ -264,16 +270,48 @@ const Settings: React.FC = () => {
       case 'billing':
         return (
           <div className="bg-white dark:bg-[#0A0A0A] p-6 lg:p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl animate-fade-in">
-            <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Subscription Plan</h2>
-            <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Membership & Billing</h2>
+            <div className={`p-4 border rounded-xl flex justify-between items-center mb-6 ${
+              hasPremiumAccess
+                ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800'
+                : 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800'
+            }`}>
               <div>
-                <h3 className="font-bold text-indigo-900 dark:text-indigo-300">
-                  Premium Credit Repair
+                <h3 className={`font-bold ${
+                  hasPremiumAccess ? 'text-emerald-900 dark:text-emerald-300' : 'text-indigo-900 dark:text-indigo-300'
+                }`}>
+                  {hasPremiumAccess ? 'CreditFix Pro' : 'Free Preview Plan'}
                 </h3>
-                <p className="text-sm text-indigo-700 dark:text-indigo-400">Monthly Plan</p>
+                <p className={`text-sm ${
+                  hasPremiumAccess ? 'text-emerald-700 dark:text-emerald-400' : 'text-indigo-700 dark:text-indigo-400'
+                }`}>
+                  {hasPremiumAccess ? '$49 / month' : 'Upgrade to Pro to unlock dispute execution'}
+                </p>
               </div>
-              <span className="px-3 py-1 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-full shadow-sm">ACTIVE</span>
+              <span className={`px-3 py-1 text-xs font-bold rounded-full shadow-sm ${
+                hasPremiumAccess
+                  ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400'
+              }`}>
+                {hasPremiumAccess ? 'ACTIVE' : 'FREE'}
+              </span>
             </div>
+            {!hasPremiumAccess && (
+              <div className="mb-6 p-4 border border-amber-300/50 dark:border-amber-700/40 rounded-xl bg-amber-50/70 dark:bg-amber-900/20">
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">
+                  Ready to activate full workflow?
+                </p>
+                <p className="text-xs text-amber-700 dark:text-amber-200 mb-3">
+                  Pro unlocks unlimited dispute letter generation, saved templates, and next-step automation.
+                </p>
+                <button
+                  onClick={() => alert('Billing checkout will be connected to your payment provider.')}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black rounded-lg text-sm font-bold"
+                >
+                  Activate Pro - $49/mo
+                </button>
+              </div>
+            )}
             <h3 className="font-bold text-slate-800 dark:text-white mb-3">Payment Methods</h3>
             <div className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg">
               <div className="w-10 h-6 bg-slate-200 rounded"></div>

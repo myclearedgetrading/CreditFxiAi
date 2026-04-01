@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { 
   ShieldCheck, TrendingUp, DollarSign, Building2, 
   CheckCircle2, ArrowRight, AlertTriangle, Briefcase, 
-  Lock, CreditCard, User, Download, FileSearch, MessageSquare, Plus, Clock3, Sparkles
+  Lock, CreditCard, User, Download, FileSearch, MessageSquare, Plus, Clock3, Sparkles, Crown
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer 
@@ -86,6 +86,12 @@ const Dashboard: React.FC = () => {
   const { user } = useUser();
   const [todayTasks, setTodayTasks] = useState<RepairTask[]>([]);
   const [upcomingDeadlines, setUpcomingDeadlines] = useState<Deadline[]>([]);
+  const hasPremiumAccess =
+    user.role === 'ADMIN'
+    || user.role === 'SUPER_ADMIN'
+    || user.subscriptionTier === 'PRO'
+    || user.subscriptionStatus === 'ACTIVE'
+    || user.subscriptionStatus === 'TRIAL';
 
   // Empty default history
   const scoreHistory: any[] = [];
@@ -169,6 +175,35 @@ const Dashboard: React.FC = () => {
             </button>
           </div>
         )}
+      </div>
+
+      <div className={`rounded-xl shadow-sm border p-4 sm:p-5 ${
+        hasPremiumAccess ? 'bg-emerald-900/10 border-emerald-800/40' : 'bg-[#0A0A0A] border-slate-800'
+      }`}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wide font-bold flex items-center gap-2 text-slate-400">
+              <Crown className={`w-3.5 h-3.5 ${hasPremiumAccess ? 'text-emerald-400' : 'text-amber-400'}`} />
+              Membership
+            </p>
+            <p className="text-sm text-white mt-1">
+              {hasPremiumAccess ? 'Pro Membership Active' : 'Free Preview Plan'}
+            </p>
+            <p className="text-xs text-slate-400 mt-1">
+              {hasPremiumAccess
+                ? 'Unlimited dispute letters, template saves, and workflow automation unlocked.'
+                : 'Use analysis and report insights free. Upgrade to unlock letter generation and full automation.'}
+            </p>
+          </div>
+          {!hasPremiumAccess && (
+            <button
+              onClick={() => navigate('/settings')}
+              className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-black rounded-lg font-semibold"
+            >
+              Activate Pro - $49/mo
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Top Grid: Scores */}

@@ -69,6 +69,9 @@ export interface User {
   lastReportSource?: 'PDF' | 'IMAGE' | 'PROVIDER';
   lastEstimatedScoreImprovement?: number;
   lastNegativeItemCount?: number;
+  subscriptionTier?: 'FREE' | 'PRO';
+  subscriptionStatus?: 'NONE' | 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED';
+  trialEndsAt?: string;
 }
 
 export enum ClientStatus {

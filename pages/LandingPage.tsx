@@ -67,7 +67,7 @@ const LandingPage: React.FC = () => {
               onClick={() => navigate('/onboarding')}
               className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(234,88,12,0.3)]"
             >
-              Start Free
+              Start Free Preview
             </button>
           </div>
         </div>
@@ -100,7 +100,7 @@ const LandingPage: React.FC = () => {
               onClick={() => navigate('/onboarding')}
               className="bg-orange-600 text-white px-10 py-4 rounded-full font-bold text-lg transition-all hover:bg-orange-500 hover:shadow-[0_0_30px_rgba(234,88,12,0.4)] flex items-center justify-center gap-2 active:scale-95"
             >
-              Start Repairing Now <ArrowRight className="w-5 h-5" />
+              Start Free Preview <ArrowRight className="w-5 h-5" />
             </button>
           </div>
 
@@ -319,7 +319,7 @@ const LandingPage: React.FC = () => {
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
              <h2 className="text-3xl font-bold text-white mb-4">Simple, Transparent Pricing</h2>
-             <p className="text-slate-400">Invest in your future for less than a coffee a day.</p>
+            <p className="text-slate-400">Start free, then activate Pro when you're ready to execute disputes.</p>
           </div>
 
           <div className="bg-[#0A0A0A] rounded-3xl p-1 overflow-hidden border border-slate-800 shadow-2xl">
@@ -346,7 +346,7 @@ const LandingPage: React.FC = () => {
                   <div className="text-5xl font-bold text-white">$49</div>
                   <span className="text-lg text-slate-400 mb-2">/mo</span>
                 </div>
-                <p className="text-sm text-slate-400 mb-8">Cancel anytime. 30-day money-back guarantee.</p>
+                <p className="text-sm text-slate-400 mb-8">Premium activation at $49/mo. Cancel anytime.</p>
                 <ul className="space-y-4 text-white mb-8">
                   <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Unlimited Disputes</li>
                   <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Automatic Report Import</li>
@@ -357,7 +357,7 @@ const LandingPage: React.FC = () => {
                   onClick={() => navigate('/onboarding')}
                   className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(234,88,12,0.3)] transition-all hover:scale-[1.02]"
                 >
-                  Start Free Trial
+                  Start Free Preview
                 </button>
               </div>
             </div>
