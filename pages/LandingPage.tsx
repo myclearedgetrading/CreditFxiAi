@@ -343,7 +343,7 @@ const LandingPage: React.FC = () => {
                 
                 <h3 className="text-xl font-bold mb-2 text-white">CreditFix AI</h3>
                 <div className="flex items-end gap-2 mb-6">
-                  <div className="text-5xl font-bold text-white">$29</div>
+                  <div className="text-5xl font-bold text-white">$49</div>
                   <span className="text-lg text-slate-400 mb-2">/mo</span>
                 </div>
                 <p className="text-sm text-slate-400 mb-8">Cancel anytime. 30-day money-back guarantee.</p>
