@@ -145,6 +145,46 @@ export async function runAnalyzeCreditReportImage(
   return JSON.parse(jsonString) as CreditAnalysisResult;
 }
 
+export async function runAnalyzeCreditReportPdf(
+  base64Pdf: string,
+  mimeType: string
+): Promise<CreditAnalysisResult> {
+  const ai = getClient();
+  const prompt = `
+    Analyze this full credit report PDF. Extract a comprehensive breakdown and return JSON only.
+
+    Required behavior:
+    1. Identify all negative items (collections, charge-offs, late payments, repossessions, bankruptcies, judgments, and any derogatory tradelines).
+    2. Include bureau attribution for each negative item when possible.
+    3. Identify factual inconsistencies across bureaus and account data.
+    4. Provide strategy recommendations with confidence scores for disputing each item.
+    5. Estimate potential score improvement conservatively.
+
+    Return JSON ONLY matching this exact schema:
+    {
+      "summary": { "totalNegativeItems": number, "estimatedScoreImprovement": number, "utilizationRate": number },
+      "negativeItems": [{ "creditor": string, "accountType": string, "amount": number, "bureau": string, "date": string }],
+      "discrepancies": [{ "type": string, "description": string, "severity": "HIGH"|"MEDIUM"|"LOW", "itemsInvolved": string[] }],
+      "recommendations": [{ "itemId": string, "creditorName": string, "recommendedStrategy": string, "confidenceScore": number, "reasoning": string, "bureauToTarget": string }],
+      "actionPlan": [{ "phase": string, "actions": string[], "expectedOutcome": string }]
+    }
+  `;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.0-flash',
+    contents: {
+      parts: [
+        { inlineData: { mimeType, data: base64Pdf } },
+        { text: prompt },
+      ],
+    },
+    config: { responseMimeType: 'application/json' },
+  });
+
+  const text = (response.text || '{}').replace(/```json/g, '').replace(/```/g, '').trim();
+  return JSON.parse(text) as CreditAnalysisResult;
+}
+
 export async function runGenerateFundingPlan(businessData: unknown): Promise<unknown> {
   const ai = getClient();
   const prompt = `
@@ -486,6 +526,11 @@ export async function dispatchGeminiAction(action: string, payload: unknown): Pr
       return runAnalyzeCreditReportImage(
         (payload as { base64Image: string; mimeType: string }).base64Image,
         (payload as { base64Image: string; mimeType: string }).mimeType
+      );
+    case 'analyzeCreditReportPdf':
+      return runAnalyzeCreditReportPdf(
+        (payload as { base64Pdf: string; mimeType: string }).base64Pdf,
+        (payload as { base64Pdf: string; mimeType: string }).mimeType
       );
     case 'generateFundingPlan':
       return runGenerateFundingPlan(payload);

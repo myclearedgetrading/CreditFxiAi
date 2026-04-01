@@ -6,13 +6,46 @@ import {
   ArrowRight, TrendingUp, Scale, Loader2, ScanLine, Camera, Zap, 
   ChevronRight, Lock, X, ExternalLink, Shield
 } from 'lucide-react';
-import { analyzeCreditReportImage } from '../services/geminiService';
-import { CreditAnalysisResult, Discrepancy, StrategyRecommendation } from '../types';
+import { analyzeCreditReportImage, analyzeCreditReportPdf } from '../services/geminiService';
+import { Bureau, CreditAnalysisResult, NegativeItem } from '../types';
 import { vibrate, HAPTIC } from '../services/mobileService';
+import { useUser } from '../context/UserContext';
+import { saveUserToFirestore } from '../services/firebaseService';
+
+const readFileAsDataUrl = (f: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('Failed to read selected file.'));
+    reader.readAsDataURL(f);
+  });
+
+const parseBureaus = (source: string): Bureau[] => {
+  const s = source.toLowerCase();
+  const bureaus: Bureau[] = [];
+  if (s.includes('equifax')) bureaus.push(Bureau.EQUIFAX);
+  if (s.includes('experian')) bureaus.push(Bureau.EXPERIAN);
+  if (s.includes('transunion') || s.includes('trans union')) bureaus.push(Bureau.TRANSUNION);
+  return bureaus.length > 0 ? bureaus : [Bureau.EQUIFAX];
+};
+
+const toDisputableItems = (analysis: CreditAnalysisResult): NegativeItem[] => {
+  return (analysis.negativeItems || []).map((item, idx) => ({
+    id: `parsed-${Date.now()}-${idx}`,
+    type: item.accountType || 'Negative Item',
+    creditor: item.creditor || 'Unknown Creditor',
+    accountNumber: '****',
+    amount: Number(item.amount || 0),
+    dateReported: item.date || new Date().toISOString().slice(0, 10),
+    bureau: parseBureaus(item.bureau || ''),
+    status: 'Open',
+  }));
+};
 
 const AnalysisEngine: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, updateUser } = useUser();
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -125,10 +158,42 @@ const AnalysisEngine: React.FC = () => {
          const mimeType = file.type;
          const analysisResult = await analyzeCreditReportImage(base64Data, mimeType);
          setResult(analysisResult);
+         const disputableItems = toDisputableItems(analysisResult);
+         const profileUpdate = {
+           negativeItems: disputableItems,
+           creditScore: {
+             equifax: user.creditScore.equifax || 0,
+             experian: user.creditScore.experian || 0,
+             transunion: user.creditScore.transunion || 0,
+           },
+         };
+         updateUser(profileUpdate);
+         if (user.id) {
+           await saveUserToFirestore({ ...user, ...profileUpdate });
+         }
+      } else if (file.type === 'application/pdf') {
+         const dataUrl = await readFileAsDataUrl(file);
+         const base64Data = dataUrl.split(',')[1];
+         if (!base64Data) {
+           throw new Error('Could not read the PDF file. Please try again.');
+         }
+         const analysisResult = await analyzeCreditReportPdf(base64Data, 'application/pdf');
+         setResult(analysisResult);
+         const disputableItems = toDisputableItems(analysisResult);
+         const profileUpdate = {
+           negativeItems: disputableItems,
+           creditScore: {
+             equifax: user.creditScore.equifax || 0,
+             experian: user.creditScore.experian || 0,
+             transunion: user.creditScore.transunion || 0,
+           },
+         };
+         updateUser(profileUpdate);
+         if (user.id) {
+           await saveUserToFirestore({ ...user, ...profileUpdate });
+         }
       } else {
-         // Real Mode: We cannot parse PDFs/HTML client-side easily without huge libraries.
-         // Since we removed mock data, we must inform the user to use images or implement server-side parsing.
-         throw new Error("Client-side parsing is currently supported for Images only. Please convert your report to an Image (JPG/PNG).");
+         throw new Error('Unsupported file type. Please upload a JPG, PNG, WEBP, or PDF report.');
       }
       
       clearInterval(stepInterval);
@@ -178,7 +243,7 @@ const AnalysisEngine: React.FC = () => {
               type="file" 
               id="fileInput" 
               className="hidden" 
-              accept="image/*" 
+              accept="image/*,.pdf,application/pdf" 
               capture="environment" 
               onChange={handleFileChange} 
             />
@@ -207,7 +272,7 @@ const AnalysisEngine: React.FC = () => {
                   <Camera className="w-8 h-8 text-slate-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-white">Tap to Scan or Upload</h3>
-                <p className="text-slate-400 mt-1">Supports Image Files (JPG, PNG)</p>
+                <p className="text-slate-400 mt-1">Supports JPG, PNG, WEBP, and PDF reports</p>
               </div>
             )}
           </div>

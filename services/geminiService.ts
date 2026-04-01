@@ -61,6 +61,13 @@ export const analyzeCreditReportImage = async (
   return callGeminiApi<CreditAnalysisResult>('analyzeCreditReportImage', { base64Image, mimeType });
 };
 
+export const analyzeCreditReportPdf = async (
+  base64Pdf: string,
+  mimeType = 'application/pdf'
+): Promise<CreditAnalysisResult> => {
+  return callGeminiApi<CreditAnalysisResult>('analyzeCreditReportPdf', { base64Pdf, mimeType });
+};
+
 export const generateFundingPlan = async (businessData: unknown): Promise<unknown> => {
   return callGeminiApi('generateFundingPlan', businessData);
 };

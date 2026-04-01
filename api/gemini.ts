@@ -22,6 +22,7 @@ const ALLOWED_ACTIONS = new Set([
   'generateDisputeLetter',
   'analyzeCreditReportHTML',
   'analyzeCreditReportImage',
+  'analyzeCreditReportPdf',
   'generateFundingPlan',
   'predictDisputeOutcome',
   'forecastCreditScore',
@@ -75,6 +76,19 @@ function validatePayload(action: string, payload: unknown): string | null {
       || (mimeType !== 'image/jpeg' && mimeType !== 'image/png' && mimeType !== 'image/webp')
     ) {
       return 'Invalid payload for analyzeCreditReportImage';
+    }
+  }
+
+  if (action === 'analyzeCreditReportPdf') {
+    const pdfPayload = payload as { base64Pdf?: string; mimeType?: string } | null;
+    const mimeType = pdfPayload?.mimeType || '';
+    if (
+      typeof pdfPayload?.base64Pdf !== 'string'
+      || pdfPayload.base64Pdf.length < 50
+      || pdfPayload.base64Pdf.length > 20_000_000
+      || mimeType !== 'application/pdf'
+    ) {
+      return 'Invalid payload for analyzeCreditReportPdf';
     }
   }
 
