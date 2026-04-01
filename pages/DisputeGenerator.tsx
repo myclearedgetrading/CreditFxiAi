@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { Bureau, DisputeStrategy, DisputeRound, DisputeStatus, NegativeItem, ResponseIngestion } from '../types';
+import { Bureau, DisputeStrategy, DisputeRound, DisputeStatus, NegativeItem, ResponseIngestion, DisputeTemplate } from '../types';
 import { generateDisputeLetter } from '../services/geminiService';
 import { Wand2, Download, AlertCircle, Loader2, FileCheck, Check, Paperclip, FileText, X, Layers, ShieldCheck, Printer, ExternalLink, Mail } from 'lucide-react';
 import {
@@ -11,6 +11,7 @@ import {
   createDisputeRound,
   createResponseIngestion,
   createRepairTask,
+  createDisputeTemplate,
   createTemplateExposure,
   getDisputeTemplates,
   getDisputeRounds,
@@ -43,6 +44,184 @@ const MAILING_PARTNER_OPTIONS: { name: string; description: string; url: string 
     url: 'https://www.letterstream.com',
   },
 ];
+
+type LetterLibraryCategory = 'ALL' | 'CREDIT_BUREAUS' | 'CREDITORS' | 'DATA_FURNISHERS' | 'CFPB';
+
+type LetterLibraryTemplate = DisputeTemplate & {
+  category: LetterLibraryCategory;
+  source: 'BUILT_IN' | 'CUSTOM';
+};
+
+const LETTER_LIBRARY_CATEGORIES: { id: LetterLibraryCategory; label: string }[] = [
+  { id: 'ALL', label: 'All' },
+  { id: 'CREDIT_BUREAUS', label: 'Credit Bureaus' },
+  { id: 'CREDITORS', label: 'Creditors' },
+  { id: 'DATA_FURNISHERS', label: 'Data Furnishers' },
+  { id: 'CFPB', label: 'CFPB' },
+];
+
+const BUILT_IN_LIBRARY_TEMPLATES: LetterLibraryTemplate[] = [
+  {
+    id: 'built-in-bureau-factual',
+    category: 'CREDIT_BUREAUS',
+    source: 'BUILT_IN',
+    name: 'Bureau Investigation Request (FCRA 611)',
+    strategy: DisputeStrategy.FACTUAL,
+    roundType: 'INITIAL',
+    bureau: 'ANY',
+    content:
+      `{{TODAY_DATE}}
+
+{{CLIENT_NAME}}
+{{CLIENT_ADDRESS}}
+
+To: {{TARGET_BUREAU}}
+
+Subject: Request for Investigation Under FCRA Section 611
+
+I am writing to dispute inaccurate information in my credit file. The account below contains data I believe is incomplete, inaccurate, or unverifiable.
+
+Creditor/Furnisher: {{CREDITOR_NAME}}
+Account Number: {{ACCOUNT_NUMBER}}
+Amount Reported: {{ACCOUNT_AMOUNT}}
+Date Reported: {{DATE_REPORTED}}
+
+Please conduct a reasonable reinvestigation and delete or correct any information that cannot be verified within the required timeframe. Send me an updated copy of my credit report after your investigation is complete.
+
+Sincerely,
+{{CLIENT_NAME}}`,
+    version: 1,
+    isActive: true,
+    createdAt: '1970-01-01T00:00:00.000Z',
+    updatedAt: '1970-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'built-in-creditor-validation',
+    category: 'CREDITORS',
+    source: 'BUILT_IN',
+    name: 'Creditor Direct Dispute (FCRA 623)',
+    strategy: DisputeStrategy.VALIDATION,
+    roundType: 'INITIAL',
+    furnisher: 'Creditor',
+    content:
+      `{{TODAY_DATE}}
+
+{{CLIENT_NAME}}
+{{CLIENT_ADDRESS}}
+
+To: {{CREDITOR_NAME}}
+
+Subject: Direct Dispute of Furnished Information (FCRA 623)
+
+I am submitting a direct dispute regarding the account listed below. I believe the reported data is inaccurate and request a documented investigation.
+
+Account Number: {{ACCOUNT_NUMBER}}
+Amount Reported: {{ACCOUNT_AMOUNT}}
+Date Reported: {{DATE_REPORTED}}
+Issue: Information appears inaccurate, incomplete, or unsupported by records available to me.
+
+Please investigate this dispute, correct or delete inaccurate data, and notify all consumer reporting agencies to which you furnished this account.
+
+Sincerely,
+{{CLIENT_NAME}}`,
+    version: 1,
+    isActive: true,
+    createdAt: '1970-01-01T00:00:00.000Z',
+    updatedAt: '1970-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'built-in-data-furnisher',
+    category: 'DATA_FURNISHERS',
+    source: 'BUILT_IN',
+    name: 'Data Furnisher Validation and Method Request',
+    strategy: DisputeStrategy.METRO2,
+    roundType: 'FOLLOW_UP',
+    furnisher: 'Data Furnisher',
+    content:
+      `{{TODAY_DATE}}
+
+{{CLIENT_NAME}}
+{{CLIENT_ADDRESS}}
+
+To: {{CREDITOR_NAME}}
+
+Subject: Validation and Reporting Accuracy Request
+
+This is a follow-up regarding your furnishing of information related to the account below.
+
+Account Number: {{ACCOUNT_NUMBER}}
+Date Reported: {{DATE_REPORTED}}
+
+Please provide documentation supporting your reporting accuracy, including the records used to validate this tradeline and any updates sent to consumer reporting agencies.
+
+If you are unable to validate the accuracy and completeness of this information, please instruct all bureaus to delete the tradeline.
+
+Sincerely,
+{{CLIENT_NAME}}`,
+    version: 1,
+    isActive: true,
+    createdAt: '1970-01-01T00:00:00.000Z',
+    updatedAt: '1970-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'built-in-cfpb-complaint',
+    category: 'CFPB',
+    source: 'BUILT_IN',
+    name: 'CFPB Escalation Complaint Draft',
+    strategy: DisputeStrategy.FACTUAL,
+    roundType: 'ESCALATION',
+    furnisher: 'CFPB',
+    content:
+      `{{TODAY_DATE}}
+
+Consumer Financial Protection Bureau
+
+Subject: Credit Reporting Complaint - {{CREDITOR_NAME}}
+
+I am submitting this complaint after unsuccessful attempts to resolve inaccurate credit reporting.
+
+Creditor/Furnisher: {{CREDITOR_NAME}}
+Account Number: {{ACCOUNT_NUMBER}}
+Bureau(s): {{TARGET_BUREAU}}
+Issue Summary:
+{{DISPUTE_REASON}}
+
+I requested correction/investigation directly and through the credit bureaus, but inaccurate reporting remains. I request supervisory review and corrective action.
+
+Consumer Name:
+{{CLIENT_NAME}}
+
+Contact:
+{{CLIENT_EMAIL}}
+{{CLIENT_PHONE}}
+
+Sincerely,
+{{CLIENT_NAME}}`,
+    version: 1,
+    isActive: true,
+    createdAt: '1970-01-01T00:00:00.000Z',
+    updatedAt: '1970-01-01T00:00:00.000Z',
+  },
+];
+
+const inferTemplateCategory = (template: DisputeTemplate): LetterLibraryCategory => {
+  const signal = `${template.name} ${template.furnisher || ''} ${template.content}`.toLowerCase();
+  if (signal.includes('cfpb') || signal.includes('consumer financial protection bureau')) return 'CFPB';
+  if (template.bureau && template.bureau !== 'ANY') return 'CREDIT_BUREAUS';
+  if (
+    signal.includes('furnisher')
+    || signal.includes('metro 2')
+    || signal.includes('data reporting')
+  ) return 'DATA_FURNISHERS';
+  if (
+    signal.includes('creditor')
+    || signal.includes('collector')
+    || signal.includes('collection')
+    || signal.includes('debt')
+  ) return 'CREDITORS';
+  if (template.bureau === 'ANY') return 'CREDIT_BUREAUS';
+  return 'CREDITORS';
+};
 
 const DisputeGenerator: React.FC = () => {
   const location = useLocation();
@@ -77,6 +256,15 @@ const DisputeGenerator: React.FC = () => {
     likelyImpact: number;
     parsedSummary: string;
   }>(null);
+  const [libraryTemplates, setLibraryTemplates] = useState<LetterLibraryTemplate[]>(BUILT_IN_LIBRARY_TEMPLATES);
+  const [libraryLoading, setLibraryLoading] = useState(false);
+  const [libraryCategory, setLibraryCategory] = useState<LetterLibraryCategory>('ALL');
+  const [librarySearch, setLibrarySearch] = useState('');
+  const [selectedLibraryTemplateId, setSelectedLibraryTemplateId] = useState<string>(BUILT_IN_LIBRARY_TEMPLATES[0]?.id || '');
+  const [saveTemplateName, setSaveTemplateName] = useState('');
+  const [saveTemplateCategory, setSaveTemplateCategory] = useState<LetterLibraryCategory>('CREDIT_BUREAUS');
+  const [saveTemplateRoundType, setSaveTemplateRoundType] = useState<'INITIAL' | 'FOLLOW_UP' | 'ESCALATION'>('INITIAL');
+  const [savingTemplate, setSavingTemplate] = useState(false);
 
   const myNegativeItems = user.negativeItems || [];
   const selectedItem = myNegativeItems.find(i => i.id === selectedItemId);
@@ -118,6 +306,180 @@ const DisputeGenerator: React.FC = () => {
     void getDisputeRounds(companyId, disputeId).then(setTimeline).catch(() => setTimeline([]));
     void getResponseIngestions(companyId, disputeId).then(setResponseIngestions).catch(() => setResponseIngestions([]));
   }, [disputeId, user, featureFlags.nextLevelDIY]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadTemplateLibrary = async () => {
+      if (!user.id) return;
+      setLibraryLoading(true);
+      try {
+        const companyId = tenantCompanyId(user);
+        const customTemplates = await getDisputeTemplates(companyId);
+        if (cancelled) return;
+
+        const normalizedCustomTemplates: LetterLibraryTemplate[] = customTemplates.map((t) => ({
+          ...t,
+          category: inferTemplateCategory(t),
+          source: 'CUSTOM',
+        }));
+
+        setLibraryTemplates([...normalizedCustomTemplates, ...BUILT_IN_LIBRARY_TEMPLATES]);
+        setSelectedLibraryTemplateId((prev) =>
+          prev || normalizedCustomTemplates[0]?.id || BUILT_IN_LIBRARY_TEMPLATES[0]?.id || ''
+        );
+      } catch {
+        if (!cancelled) {
+          setLibraryTemplates(BUILT_IN_LIBRARY_TEMPLATES);
+          setSelectedLibraryTemplateId(BUILT_IN_LIBRARY_TEMPLATES[0]?.id || '');
+        }
+      } finally {
+        if (!cancelled) setLibraryLoading(false);
+      }
+    };
+
+    void loadTemplateLibrary();
+    return () => {
+      cancelled = true;
+    };
+  }, [user.id, user.companyId]);
+
+  const applyTemplatePlaceholders = (
+    templateBody: string,
+    overrides?: { bureau?: Bureau; creditorName?: string }
+  ) => {
+    const address = user.address
+      ? [user.address.street, `${user.address.city}, ${user.address.state} ${user.address.zip}`].filter(Boolean).join('\n')
+      : 'Address not provided';
+    const bureauName = overrides?.bureau || selectedBureaus[0] || Bureau.EQUIFAX;
+    const creditorName = overrides?.creditorName || selectedItem?.creditor || 'Creditor/Furnisher';
+    const reasonLine = selectedItem
+      ? `Inaccurate or unverifiable reporting for ${selectedItem.type} account with ${selectedItem.creditor}.`
+      : 'Inaccurate or unverifiable reporting remains after prior dispute attempts.';
+    const tokens: Record<string, string> = {
+      TODAY_DATE: new Date().toLocaleDateString(),
+      CLIENT_NAME: `${user.firstName} ${user.lastName}`.trim() || 'Client Name',
+      CLIENT_EMAIL: user.email || 'client@email.com',
+      CLIENT_PHONE: user.phone || 'Phone number',
+      CLIENT_ADDRESS: address,
+      TARGET_BUREAU: bureauName,
+      CREDITOR_NAME: creditorName,
+      ACCOUNT_NUMBER: selectedItem?.accountNumber || 'XXXX-XXXX',
+      ACCOUNT_AMOUNT: typeof selectedItem?.amount === 'number' ? `$${selectedItem.amount}` : 'N/A',
+      DATE_REPORTED: selectedItem?.dateReported || 'Unknown',
+      DISPUTE_REASON: reasonLine,
+    };
+    return Object.entries(tokens).reduce((acc, [key, value]) => {
+      const pattern = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
+      return acc.replace(pattern, value);
+    }, templateBody);
+  };
+
+  const visibleLibraryTemplates = libraryTemplates.filter((template) => {
+    const categoryOk = libraryCategory === 'ALL' || template.category === libraryCategory;
+    if (!categoryOk) return false;
+    const search = librarySearch.trim().toLowerCase();
+    if (!search) return true;
+    const corpus = `${template.name} ${template.strategy} ${template.content} ${template.furnisher || ''}`.toLowerCase();
+    return corpus.includes(search);
+  });
+
+  const selectedLibraryTemplate =
+    visibleLibraryTemplates.find((t) => t.id === selectedLibraryTemplateId)
+    || libraryTemplates.find((t) => t.id === selectedLibraryTemplateId)
+    || visibleLibraryTemplates[0]
+    || libraryTemplates[0]
+    || null;
+
+  const handleApplyLibraryTemplate = () => {
+    if (!selectedLibraryTemplate) return;
+    setStrategy(selectedLibraryTemplate.strategy);
+
+    const multiBureauTemplate = selectedLibraryTemplate.category === 'CREDIT_BUREAUS'
+      || selectedLibraryTemplate.bureau === 'ANY'
+      || !!selectedLibraryTemplate.bureau;
+
+    if (multiBureauTemplate) {
+      const parts = selectedBureaus.map((bureau) => {
+        const body = applyTemplatePlaceholders(selectedLibraryTemplate.content, { bureau });
+        return `----------------------------------------\nLETTER TO: ${bureau.toUpperCase()}\n----------------------------------------\n\n${body}`;
+      });
+      setGeneratedLetter(parts.join('\n\n\n'));
+      return;
+    }
+
+    const body = applyTemplatePlaceholders(selectedLibraryTemplate.content, {
+      creditorName: selectedLibraryTemplate.furnisher || selectedItem?.creditor,
+    });
+    setGeneratedLetter(body);
+  };
+
+  const handleSaveCurrentLetterTemplate = async () => {
+    if (!generatedLetter.trim()) {
+      setError('Generate or paste a letter before saving it as a template.');
+      return;
+    }
+    if (!saveTemplateName.trim()) {
+      setError('Enter a template name before saving.');
+      return;
+    }
+
+    setSavingTemplate(true);
+    setError(null);
+    try {
+      const companyId = tenantCompanyId(user);
+      const resolvedBureau =
+        saveTemplateCategory === 'CREDIT_BUREAUS'
+          ? (selectedBureaus[0] || 'ANY')
+          : undefined;
+      const resolvedFurnisher =
+        saveTemplateCategory === 'CFPB'
+          ? 'CFPB'
+          : saveTemplateCategory === 'DATA_FURNISHERS'
+            ? (selectedItem?.creditor || 'Data Furnisher')
+            : saveTemplateCategory === 'CREDITORS'
+              ? (selectedItem?.creditor || 'Creditor')
+              : undefined;
+
+      const created = await createDisputeTemplate(companyId, {
+        name: saveTemplateName.trim(),
+        strategy,
+        roundType: saveTemplateRoundType,
+        bureau: resolvedBureau || 'ANY',
+        furnisher: resolvedFurnisher,
+        content: generatedLetter.trim(),
+        version: 1,
+        isActive: true,
+      });
+
+      const savedTemplate: LetterLibraryTemplate = {
+        id: created.id,
+        name: saveTemplateName.trim(),
+        strategy,
+        roundType: saveTemplateRoundType,
+        bureau: resolvedBureau || 'ANY',
+        furnisher: resolvedFurnisher,
+        content: generatedLetter.trim(),
+        version: 1,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        companyId,
+        category: saveTemplateCategory,
+        source: 'CUSTOM',
+      };
+
+      setLibraryTemplates((prev) => {
+        const withoutBuiltInCollision = prev.filter((t) => t.id !== savedTemplate.id);
+        return [savedTemplate, ...withoutBuiltInCollision];
+      });
+      setSelectedLibraryTemplateId(savedTemplate.id);
+      setSaveTemplateName('');
+    } catch {
+      setError('Unable to save template. Only tenant admins can create templates under current security rules.');
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
 
   const toggleBureau = (b: Bureau) => {
     setSelectedBureaus(prev => {
@@ -556,9 +918,128 @@ const DisputeGenerator: React.FC = () => {
               </div>
             </div>
 
+            <div>
+              <label className="block text-sm font-semibold text-white mb-2">4. Letter Library (Optional)</label>
+              <div className="space-y-3 bg-slate-900 p-3 rounded-lg border border-slate-800">
+                <div className="grid grid-cols-2 gap-2">
+                  {LETTER_LIBRARY_CATEGORIES.map((category) => (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => setLibraryCategory(category.id)}
+                      className={`text-[11px] px-2 py-1.5 rounded border transition-colors ${
+                        libraryCategory === category.id
+                          ? 'bg-orange-900/30 border-orange-700 text-orange-300'
+                          : 'bg-[#0A0A0A] border-slate-800 text-slate-400 hover:bg-slate-800'
+                      }`}
+                    >
+                      {category.label}
+                    </button>
+                  ))}
+                </div>
+
+                <input
+                  value={librarySearch}
+                  onChange={(e) => setLibrarySearch(e.target.value)}
+                  placeholder="Search templates..."
+                  className="w-full bg-[#0A0A0A] border border-slate-800 rounded px-2 py-2 text-xs text-slate-200 placeholder-slate-500"
+                />
+
+                <div className="max-h-44 overflow-y-auto space-y-2">
+                  {libraryLoading && (
+                    <p className="text-xs text-slate-500">Loading saved templates...</p>
+                  )}
+                  {!libraryLoading && visibleLibraryTemplates.length === 0 && (
+                    <p className="text-xs text-slate-500">No templates match this filter.</p>
+                  )}
+                  {!libraryLoading && visibleLibraryTemplates.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => setSelectedLibraryTemplateId(template.id)}
+                      className={`w-full text-left p-2 rounded border transition-colors ${
+                        selectedLibraryTemplateId === template.id
+                          ? 'border-orange-600 bg-orange-900/20'
+                          : 'border-slate-800 bg-[#0A0A0A] hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-semibold text-white truncate">{template.name}</p>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                          template.source === 'CUSTOM'
+                            ? 'bg-blue-900/30 text-blue-300'
+                            : 'bg-slate-800 text-slate-300'
+                        }`}>
+                          {template.source === 'CUSTOM' ? 'Saved' : 'Built-in'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1">{template.strategy}</p>
+                    </button>
+                  ))}
+                </div>
+
+                {selectedLibraryTemplate && (
+                  <div className="border border-slate-800 rounded p-2 bg-[#0A0A0A] space-y-2">
+                    <p className="text-[11px] text-slate-500 uppercase tracking-wide">Template Preview</p>
+                    <p className="text-xs text-slate-300 whitespace-pre-wrap max-h-32 overflow-y-auto">
+                      {applyTemplatePlaceholders(selectedLibraryTemplate.content)
+                        .slice(0, 420)}
+                      {selectedLibraryTemplate.content.length > 420 ? '...' : ''}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleApplyLibraryTemplate}
+                      className="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded"
+                    >
+                      Use this template in editor
+                    </button>
+                  </div>
+                )}
+
+                <div className="border border-slate-800 rounded p-2 bg-[#0A0A0A] space-y-2">
+                  <p className="text-[11px] text-slate-500 uppercase tracking-wide">Save Current Editor As Template</p>
+                  <input
+                    value={saveTemplateName}
+                    onChange={(e) => setSaveTemplateName(e.target.value)}
+                    placeholder="Template name (e.g. Bureau Round 1 - Factual)"
+                    className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-2 text-xs text-slate-200 placeholder-slate-500"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <select
+                      value={saveTemplateCategory}
+                      onChange={(e) => setSaveTemplateCategory(e.target.value as LetterLibraryCategory)}
+                      className="bg-slate-950 border border-slate-800 rounded px-2 py-2 text-xs text-slate-200"
+                    >
+                      <option value="CREDIT_BUREAUS">Credit Bureaus</option>
+                      <option value="CREDITORS">Creditors</option>
+                      <option value="DATA_FURNISHERS">Data Furnishers</option>
+                      <option value="CFPB">CFPB</option>
+                    </select>
+                    <select
+                      value={saveTemplateRoundType}
+                      onChange={(e) => setSaveTemplateRoundType(e.target.value as 'INITIAL' | 'FOLLOW_UP' | 'ESCALATION')}
+                      className="bg-slate-950 border border-slate-800 rounded px-2 py-2 text-xs text-slate-200"
+                    >
+                      <option value="INITIAL">Initial</option>
+                      <option value="FOLLOW_UP">Follow-up</option>
+                      <option value="ESCALATION">Escalation</option>
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={savingTemplate || !generatedLetter.trim() || !saveTemplateName.trim()}
+                    onClick={handleSaveCurrentLetterTemplate}
+                    className="w-full py-2 bg-orange-700 hover:bg-orange-600 disabled:opacity-50 text-white text-xs font-semibold rounded"
+                  >
+                    {savingTemplate ? 'Saving template...' : 'Save current letter as template'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {featureFlags.nextLevelDIY && (
               <div>
-                  <label className="block text-sm font-semibold text-white mb-2">4. Round Lifecycle</label>
+                  <label className="block text-sm font-semibold text-white mb-2">5. Round Lifecycle</label>
                   <div className="space-y-2 bg-slate-900 p-3 rounded-lg border border-slate-800">
                       <div className="flex items-center justify-between">
                           <span className="text-xs text-slate-400 uppercase tracking-wide">Current round</span>
@@ -592,7 +1073,7 @@ const DisputeGenerator: React.FC = () => {
             {/* Step 5: Attachments */}
             <div>
                 <label className="block text-sm font-semibold text-white mb-2 flex justify-between">
-                    {featureFlags.nextLevelDIY ? '5. Attach Evidence' : '4. Attach Evidence'}
+                    {featureFlags.nextLevelDIY ? '6. Attach Evidence' : '5. Attach Evidence'}
                     <span className="text-xs text-slate-400 font-normal">Required for identification</span>
                 </label>
                 <div className="space-y-2 bg-slate-900 p-3 rounded-lg border border-slate-800">
