@@ -186,35 +186,93 @@ export async function runAnalyzeCreditReportPdf(
     return JSON.parse(text) as CreditAnalysisResult;
   } catch {
     // Fallback: extract text from PDF and analyze as plain report content.
-    const pdfBuffer = Buffer.from(base64Pdf, 'base64');
-    const pdfParseModule = await import('pdf-parse');
-    const pdfParseFn = (pdfParseModule as any).default || (pdfParseModule as any);
-    const parsed = await pdfParseFn(pdfBuffer);
-    const extractedText = String(parsed?.text || '').trim();
-    if (extractedText.length < 200) {
-      throw new Error('PDF parsing failed. Try a text-based PDF or upload clear report screenshots.');
-    }
-
-    const textPrompt = `
-      Analyze this extracted credit report text and return JSON only.
-      Extract negative items, discrepancies, strategy recommendations, and a 90-day action plan.
-      Keep output strict to this schema:
-      {
-        "summary": { "totalNegativeItems": number, "estimatedScoreImprovement": number, "utilizationRate": number },
-        "negativeItems": [{ "creditor": string, "accountType": string, "amount": number, "bureau": string, "date": string }],
-        "discrepancies": [{ "type": string, "description": string, "severity": "HIGH"|"MEDIUM"|"LOW", "itemsInvolved": string[] }],
-        "recommendations": [{ "itemId": string, "creditorName": string, "recommendedStrategy": string, "confidenceScore": number, "reasoning": string, "bureauToTarget": string }],
-        "actionPlan": [{ "phase": string, "actions": string[], "expectedOutcome": string }]
+    try {
+      const pdfBuffer = Buffer.from(base64Pdf, 'base64');
+      const pdfParseModule = await import('pdf-parse');
+      const pdfParseFn = (pdfParseModule as any).default || (pdfParseModule as any);
+      const parsed = await pdfParseFn(pdfBuffer);
+      const extractedText = String(parsed?.text || '').trim();
+      if (extractedText.length < 80) {
+        return {
+          summary: {
+            totalNegativeItems: 0,
+            estimatedScoreImprovement: 0,
+            utilizationRate: 0,
+          },
+          negativeItems: [],
+          discrepancies: [
+            {
+              type: 'PARSE_LIMITATION',
+              description: 'This PDF appears image-heavy or non-extractable. We could not reliably parse account-level text from the document.',
+              severity: 'LOW',
+              itemsInvolved: ['PDF_IMPORT'],
+            },
+          ],
+          recommendations: [],
+          actionPlan: [
+            {
+              phase: 'Capture Readable Report Data',
+              actions: [
+                'Export a text-based PDF from your provider when possible.',
+                'Upload clear screenshots of key sections (negative accounts, account details, bureau summary).',
+                'Re-run analysis for full item extraction and strategy recommendations.',
+              ],
+              expectedOutcome: 'Obtain parseable report data for complete dispute analysis.',
+            },
+          ],
+        };
       }
-    `;
 
-    const fallbackResponse = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: `${textPrompt}\n\nREPORT TEXT:\n${extractedText.slice(0, 320000)}`,
-      config: { responseMimeType: 'application/json' },
-    });
-    const fallbackText = (fallbackResponse.text || '{}').replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(fallbackText) as CreditAnalysisResult;
+      const textPrompt = `
+        Analyze this extracted credit report text and return JSON only.
+        Extract negative items, discrepancies, strategy recommendations, and a 90-day action plan.
+        Keep output strict to this schema:
+        {
+          "summary": { "totalNegativeItems": number, "estimatedScoreImprovement": number, "utilizationRate": number },
+          "negativeItems": [{ "creditor": string, "accountType": string, "amount": number, "bureau": string, "date": string }],
+          "discrepancies": [{ "type": string, "description": string, "severity": "HIGH"|"MEDIUM"|"LOW", "itemsInvolved": string[] }],
+          "recommendations": [{ "itemId": string, "creditorName": string, "recommendedStrategy": string, "confidenceScore": number, "reasoning": string, "bureauToTarget": string }],
+          "actionPlan": [{ "phase": string, "actions": string[], "expectedOutcome": string }]
+        }
+      `;
+
+      const fallbackResponse = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: `${textPrompt}\n\nREPORT TEXT:\n${extractedText.slice(0, 320000)}`,
+        config: { responseMimeType: 'application/json' },
+      });
+      const fallbackText = (fallbackResponse.text || '{}').replace(/```json/g, '').replace(/```/g, '').trim();
+      return JSON.parse(fallbackText) as CreditAnalysisResult;
+    } catch {
+      return {
+        summary: {
+          totalNegativeItems: 0,
+          estimatedScoreImprovement: 0,
+          utilizationRate: 0,
+        },
+        negativeItems: [],
+        discrepancies: [
+          {
+            type: 'PARSE_LIMITATION',
+            description: 'We could not decode this PDF format reliably. Try a provider-exported text PDF or upload report screenshots for best results.',
+            severity: 'LOW',
+            itemsInvolved: ['PDF_IMPORT'],
+          },
+        ],
+        recommendations: [],
+        actionPlan: [
+          {
+            phase: 'Retry with Alternative Format',
+            actions: [
+              'Use provider auto-import when available.',
+              'Upload screenshots of negative accounts and bureau details.',
+              'Re-run analysis to generate dispute-ready item extraction.',
+            ],
+            expectedOutcome: 'Successful extraction of negative items and strategies.',
+          },
+        ],
+      };
+    }
   }
 }
 

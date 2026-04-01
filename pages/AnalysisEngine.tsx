@@ -219,7 +219,7 @@ const AnalysisEngine: React.FC = () => {
       clearInterval(stepInterval);
       const message = String(err?.message || '');
       if (message.includes('500')) {
-        setError('We could not process this PDF format yet. Try a smaller/text-based PDF or upload clear screenshots of each report section.');
+        setError('We hit a server issue while processing this file. Please retry once, then use provider auto-import or upload clearer report screenshots if needed.');
       } else {
         setError(message || 'Failed to analyze document.');
       }
