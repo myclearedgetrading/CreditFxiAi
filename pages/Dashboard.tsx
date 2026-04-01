@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { 
   ShieldCheck, TrendingUp, DollarSign, Building2, 
   CheckCircle2, ArrowRight, AlertTriangle, Briefcase, 
-  Lock, CreditCard, User, Download, FileSearch, MessageSquare, Plus
+  Lock, CreditCard, User, Download, FileSearch, MessageSquare, Plus, Clock3, Sparkles
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer 
@@ -118,6 +118,57 @@ const Dashboard: React.FC = () => {
           <CreditCard className="w-4 h-4 mr-2" />
           Update Report
         </button>
+      </div>
+
+      <div className="bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-800 p-4 sm:p-5">
+        {user.lastReportAnalysisAt ? (
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-slate-500 font-bold flex items-center gap-2">
+                <Clock3 className="w-3.5 h-3.5 text-orange-500" />
+                Last Report Analysis
+              </p>
+              <p className="text-sm text-slate-200 mt-1">
+                {new Date(user.lastReportAnalysisAt).toLocaleString()} - {user.lastReportFileName || 'Uploaded report'} ({user.lastReportSource || 'UNKNOWN'})
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                {user.lastNegativeItemCount ?? 0} negative item(s) detected, potential gain +{user.lastEstimatedScoreImprovement ?? 0} pts.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => navigate('/analysis')}
+                className="px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-semibold"
+              >
+                Re-analyze
+              </button>
+              <button
+                onClick={() => navigate('/disputes')}
+                className="px-4 py-2 text-sm bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-semibold"
+              >
+                Open Disputes
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-slate-500 font-bold flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+                New AI Report Workflow
+              </p>
+              <p className="text-sm text-slate-300 mt-1">
+                Upload a PDF or image credit report to auto-detect negative items and prep dispute letters.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/analysis')}
+              className="px-4 py-2 text-sm bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-semibold"
+            >
+              Analyze my report
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Top Grid: Scores */}

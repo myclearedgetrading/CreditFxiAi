@@ -34,7 +34,20 @@ const DEFAULT_USER: User = {
   negativeItems: []
 };
 
-type SessionSnapshot = Pick<User, 'id' | 'email' | 'role' | 'companyId' | 'firstName' | 'lastName'>;
+type SessionSnapshot = Pick<
+  User,
+  | 'id'
+  | 'email'
+  | 'role'
+  | 'companyId'
+  | 'firstName'
+  | 'lastName'
+  | 'lastReportAnalysisAt'
+  | 'lastReportFileName'
+  | 'lastReportSource'
+  | 'lastEstimatedScoreImprovement'
+  | 'lastNegativeItemCount'
+>;
 
 const toSessionSnapshot = (user: User): SessionSnapshot => ({
   id: user.id,
@@ -43,6 +56,11 @@ const toSessionSnapshot = (user: User): SessionSnapshot => ({
   companyId: user.companyId,
   firstName: user.firstName,
   lastName: user.lastName,
+  lastReportAnalysisAt: user.lastReportAnalysisAt,
+  lastReportFileName: user.lastReportFileName,
+  lastReportSource: user.lastReportSource,
+  lastEstimatedScoreImprovement: user.lastEstimatedScoreImprovement,
+  lastNegativeItemCount: user.lastNegativeItemCount,
 });
 
 const fromSessionSnapshot = (snapshot: SessionSnapshot): User => ({

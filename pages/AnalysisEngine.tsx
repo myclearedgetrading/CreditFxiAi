@@ -63,6 +63,32 @@ const AnalysisEngine: React.FC = () => {
     password: ''
   });
 
+  const persistAnalysisToProfile = async (
+    analysisResult: CreditAnalysisResult,
+    selectedFile: File,
+    source: 'PDF' | 'IMAGE' | 'PROVIDER'
+  ) => {
+    const disputableItems = toDisputableItems(analysisResult);
+    const profileUpdate = {
+      negativeItems: disputableItems,
+      creditScore: {
+        equifax: user.creditScore.equifax || 0,
+        experian: user.creditScore.experian || 0,
+        transunion: user.creditScore.transunion || 0,
+      },
+      lastReportAnalysisAt: new Date().toISOString(),
+      lastReportFileName: selectedFile.name,
+      lastReportSource: source,
+      lastEstimatedScoreImprovement: analysisResult.summary?.estimatedScoreImprovement || 0,
+      lastNegativeItemCount: analysisResult.summary?.totalNegativeItems || disputableItems.length,
+    } as const;
+
+    updateUser(profileUpdate);
+    if (user.id) {
+      await saveUserToFirestore({ ...user, ...profileUpdate });
+    }
+  };
+
   useEffect(() => {
     if (location.state && (location.state as any).openConnect) {
       setShowConnectModal(true);
@@ -158,19 +184,7 @@ const AnalysisEngine: React.FC = () => {
          const mimeType = file.type;
          const analysisResult = await analyzeCreditReportImage(base64Data, mimeType);
          setResult(analysisResult);
-         const disputableItems = toDisputableItems(analysisResult);
-         const profileUpdate = {
-           negativeItems: disputableItems,
-           creditScore: {
-             equifax: user.creditScore.equifax || 0,
-             experian: user.creditScore.experian || 0,
-             transunion: user.creditScore.transunion || 0,
-           },
-         };
-         updateUser(profileUpdate);
-         if (user.id) {
-           await saveUserToFirestore({ ...user, ...profileUpdate });
-         }
+         await persistAnalysisToProfile(analysisResult, file, 'IMAGE');
       } else if (file.type === 'application/pdf') {
          const dataUrl = await readFileAsDataUrl(file);
          const base64Data = dataUrl.split(',')[1];
@@ -179,19 +193,7 @@ const AnalysisEngine: React.FC = () => {
          }
          const analysisResult = await analyzeCreditReportPdf(base64Data, 'application/pdf');
          setResult(analysisResult);
-         const disputableItems = toDisputableItems(analysisResult);
-         const profileUpdate = {
-           negativeItems: disputableItems,
-           creditScore: {
-             equifax: user.creditScore.equifax || 0,
-             experian: user.creditScore.experian || 0,
-             transunion: user.creditScore.transunion || 0,
-           },
-         };
-         updateUser(profileUpdate);
-         if (user.id) {
-           await saveUserToFirestore({ ...user, ...profileUpdate });
-         }
+         await persistAnalysisToProfile(analysisResult, file, 'PDF');
       } else {
          throw new Error('Unsupported file type. Please upload a JPG, PNG, WEBP, or PDF report.');
       }
@@ -412,6 +414,29 @@ const AnalysisEngine: React.FC = () => {
                 <h3 className="text-slate-400 font-medium">Discrepancies</h3>
               </div>
               <p className="text-3xl font-bold text-white">{result.discrepancies.length}</p>
+            </div>
+          </div>
+
+          <div className="bg-[#0A0A0A] border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-slate-500 font-bold">Report Processed</p>
+              <p className="text-sm text-slate-200 mt-1">
+                {file?.name || 'Uploaded report'} analyzed and saved to your profile.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => navigate('/disputes')}
+                className="px-4 py-2 text-sm bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-semibold"
+              >
+                Generate Dispute Letters
+              </button>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-4 py-2 text-sm border border-slate-700 hover:bg-slate-800 text-slate-200 rounded-lg font-semibold"
+              >
+                Back to Dashboard
+              </button>
             </div>
           </div>
 

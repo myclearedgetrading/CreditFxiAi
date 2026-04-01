@@ -64,6 +64,11 @@ export interface User {
     ssnCard: boolean;
     proofOfAddress: boolean;
   };
+  lastReportAnalysisAt?: string;
+  lastReportFileName?: string;
+  lastReportSource?: 'PDF' | 'IMAGE' | 'PROVIDER';
+  lastEstimatedScoreImprovement?: number;
+  lastNegativeItemCount?: number;
 }
 
 export enum ClientStatus {

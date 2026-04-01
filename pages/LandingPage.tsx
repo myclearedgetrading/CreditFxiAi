@@ -5,7 +5,7 @@ import {
   ArrowRight, Shield, Zap, TrendingUp, CheckCircle2, 
   Lock, PieChart, Star, ChevronRight, X, Sparkles,
   BarChart3, Smartphone, FileText, ChevronDown, 
-  Users, Home, Briefcase, Building2, ShieldCheck
+  Users, Home, Briefcase, Building2, ShieldCheck, ScanLine, Workflow, UploadCloud
 } from 'lucide-react';
 
 const FaqItem = ({ question, answer }: { question: string, answer: string }) => {
@@ -81,7 +81,7 @@ const LandingPage: React.FC = () => {
 
         <div className="max-w-4xl mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-orange-400 text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in shadow-sm hover:border-orange-500/50 transition-colors cursor-default">
-            <Sparkles className="w-3 h-3" /> New: Metro 2 Compliance Check
+            <Sparkles className="w-3 h-3" /> New: Smart Auto-Import + Closed-Loop Disputes
           </div>
           
           <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-8">
@@ -92,7 +92,7 @@ const LandingPage: React.FC = () => {
           </h1>
           
           <p className="text-lg lg:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            The first automated credit repair platform that uses AI to identify legal violations and remove negative items permanently. No expensive monthly agencies.
+            Connect your monitoring provider for automatic report import, then let AI extract negative items and launch targeted dispute letters with guided next-best actions.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -112,7 +112,7 @@ const LandingPage: React.FC = () => {
               <CheckCircle2 className="w-4 h-4 text-orange-500" /> 256-bit Encryption
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-orange-500" /> 3-Bureau Analysis
+              <CheckCircle2 className="w-4 h-4 text-orange-500" /> Auto Import + Backup Upload
             </div>
           </div>
         </div>
@@ -166,19 +166,19 @@ const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: FileText,
-                title: "Legal Dispute Letters",
-                desc: "Don't write generic letters. Our AI generates Metro 2 compliant challenges tailored to your specific situation."
+                icon: UploadCloud,
+                title: "Automatic Report Import",
+                desc: "Connect your provider to pull new reports automatically. Manual PDF/image upload remains available as a backup."
               },
               {
-                icon: Zap,
-                title: "Instant Analysis",
-                desc: "Upload your report and get a detailed breakdown of negative items and errors in under 30 seconds."
+                icon: ScanLine,
+                title: "Detailed AI Breakdown",
+                desc: "Get item-by-item analysis, discrepancy detection, confidence-based strategy recommendations, and a 90-day action plan."
               },
               {
-                icon: TrendingUp,
-                title: "Score Tracking",
-                desc: "Monitor your progress across Equifax, Experian, and TransUnion with real-time score updates."
+                icon: Workflow,
+                title: "Closed-Loop Dispute Workflow",
+                desc: "Move from draft to sent to response review with guided next steps, timelines, and action-ready dispute tasks."
               }
             ].map((item, i) => (
               <div key={i} className="bg-[#0F0F0F] p-8 rounded-2xl border border-slate-800 hover:border-orange-500/30 transition-colors group">
@@ -242,12 +242,12 @@ const LandingPage: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
             {[
-              { icon: Zap, title: "Smart Dispute Engine", desc: "Uses Metro 2 compliance logic to challenge items effectively." },
+              { icon: Zap, title: "Smart Dispute Engine", desc: "Uses strategy + bureau targeting logic to challenge items effectively." },
               { icon: Lock, title: "Bank-Level Security", desc: "Your data is encrypted with AES-256 and never shared." },
-              { icon: BarChart3, title: "Score Simulator", desc: "See exactly how much your score will increase before you dispute." },
+              { icon: BarChart3, title: "AI Score Impact Modeling", desc: "Estimate likely score impact and prioritize highest-value actions first." },
               { icon: Smartphone, title: "Mobile Friendly", desc: "Manage your disputes from your phone, anywhere, anytime." },
-              { icon: FileText, title: "Letter Library", desc: "Access to 50+ templates for every unique credit situation." },
-              { icon: PieChart, title: "Progress Dashboard", desc: "Visual tracking of deleted items across all three bureaus." }
+              { icon: FileText, title: "Letter Library + Saved Templates", desc: "Use built-in bureau/creditor/furnisher/CFPB templates or save your own winning letters." },
+              { icon: PieChart, title: "Progress Dashboard", desc: "Track imported report insights, task queue, deadlines, and dispute activity in one place." }
             ].map((feat, i) => (
               <div key={i} className="flex gap-4 group">
                 <div className="flex-shrink-0">
@@ -349,9 +349,9 @@ const LandingPage: React.FC = () => {
                 <p className="text-sm text-slate-400 mb-8">Cancel anytime. 30-day money-back guarantee.</p>
                 <ul className="space-y-4 text-white mb-8">
                   <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Unlimited Disputes</li>
-                  <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> 3-Bureau Analysis</li>
-                  <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Instant Letter Generation</li>
-                  <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Score Tracking</li>
+                  <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Automatic Report Import</li>
+                  <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Letter Library + Saved Templates</li>
+                  <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Closed-Loop Dispute Orchestration</li>
                 </ul>
                 <button 
                   onClick={() => navigate('/onboarding')}
@@ -373,6 +373,10 @@ const LandingPage: React.FC = () => {
           </div>
           
           <div className="space-y-2">
+            <FaqItem 
+              question="Can reports be imported automatically?" 
+              answer="Yes. Auto-import from connected providers is the primary workflow. You can still upload PDF or image reports as a backup when needed." 
+            />
             <FaqItem 
               question="Is my data safe?" 
               answer="Absolutely. We use bank-level AES-256 encryption to protect your personal information. We never sell your data to third parties." 
