@@ -170,19 +170,52 @@ export async function runAnalyzeCreditReportPdf(
     }
   `;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
-    contents: {
-      parts: [
-        { inlineData: { mimeType, data: base64Pdf } },
-        { text: prompt },
-      ],
-    },
-    config: { responseMimeType: 'application/json' },
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: {
+        parts: [
+          { inlineData: { mimeType, data: base64Pdf } },
+          { text: prompt },
+        ],
+      },
+      config: { responseMimeType: 'application/json' },
+    });
 
-  const text = (response.text || '{}').replace(/```json/g, '').replace(/```/g, '').trim();
-  return JSON.parse(text) as CreditAnalysisResult;
+    const text = (response.text || '{}').replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(text) as CreditAnalysisResult;
+  } catch {
+    // Fallback: extract text from PDF and analyze as plain report content.
+    const pdfBuffer = Buffer.from(base64Pdf, 'base64');
+    const pdfParseModule = await import('pdf-parse');
+    const pdfParseFn = (pdfParseModule as any).default || (pdfParseModule as any);
+    const parsed = await pdfParseFn(pdfBuffer);
+    const extractedText = String(parsed?.text || '').trim();
+    if (extractedText.length < 200) {
+      throw new Error('PDF parsing failed. Try a text-based PDF or upload clear report screenshots.');
+    }
+
+    const textPrompt = `
+      Analyze this extracted credit report text and return JSON only.
+      Extract negative items, discrepancies, strategy recommendations, and a 90-day action plan.
+      Keep output strict to this schema:
+      {
+        "summary": { "totalNegativeItems": number, "estimatedScoreImprovement": number, "utilizationRate": number },
+        "negativeItems": [{ "creditor": string, "accountType": string, "amount": number, "bureau": string, "date": string }],
+        "discrepancies": [{ "type": string, "description": string, "severity": "HIGH"|"MEDIUM"|"LOW", "itemsInvolved": string[] }],
+        "recommendations": [{ "itemId": string, "creditorName": string, "recommendedStrategy": string, "confidenceScore": number, "reasoning": string, "bureauToTarget": string }],
+        "actionPlan": [{ "phase": string, "actions": string[], "expectedOutcome": string }]
+      }
+    `;
+
+    const fallbackResponse = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: `${textPrompt}\n\nREPORT TEXT:\n${extractedText.slice(0, 320000)}`,
+      config: { responseMimeType: 'application/json' },
+    });
+    const fallbackText = (fallbackResponse.text || '{}').replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(fallbackText) as CreditAnalysisResult;
+  }
 }
 
 export async function runGenerateFundingPlan(businessData: unknown): Promise<unknown> {

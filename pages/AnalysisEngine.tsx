@@ -42,6 +42,8 @@ const toDisputableItems = (analysis: CreditAnalysisResult): NegativeItem[] => {
   }));
 };
 
+const MAX_PDF_SIZE_BYTES = 4.5 * 1024 * 1024;
+
 const AnalysisEngine: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -127,6 +129,12 @@ const AnalysisEngine: React.FC = () => {
 
   const handleFileSelection = (selectedFile: File) => {
     vibrate(HAPTIC.LIGHT);
+    if (selectedFile.type === 'application/pdf' && selectedFile.size > MAX_PDF_SIZE_BYTES) {
+      setError('PDF is too large for direct analysis. Please upload a PDF under 4.5 MB or split/export fewer pages.');
+      setFile(null);
+      setPreview(null);
+      return;
+    }
     setFile(selectedFile);
     setError(null);
     setResult(null);
@@ -209,7 +217,12 @@ const AnalysisEngine: React.FC = () => {
       vibrate(HAPTIC.SUCCESS);
     } catch (err: any) {
       clearInterval(stepInterval);
-      setError(err.message || "Failed to analyze document.");
+      const message = String(err?.message || '');
+      if (message.includes('500')) {
+        setError('We could not process this PDF format yet. Try a smaller/text-based PDF or upload clear screenshots of each report section.');
+      } else {
+        setError(message || 'Failed to analyze document.');
+      }
       vibrate(HAPTIC.ERROR);
     } finally {
       setAnalyzing(false);
