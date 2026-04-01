@@ -46,8 +46,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/disputes', label: 'Dispute Center', icon: ShieldCheck },
     { path: '/analytics', label: 'Progress Tracker', icon: LineChart },
     { path: '/learning', label: 'Education Hub', icon: GraduationCap },
-    { path: '/funding', label: 'Business Funding', icon: Building2 },
     { path: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
+    { path: '/funding', label: 'Business Funding', icon: Building2 },
     { path: '/rewards', label: 'Rewards', icon: Trophy },
     { path: '/settings', label: 'Settings', icon: Settings },
   ];
