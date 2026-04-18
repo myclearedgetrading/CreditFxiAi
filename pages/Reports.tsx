@@ -11,6 +11,8 @@ import {
 import { generateExecutiveSummary } from '../services/geminiService';
 import { useUser } from '../context/UserContext';
 import { getTemplateExperiments, getTemplateOutcomeSummary, tenantCompanyId } from '../services/firebaseService';
+import { canUseProgressTracking } from '../services/access';
+import TierUpgradePrompt from '../components/TierUpgradePrompt';
 import { TemplateExperiment } from '../types';
 import { featureFlags } from '../services/featureFlags';
 
@@ -20,8 +22,10 @@ const Reports: React.FC = () => {
   const [experiments, setExperiments] = useState<TemplateExperiment[]>([]);
   const [variantPerformance, setVariantPerformance] = useState<{ variantId: string; total: number; deletedRate: number }[]>([]);
   const { user } = useUser();
+  const progressAllowed = canUseProgressTracking(user);
 
   useEffect(() => {
+    if (!canUseProgressTracking(user)) return;
     // Only load summary if there is meaningful data
     if (user.creditScore.equifax > 0) {
       loadPersonalSummary();
@@ -34,6 +38,7 @@ const Reports: React.FC = () => {
   }, [user]);
 
   const loadPersonalSummary = async () => {
+    if (!canUseProgressTracking(user)) return;
     setLoadingSummary(true);
     try {
       const summary = await generateExecutiveSummary({
@@ -49,6 +54,26 @@ const Reports: React.FC = () => {
     }
     setLoadingSummary(false);
   };
+
+  if (!progressAllowed) {
+    return (
+      <div className="space-y-6 animate-fade-in pb-10">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+            <TrendingUp className="text-indigo-600 dark:text-indigo-400 w-8 h-8" />
+            My Progress Tracker
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Track your credit repair journey, score improvements, and dispute wins.
+          </p>
+        </div>
+        <TierUpgradePrompt
+          title="Progress tracking is included with DIY Pro"
+          description="Free includes the Education Hub and one dispute letter. DIY Pro ($39/mo) adds AI progress insights, unlimited disputes, and full credit report analysis."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">

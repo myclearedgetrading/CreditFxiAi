@@ -4,6 +4,9 @@ import { Search, Plus, Filter, MoreVertical, Loader2 } from 'lucide-react';
 import { ClientStatus, Client } from '../types';
 import { getClients, tenantCompanyId } from '../services/firebaseService';
 import { useUser } from '../context/UserContext';
+import { canAccessAgencyCrm } from '../services/access';
+import TierUpgradePrompt from '../components/TierUpgradePrompt';
+import { PLAN_PRICES } from '../constants/plans';
 
 const Clients: React.FC = () => {
   const { user } = useUser();
@@ -14,6 +17,11 @@ const Clients: React.FC = () => {
 
   useEffect(() => {
     const fetchClients = async () => {
+      if (!canAccessAgencyCrm(user)) {
+        setClients([]);
+        setIsLoading(false);
+        return;
+      }
       if (!companyId) {
         setClients([]);
         setIsLoading(false);
@@ -29,7 +37,19 @@ const Clients: React.FC = () => {
       }
     };
     fetchClients();
-  }, [companyId]);
+  }, [companyId, user]);
+
+  if (!canAccessAgencyCrm(user)) {
+    return (
+      <div className="space-y-6">
+        <TierUpgradePrompt
+          title="Agency plan required"
+          description="Multi-client CRM, full team workflows, and all DIY Pro features are on the Agency plan."
+          primaryCta={`Upgrade to Agency — $${PLAN_PRICES.AGENCY_MONTHLY_USD}/mo`}
+        />
+      </div>
+    );
+  }
 
   const getStatusColor = (status: ClientStatus) => {
     switch (status) {

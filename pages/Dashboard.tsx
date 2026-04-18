@@ -13,7 +13,8 @@ import { useUser } from '../context/UserContext';
 import { RepairTask, Deadline } from '../types';
 import { getUpcomingDeadlines, subscribeToRepairTasks, tenantCompanyId } from '../services/firebaseService';
 import { featureFlags } from '../services/featureFlags';
-import { hasProSubscription } from '../services/access';
+import { getEffectiveTier, isDiyProOrAgency } from '../services/access';
+import { PLAN_PRICES } from '../constants/plans';
 
 const ScoreCircle = ({ bureau, score, prevScore }: { bureau: string, score: number, prevScore: number }) => {
   // Handle empty/zero score
@@ -87,7 +88,16 @@ const Dashboard: React.FC = () => {
   const { user } = useUser();
   const [todayTasks, setTodayTasks] = useState<RepairTask[]>([]);
   const [upcomingDeadlines, setUpcomingDeadlines] = useState<Deadline[]>([]);
-  const isProMember = hasProSubscription(user);
+  const tier = getEffectiveTier(user);
+  const isPaidDiy = isDiyProOrAgency(user);
+  const membershipTitle =
+    tier === 'FREE' ? 'Free plan' : tier === 'DIY_PRO' ? 'DIY Pro' : 'Agency';
+  const membershipDetail =
+    tier === 'FREE'
+      ? 'Education Hub and one dispute letter. Upgrade for AI report analysis, unlimited disputes, and progress tracking.'
+      : tier === 'DIY_PRO'
+        ? 'Full AI analysis, unlimited disputes, progress tracking, and education.'
+        : 'Multi-client CRM, full feature set, and all DIY Pro capabilities.';
 
   // Empty default history
   const scoreHistory: any[] = [];
@@ -174,29 +184,35 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className={`rounded-xl shadow-sm border p-4 sm:p-5 ${
-        isProMember ? 'bg-emerald-900/10 border-emerald-800/40' : 'bg-[#0A0A0A] border-slate-800'
+        isPaidDiy ? 'bg-emerald-900/10 border-emerald-800/40' : 'bg-[#0A0A0A] border-slate-800'
       }`}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-wide font-bold flex items-center gap-2 text-slate-400">
-              <Crown className={`w-3.5 h-3.5 ${isProMember ? 'text-emerald-400' : 'text-amber-400'}`} />
+              <Crown className={`w-3.5 h-3.5 ${isPaidDiy ? 'text-emerald-400' : 'text-amber-400'}`} />
               Membership
             </p>
             <p className="text-sm text-white mt-1">
-              {isProMember ? 'Pro Membership Active' : 'Free plan'}
+              {membershipTitle}
             </p>
             <p className="text-xs text-slate-400 mt-1">
-              {isProMember
-                ? 'Saved templates, priority automation, and full workflow tools unlocked.'
-                : 'Credit Audit and DIY dispute letters are included. Upgrade for saved templates, experiments, and advanced automation.'}
+              {membershipDetail}
             </p>
           </div>
-          {!isProMember && (
+          {tier === 'FREE' && (
             <button
               onClick={() => navigate('/settings')}
               className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-black rounded-lg font-semibold"
             >
-              Activate Pro - $49/mo
+              {`Upgrade to DIY Pro — $${PLAN_PRICES.DIY_PRO_MONTHLY_USD}/mo`}
+            </button>
+          )}
+          {tier === 'DIY_PRO' && (
+            <button
+              onClick={() => navigate('/settings')}
+              className="px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-semibold border border-slate-700"
+            >
+              {`Agency — $${PLAN_PRICES.AGENCY_MONTHLY_USD}/mo`}
             </button>
           )}
         </div>

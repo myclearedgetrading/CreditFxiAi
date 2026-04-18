@@ -10,17 +10,38 @@ import SecurityCenter from './SecurityCenter';
 import LearningCenter from './LearningCenter';
 import GamificationCenter from './GamificationCenter';
 import { useUser } from '../context/UserContext';
+import type { User as UserProfile } from '../types';
+import { saveUserToFirestore } from '../services/firebaseService';
+import { getEffectiveTier, isDiyProOrAgency } from '../services/access';
+import { PLAN_COPY, PLAN_PRICES } from '../constants/plans';
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const { user, updateUser } = useUser();
   const [isSaving, setIsSaving] = useState(false);
-  const hasPremiumAccess =
-    user.role === 'ADMIN'
-    || user.role === 'SUPER_ADMIN'
-    || user.subscriptionTier === 'PRO'
-    || user.subscriptionStatus === 'ACTIVE'
-    || user.subscriptionStatus === 'TRIAL';
+  const tier = getEffectiveTier(user);
+  const hasPremiumAccess = isDiyProOrAgency(user);
+  const currentPlanName =
+    tier === 'FREE' ? PLAN_COPY.free.name : tier === 'DIY_PRO' ? PLAN_COPY.diyPro.name : PLAN_COPY.agency.name;
+  const currentPlanPrice =
+    tier === 'FREE' ? PLAN_COPY.free.priceLabel : tier === 'DIY_PRO' ? PLAN_COPY.diyPro.priceLabel : PLAN_COPY.agency.priceLabel;
+  const currentPlanBlurb =
+    tier === 'FREE' ? PLAN_COPY.free.blurb : tier === 'DIY_PRO' ? PLAN_COPY.diyPro.blurb : PLAN_COPY.agency.blurb;
+
+  const simulatePlan = async (next: 'FREE' | 'DIY_PRO' | 'AGENCY') => {
+    const patch: Partial<UserProfile> = {
+      subscriptionTier: next,
+      subscriptionStatus: next === 'FREE' ? 'NONE' : 'ACTIVE',
+    };
+    updateUser(patch);
+    if (user.id) {
+      try {
+        await saveUserToFirestore({ ...user, ...patch } as UserProfile);
+      } catch (e) {
+        console.warn('Could not persist subscription to Firestore', e);
+      }
+    }
+  };
 
   // Local state for form management
   const [profileForm, setProfileForm] = useState({
@@ -269,7 +290,7 @@ const Settings: React.FC = () => {
         );
       case 'billing':
         return (
-          <div className="bg-white dark:bg-[#0A0A0A] p-6 lg:p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-2xl animate-fade-in">
+          <div className="bg-white dark:bg-[#0A0A0A] p-6 lg:p-8 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-4xl animate-fade-in">
             <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Membership & Billing</h2>
             <div className={`p-4 border rounded-xl flex justify-between items-center mb-6 ${
               hasPremiumAccess
@@ -280,12 +301,12 @@ const Settings: React.FC = () => {
                 <h3 className={`font-bold ${
                   hasPremiumAccess ? 'text-emerald-900 dark:text-emerald-300' : 'text-indigo-900 dark:text-indigo-300'
                 }`}>
-                  {hasPremiumAccess ? 'CreditFix Pro' : 'Free Preview Plan'}
+                  {currentPlanName}
                 </h3>
                 <p className={`text-sm ${
                   hasPremiumAccess ? 'text-emerald-700 dark:text-emerald-400' : 'text-indigo-700 dark:text-indigo-400'
                 }`}>
-                  {hasPremiumAccess ? '$49 / month' : 'Upgrade to Pro to unlock dispute execution'}
+                  {currentPlanPrice} — {currentPlanBlurb}
                 </p>
               </div>
               <span className={`px-3 py-1 text-xs font-bold rounded-full shadow-sm ${
@@ -293,25 +314,54 @@ const Settings: React.FC = () => {
                   ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400'
                   : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400'
               }`}>
-                {hasPremiumAccess ? 'ACTIVE' : 'FREE'}
+                {tier === 'FREE' ? 'FREE' : tier === 'DIY_PRO' ? 'DIY PRO' : 'AGENCY'}
               </span>
             </div>
-            {!hasPremiumAccess && (
-              <div className="mb-6 p-4 border border-amber-300/50 dark:border-amber-700/40 rounded-xl bg-amber-50/70 dark:bg-amber-900/20">
-                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">
-                  Ready to activate full workflow?
-                </p>
-                <p className="text-xs text-amber-700 dark:text-amber-200 mb-3">
-                  Pro unlocks unlimited dispute letter generation, saved templates, and next-step automation.
-                </p>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              Checkout is not wired in this build — use &quot;Simulate&quot; to test tier gates locally. Production billing will set{' '}
+              <code className="text-slate-600 dark:text-slate-300">subscriptionTier</code> on your profile.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className={`rounded-xl border p-4 flex flex-col ${tier === 'FREE' ? 'border-orange-500/50 bg-orange-950/20' : 'border-slate-200 dark:border-slate-800'}`}>
+                <h4 className="font-bold text-slate-800 dark:text-white">{PLAN_COPY.free.name}</h4>
+                <p className="text-2xl font-bold text-slate-800 dark:text-white mt-2">{PLAN_COPY.free.priceLabel}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex-1">{PLAN_COPY.free.blurb}</p>
                 <button
-                  onClick={() => alert('Billing checkout will be connected to your payment provider.')}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black rounded-lg text-sm font-bold"
+                  type="button"
+                  onClick={() => simulatePlan('FREE')}
+                  className="mt-4 w-full py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-900"
                 >
-                  Activate Pro - $49/mo
+                  Simulate Free
                 </button>
               </div>
-            )}
+              <div className={`rounded-xl border p-4 flex flex-col ${tier === 'DIY_PRO' ? 'border-orange-500/50 bg-orange-950/20' : 'border-slate-200 dark:border-slate-800'}`}>
+                <h4 className="font-bold text-slate-800 dark:text-white">{PLAN_COPY.diyPro.name}</h4>
+                <p className="text-2xl font-bold text-slate-800 dark:text-white mt-2">{PLAN_COPY.diyPro.priceLabel}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex-1">{PLAN_COPY.diyPro.blurb}</p>
+                <button
+                  type="button"
+                  onClick={() => simulatePlan('DIY_PRO')}
+                  className="mt-4 w-full py-2 text-sm bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-bold"
+                >
+                  Simulate DIY Pro — ${PLAN_PRICES.DIY_PRO_MONTHLY_USD}/mo
+                </button>
+              </div>
+              <div className={`rounded-xl border p-4 flex flex-col ${tier === 'AGENCY' ? 'border-orange-500/50 bg-orange-950/20' : 'border-slate-200 dark:border-slate-800'}`}>
+                <h4 className="font-bold text-slate-800 dark:text-white">{PLAN_COPY.agency.name}</h4>
+                <p className="text-2xl font-bold text-slate-800 dark:text-white mt-2">{PLAN_COPY.agency.priceLabel}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex-1">{PLAN_COPY.agency.blurb}</p>
+                <button
+                  type="button"
+                  onClick={() => simulatePlan('AGENCY')}
+                  className="mt-4 w-full py-2 text-sm bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold border border-slate-600"
+                >
+                  Simulate Agency — ${PLAN_PRICES.AGENCY_MONTHLY_USD}/mo
+                </button>
+              </div>
+            </div>
+
             <h3 className="font-bold text-slate-800 dark:text-white mb-3">Payment Methods</h3>
             <div className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg">
               <div className="w-10 h-6 bg-slate-200 rounded"></div>

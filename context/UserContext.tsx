@@ -28,6 +28,7 @@ const DEFAULT_USER: User = {
   role: 'USER',
   subscriptionTier: 'FREE',
   subscriptionStatus: 'NONE',
+  disputeLettersGeneratedCount: 0,
   creditScore: {
     equifax: 0,
     experian: 0,

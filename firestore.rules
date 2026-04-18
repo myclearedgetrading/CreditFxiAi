@@ -36,7 +36,17 @@ service cloud.firestore {
         'creditScore',
         'negativeItems',
         'avatarUrl',
-        'updatedAt'
+        'updatedAt',
+        'disputeLettersGeneratedCount',
+        'lastReportAnalysisAt',
+        'lastReportFileName',
+        'lastReportSource',
+        'lastEstimatedScoreImprovement',
+        'lastNegativeItemCount',
+        'verificationDocuments',
+        'subscriptionTier',
+        'subscriptionStatus',
+        'trialEndsAt'
       ]);
     }
 

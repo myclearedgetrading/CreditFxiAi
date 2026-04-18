@@ -124,6 +124,9 @@ const Onboarding: React.FC = () => {
 
     try {
       const newUserProfile: Partial<UserType> = {
+        subscriptionTier: 'FREE',
+        subscriptionStatus: 'NONE',
+        disputeLettersGeneratedCount: 0,
         firstName: formData.firstName || 'Guest',
         lastName: formData.lastName || '',
         phone: '',

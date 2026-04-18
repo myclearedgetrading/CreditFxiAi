@@ -1,7 +1,7 @@
 
 import { 
   collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, 
-  query, where, orderBy, limit, onSnapshot, Timestamp 
+  query, where, orderBy, limit, onSnapshot, Timestamp, increment 
 } from 'firebase/firestore';
 import { 
   signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser,
@@ -78,6 +78,9 @@ export const buildUserProfileFromAuthUser = (fbUser: FirebaseUser): User => {
     createdAt: new Date().toISOString(),
     creditScore: { equifax: 0, experian: 0, transunion: 0 },
     negativeItems: [],
+    subscriptionTier: 'FREE',
+    subscriptionStatus: 'NONE',
+    disputeLettersGeneratedCount: 0,
   };
 };
 
@@ -99,6 +102,9 @@ export const registerWithEmail = async (email: string, pass: string, userData: P
     role: merged.role || 'USER',
     companyId: merged.companyId ?? uid,
     createdAt: merged.createdAt ?? new Date().toISOString(),
+    subscriptionTier: merged.subscriptionTier ?? 'FREE',
+    subscriptionStatus: merged.subscriptionStatus ?? 'NONE',
+    disputeLettersGeneratedCount: merged.disputeLettersGeneratedCount ?? 0,
   };
 
   await saveUserToFirestore(userProfile);
@@ -132,6 +138,14 @@ export const logoutUser = async () => {
 export const saveUserToFirestore = async (user: User) => {
   if (!db.app) return;
   await setDoc(doc(db, 'users', user.id), normalizeTenantUser(user));
+};
+
+/** Increment after a successful AI dispute letter generation (server-enforced limit on Free is client-side + rules-friendly). */
+export const incrementUserDisputeLetterCount = async (userId: string): Promise<void> => {
+  if (!db.app) return;
+  await updateDoc(doc(db, 'users', userId), {
+    disputeLettersGeneratedCount: increment(1),
+  });
 };
 
 export const getUserFromFirestore = async (uid: string): Promise<User | null> => {

@@ -18,10 +18,17 @@ import {
   getTemplateExperiments,
   tenantCompanyId,
   updateDisputeRound,
+  incrementUserDisputeLetterCount,
 } from '../services/firebaseService';
 import { runDisputeOrchestration } from '../services/disputeOrchestratorService';
 import { featureFlags } from '../services/featureFlags';
-import { canGenerateDisputeLetters, hasProSubscription } from '../services/access';
+import {
+  canGenerateAnotherDisputeLetter,
+  getDisputeLetterLimit,
+  getDisputeLettersUsed,
+  getEffectiveTier,
+  isDiyProOrAgency,
+} from '../services/access';
 import { downloadDisputeLetterPdf } from '../services/disputeLetterExport';
 
 /** Escape text for safe insertion into a print HTML document */
@@ -227,7 +234,7 @@ const inferTemplateCategory = (template: DisputeTemplate): LetterLibraryCategory
 const DisputeGenerator: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, updateUser } = useUser();
   const [selectedItemId, setSelectedItemId] = useState<string>('');
   const [strategy, setStrategy] = useState<DisputeStrategy>(DisputeStrategy.FACTUAL);
   
@@ -270,8 +277,11 @@ const DisputeGenerator: React.FC = () => {
 
   const myNegativeItems = user.negativeItems || [];
   const selectedItem = myNegativeItems.find(i => i.id === selectedItemId);
-  const canGenerateLetters = canGenerateDisputeLetters(user);
-  const isProMember = hasProSubscription(user);
+  const canGenerateLetters = Boolean(user.id) && canGenerateAnotherDisputeLetter(user);
+  const lettersUsed = getDisputeLettersUsed(user);
+  const letterLimit = getDisputeLetterLimit(user);
+  const tier = getEffectiveTier(user);
+  const isProMember = isDiyProOrAgency(user);
 
   // Effect to load saved documents preferences from User Profile
   useEffect(() => {
@@ -502,8 +512,14 @@ const DisputeGenerator: React.FC = () => {
 
   const handleGenerate = async () => {
     if (!selectedItem || selectedBureaus.length === 0) return;
-    if (!canGenerateLetters) {
+    if (!user.id) {
       setError('Sign in to generate dispute letters.');
+      return;
+    }
+    if (!canGenerateAnotherDisputeLetter(user)) {
+      setError(
+        `Free plan includes 1 dispute letter. Upgrade to DIY Pro ($39/mo) for unlimited letters and AI credit analysis.`
+      );
       return;
     }
 
@@ -540,6 +556,15 @@ const DisputeGenerator: React.FC = () => {
 
       const fullBundle = generatedParts.join('\n\n\n');
       setGeneratedLetter(fullBundle);
+
+      try {
+        await incrementUserDisputeLetterCount(user.id);
+      } catch {
+        /* Firestore offline — local count still updated */
+      }
+      updateUser({
+        disputeLettersGeneratedCount: (user.disputeLettersGeneratedCount ?? 0) + 1,
+      });
 
       if (featureFlags.nextLevelDIY) {
         // Create or update dispute + current round records for closed-loop tracking.
@@ -836,6 +861,37 @@ const DisputeGenerator: React.FC = () => {
         </div>
       </div>
 
+      {tier === 'FREE' && (
+        <div className="rounded-xl border border-amber-500/25 bg-amber-950/25 px-4 py-3 text-sm text-amber-100">
+          <span className="font-semibold text-amber-200">Free plan: </span>
+          {lettersUsed >= letterLimit ? (
+            <span>
+              You have used your included dispute letter.{' '}
+              <button
+                type="button"
+                onClick={() => navigate('/settings')}
+                className="text-orange-400 hover:text-orange-300 font-medium underline-offset-2 hover:underline"
+              >
+                Upgrade to DIY Pro
+              </button>{' '}
+              for unlimited letters and AI report analysis.
+            </span>
+          ) : (
+            <span>
+              <strong>{Math.max(0, letterLimit - lettersUsed)}</strong> dispute letter included on Free (no AI credit report analysis).{' '}
+              <button
+                type="button"
+                onClick={() => navigate('/settings')}
+                className="text-orange-400 hover:text-orange-300 font-medium underline-offset-2 hover:underline"
+              >
+                DIY Pro
+              </button>{' '}
+              unlocks unlimited disputes and full analysis.
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Configuration Panel */}
         <div className="lg:col-span-1 space-y-6">
@@ -870,7 +926,11 @@ const DisputeGenerator: React.FC = () => {
                 ) : (
                     <div className="text-center py-4 bg-slate-900/50 rounded-lg border border-dashed border-slate-800">
                         <p className="text-xs text-slate-500 mb-2">No negative items found.</p>
-                        <p className="text-[10px] text-slate-600">Import your credit report to begin.</p>
+                        <p className="text-[10px] text-slate-600">
+                          {tier === 'FREE'
+                            ? 'Upgrade to DIY Pro to run AI Credit Audit and auto-detect tradelines, or complete onboarding with sample data.'
+                            : 'Import your credit report in Credit Audit to populate items.'}
+                        </p>
                     </div>
                 )}
             </div>
@@ -1159,7 +1219,7 @@ const DisputeGenerator: React.FC = () => {
             {!isProMember && (
               <p className="text-[11px] text-slate-500 mt-3 text-center leading-relaxed">
                 <Crown className="w-3 h-3 inline-block text-amber-500/80 mr-1 align-text-bottom" />
-                Pro unlocks saved templates and advanced automation.{' '}
+                DIY Pro adds saved templates, automation, and unlimited dispute letters.{' '}
                 <button type="button" onClick={() => navigate('/settings')} className="text-orange-400 hover:text-orange-300 font-medium">
                   View plans
                 </button>

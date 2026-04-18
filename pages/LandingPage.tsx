@@ -7,6 +7,7 @@ import {
   BarChart3, Smartphone, FileText, ChevronDown, 
   Users, Home, Briefcase, Building2, ShieldCheck, ScanLine, Workflow, UploadCloud
 } from 'lucide-react';
+import { PLAN_COPY, PLAN_PRICES } from '../constants/plans';
 
 const FaqItem = ({ question, answer }: { question: string, answer: string }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -315,52 +316,73 @@ const LandingPage: React.FC = () => {
       <section id="pricing" className="py-24 bg-[#050505] relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-600/5 rounded-full blur-[100px] -z-10" />
         
-        <div className="max-w-5xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
              <h2 className="text-3xl font-bold text-white mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-slate-400">Start free, then activate Pro when you're ready to execute disputes.</p>
+            <p className="text-slate-400">Start free, upgrade to DIY Pro for full AI workflows, or run an agency on the CRM tier.</p>
           </div>
 
-          <div className="bg-[#0A0A0A] rounded-3xl p-1 overflow-hidden border border-slate-800 shadow-2xl">
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              {/* The "Other Guys" */}
-              <div className="p-12 text-center md:text-left bg-[#080808]">
-                <h3 className="text-xl font-bold mb-2 text-slate-400">Traditional Agencies</h3>
-                <div className="text-4xl font-bold text-slate-500 mb-6 line-through decoration-red-500 decoration-2">$129<span className="text-lg font-normal">/mo</span></div>
-                <ul className="space-y-4 text-slate-500 mb-8">
-                  <li className="flex items-center gap-3"><X className="w-5 h-5 text-red-900" /> High monthly retainer</li>
-                  <li className="flex items-center gap-3"><X className="w-5 h-5 text-red-900" /> Slow manual process</li>
-                  <li className="flex items-center gap-3"><X className="w-5 h-5 text-red-900" /> Intentionally dragged out</li>
-                  <li className="flex items-center gap-3"><X className="w-5 h-5 text-red-900" /> Hard to cancel</li>
-                </ul>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-[#0A0A0A] rounded-2xl p-8 border border-slate-800 flex flex-col">
+              <h3 className="text-lg font-bold text-white mb-1">{PLAN_COPY.free.name}</h3>
+              <div className="text-4xl font-bold text-white mb-2">{PLAN_COPY.free.priceLabel}</div>
+              <p className="text-sm text-slate-400 mb-6 flex-1">{PLAN_COPY.free.blurb}</p>
+              <ul className="space-y-3 text-sm text-slate-300 mb-8">
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" /> Education Hub</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" /> 1 dispute letter (total)</li>
+                <li className="flex items-center gap-2"><X className="w-4 h-4 text-slate-600 shrink-0" /> AI credit report analysis</li>
+              </ul>
+              <button
+                type="button"
+                onClick={() => navigate('/onboarding')}
+                className="w-full py-3 border border-slate-600 text-white rounded-xl font-bold hover:bg-slate-900 transition-colors"
+              >
+                Start free
+              </button>
+            </div>
 
-              {/* CreditFix AI */}
-              <div className="p-12 bg-gradient-to-br from-orange-900/20 to-[#0A0A0A] relative overflow-hidden">
-                <div className="absolute top-0 right-0 bg-orange-600 text-white text-xs font-bold px-4 py-1.5 rounded-bl-xl shadow-lg">RECOMMENDED</div>
-                <div className="absolute inset-0 border-l border-slate-800 md:block hidden" />
-                
-                <h3 className="text-xl font-bold mb-2 text-white">CreditFix AI</h3>
-                <div className="flex items-end gap-2 mb-6">
-                  <div className="text-5xl font-bold text-white">$49</div>
-                  <span className="text-lg text-slate-400 mb-2">/mo</span>
-                </div>
-                <p className="text-sm text-slate-400 mb-8">Premium activation at $49/mo. Cancel anytime.</p>
-                <ul className="space-y-4 text-white mb-8">
-                  <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Unlimited Disputes</li>
-                  <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Automatic Report Import</li>
-                  <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Letter Library + Saved Templates</li>
-                  <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> Closed-Loop Dispute Orchestration</li>
-                </ul>
-                <button 
-                  onClick={() => navigate('/onboarding')}
-                  className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(234,88,12,0.3)] transition-all hover:scale-[1.02]"
-                >
-                  Start Free Preview
-                </button>
-              </div>
+            <div className="bg-gradient-to-br from-orange-900/30 to-[#0A0A0A] rounded-2xl p-8 border border-orange-500/40 flex flex-col relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
+              <h3 className="text-lg font-bold text-white mb-1">{PLAN_COPY.diyPro.name}</h3>
+              <div className="text-4xl font-bold text-white mb-2">{PLAN_COPY.diyPro.priceLabel}</div>
+              <p className="text-sm text-slate-400 mb-6 flex-1">{PLAN_COPY.diyPro.blurb}</p>
+              <ul className="space-y-3 text-sm text-slate-200 mb-8">
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Full AI report analysis</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Unlimited disputes</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Progress tracking</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Education Hub</li>
+              </ul>
+              <button
+                type="button"
+                onClick={() => navigate('/onboarding')}
+                className="w-full py-3 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(234,88,12,0.25)]"
+              >
+                {`Get DIY Pro — $${PLAN_PRICES.DIY_PRO_MONTHLY_USD}/mo`}
+              </button>
+            </div>
+
+            <div className="bg-[#0A0A0A] rounded-2xl p-8 border border-slate-800 flex flex-col">
+              <h3 className="text-lg font-bold text-white mb-1">{PLAN_COPY.agency.name}</h3>
+              <div className="text-4xl font-bold text-white mb-2">{PLAN_COPY.agency.priceLabel}</div>
+              <p className="text-sm text-slate-400 mb-6 flex-1">{PLAN_COPY.agency.blurb}</p>
+              <ul className="space-y-3 text-sm text-slate-300 mb-8">
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" /> Multi-client CRM</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" /> Everything in DIY Pro</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" /> Team & agency workflows</li>
+              </ul>
+              <button
+                type="button"
+                onClick={() => navigate('/onboarding')}
+                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold border border-slate-600"
+              >
+                {`Agency — $${PLAN_PRICES.AGENCY_MONTHLY_USD}/mo`}
+              </button>
             </div>
           </div>
+
+          <p className="text-center text-xs text-slate-500 mt-10 max-w-xl mx-auto">
+            Compare: traditional repair agencies often charge around $129/mo with long retainers. CreditFix AI keeps pricing simple — cancel anytime from Settings.
+          </p>
         </div>
       </section>
 

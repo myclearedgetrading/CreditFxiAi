@@ -69,9 +69,17 @@ export interface User {
   lastReportSource?: 'PDF' | 'IMAGE' | 'PROVIDER';
   lastEstimatedScoreImprovement?: number;
   lastNegativeItemCount?: number;
-  subscriptionTier?: 'FREE' | 'PRO';
+  /**
+   * `PRO` is legacy — treated as DIY Pro in access helpers.
+   * `FREE` = 1 dispute letter, no AI credit analysis, education hub.
+   * `DIY_PRO` = full analysis, unlimited disputes, progress tracking.
+   * `AGENCY` = multi-client CRM + all DIY Pro capabilities.
+   */
+  subscriptionTier?: 'FREE' | 'DIY_PRO' | 'AGENCY' | 'PRO';
   subscriptionStatus?: 'NONE' | 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED';
   trialEndsAt?: string;
+  /** Letters completed via Dispute Center (Gemini generation). Free tier max 1. */
+  disputeLettersGeneratedCount?: number;
 }
 
 export enum ClientStatus {

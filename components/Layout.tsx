@@ -1,33 +1,58 @@
 
-import React, { ReactNode, useState, useEffect } from 'react';
+import React, { ReactNode, useState, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Settings, LogOut, Menu, X,
   ShieldCheck, ScanSearch, LineChart, Trophy,
   GraduationCap, Building2,
-  ShoppingBag, BarChart3
+  ShoppingBag, BarChart3, Users, MessageCircle, HelpCircle
 } from 'lucide-react';
 import MobileNav from './MobileNav';
-import { isMobileDevice } from '../services/mobileService';
 import { useUser } from '../context/UserContext';
 import { logoutUser, isPlatformAdmin } from '../services/firebaseService';
+import { getEffectiveTier, type PlanTier } from '../services/access';
+import type { LucideIcon } from 'lucide-react';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
+type NavTier = 'free' | 'diy' | 'agency';
+
+type NavDef = { path: string; label: string; icon: LucideIcon; tier: NavTier };
+
+const ALL_NAV: NavDef[] = [
+  { path: '/dashboard', label: 'Overview', icon: LayoutDashboard, tier: 'free' },
+  { path: '/analysis', label: 'Credit Audit', icon: ScanSearch, tier: 'diy' },
+  { path: '/disputes', label: 'Dispute Center', icon: ShieldCheck, tier: 'free' },
+  { path: '/analytics', label: 'Progress Tracker', icon: LineChart, tier: 'diy' },
+  { path: '/learning', label: 'Education Hub', icon: GraduationCap, tier: 'free' },
+  { path: '/marketplace', label: 'Marketplace', icon: ShoppingBag, tier: 'diy' },
+  { path: '/funding', label: 'Business Funding', icon: Building2, tier: 'diy' },
+  { path: '/rewards', label: 'Rewards', icon: Trophy, tier: 'diy' },
+  { path: '/communication', label: 'Messages', icon: MessageCircle, tier: 'diy' },
+  { path: '/support', label: 'Support', icon: HelpCircle, tier: 'diy' },
+  { path: '/clients', label: 'Clients', icon: Users, tier: 'agency' },
+  { path: '/settings', label: 'Settings', icon: Settings, tier: 'free' },
+];
+
+function filterNavForTier(tier: PlanTier): NavDef[] {
+  return ALL_NAV.filter((item) => {
+    if (item.tier === 'free') return true;
+    if (item.tier === 'diy') return tier === 'DIY_PRO' || tier === 'AGENCY';
+    if (item.tier === 'agency') return tier === 'AGENCY';
+    return false;
+  });
+}
+
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useUser();
+  const planTier = getEffectiveTier(user);
 
-  useEffect(() => {
-    setIsMobile(isMobileDevice());
-    window.addEventListener('resize', () => setIsMobile(isMobileDevice()));
-    return () => window.removeEventListener('resize', () => setIsMobile(isMobileDevice()));
-  }, []);
+  const navItems = useMemo(() => filterNavForTier(planTier), [planTier]);
 
   const handleLogout = async () => {
     try {
@@ -39,24 +64,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate('/login');
   };
 
-  // DIY-first: personal credit repair flows (no agency/business-mode UI)
-  const navItems = [
-    { path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-    { path: '/analysis', label: 'Credit Audit', icon: ScanSearch },
-    { path: '/disputes', label: 'Dispute Center', icon: ShieldCheck },
-    { path: '/analytics', label: 'Progress Tracker', icon: LineChart },
-    { path: '/learning', label: 'Education Hub', icon: GraduationCap },
-    { path: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
-    { path: '/funding', label: 'Business Funding', icon: Building2 },
-    { path: '/rewards', label: 'Rewards', icon: Trophy },
-    { path: '/settings', label: 'Settings', icon: Settings },
-  ];
-
   const isActive = (path: string) => location.pathname === path;
+
+  const sidebarLabel = planTier === 'AGENCY' ? 'Agency workspace' : 'DIY credit repair';
 
   return (
     <div className="flex h-screen bg-[#050505] text-white overflow-hidden transition-colors duration-300">
-      {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 z-40 bg-black bg-opacity-80 lg:hidden backdrop-blur-sm transition-opacity"
@@ -64,7 +77,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         />
       )}
 
-      {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-[#0A0A0A] border-r border-slate-900 text-white transform transition-transform duration-300 ease-in-out
         lg:translate-x-0 lg:static lg:inset-0
@@ -84,7 +96,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
 
         <div className="px-6 pt-6 pb-2">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">DIY credit repair</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{sidebarLabel}</p>
+          {planTier === 'FREE' && (
+            <p className="text-[10px] text-amber-500/90 font-semibold mb-1">Free plan</p>
+          )}
+          {planTier === 'DIY_PRO' && (
+            <p className="text-[10px] text-emerald-400/90 font-semibold mb-1">DIY Pro</p>
+          )}
+          {planTier === 'AGENCY' && (
+            <p className="text-[10px] text-indigo-400/90 font-semibold mb-1">Agency</p>
+          )}
         </div>
 
         <nav className="flex-1 px-4 space-y-2 overflow-y-auto pb-24 lg:pb-6">
@@ -126,7 +147,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
              </div>
              <div className="overflow-hidden">
                <p className="text-sm font-bold text-white truncate">{user.firstName} {user.lastName}</p>
-               <p className="text-xs text-slate-400 truncate">Personal account</p>
+               <p className="text-xs text-slate-400 truncate">
+                 {planTier === 'AGENCY' ? 'Agency account' : 'Personal account'}
+               </p>
              </div>
           </div>
 
@@ -140,9 +163,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="flex flex-col flex-1 overflow-hidden w-full bg-[#050505]">
-        {/* Header */}
         <header className="flex items-center justify-between h-20 px-6 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-slate-900 shadow-sm flex-shrink-0 transition-colors z-20">
           <div className="flex items-center gap-4">
             <button 
@@ -157,15 +178,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#050505] p-4 lg:p-6 pb-20 lg:pb-6 transition-colors">
           <div className="max-w-7xl mx-auto h-full">
             {children}
           </div>
         </main>
 
-        {/* Mobile Bottom Navigation */}
-        <MobileNav onMenuClick={() => setIsSidebarOpen(true)} />
+        <MobileNav planTier={planTier} onMenuClick={() => setIsSidebarOpen(true)} />
       </div>
     </div>
   );

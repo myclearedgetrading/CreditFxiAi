@@ -56,6 +56,10 @@ describe('firestore rules: users profile security', () => {
 
     const updatedDoc = await getDoc(userRef);
     assert.equal(updatedDoc.data()?.firstName, 'Abe');
+
+    await assertSucceeds(updateDoc(userRef, { disputeLettersGeneratedCount: 1 }));
+    const afterCount = await getDoc(userRef);
+    assert.equal(afterCount.data()?.disputeLettersGeneratedCount, 1);
   });
 
   test('owner cannot self-promote role to ADMIN', async () => {

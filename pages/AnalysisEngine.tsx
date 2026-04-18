@@ -11,7 +11,8 @@ import { Bureau, CreditAnalysisResult, NegativeItem } from '../types';
 import { vibrate, HAPTIC } from '../services/mobileService';
 import { useUser } from '../context/UserContext';
 import { saveUserToFirestore } from '../services/firebaseService';
-import { canGenerateDisputeLetters } from '../services/access';
+import { canUseAiCreditAnalysis } from '../services/access';
+import TierUpgradePrompt from '../components/TierUpgradePrompt';
 import {
   CREDIT_MONITORING_PROVIDER_CARDS,
   getCreditMonitoringAffiliateUrl,
@@ -70,7 +71,8 @@ const AnalysisEngine: React.FC = () => {
     username: '',
     password: ''
   });
-  const canOpenDisputes = canGenerateDisputeLetters(user);
+  const canOpenDisputes = Boolean(user?.id);
+  const aiAnalysisAllowed = canUseAiCreditAnalysis(user);
 
   const persistAnalysisToProfile = async (
     analysisResult: CreditAnalysisResult,
@@ -175,6 +177,10 @@ const AnalysisEngine: React.FC = () => {
 
   const handleAnalysis = async () => {
     if (!preview || !file) return;
+    if (!canUseAiCreditAnalysis(user)) {
+      setError('AI credit report analysis is included with DIY Pro and Agency. Upgrade in Settings.');
+      return;
+    }
 
     vibrate(HAPTIC.MEDIUM);
     setAnalyzing(true);
@@ -227,6 +233,26 @@ const AnalysisEngine: React.FC = () => {
     if (score >= 50) return 'text-orange-400 bg-orange-900/30';
     return 'text-red-400 bg-red-900/30';
   };
+
+  if (!aiAnalysisAllowed) {
+    return (
+      <div className="space-y-8 pb-10">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            <BrainCircuit className="text-orange-500" />
+            Advanced Credit Analysis Engine
+          </h1>
+          <p className="text-slate-400 mt-2">
+            AI-powered report parsing and strategy — upgrade to unlock.
+          </p>
+        </div>
+        <TierUpgradePrompt
+          title="AI Credit Audit is a DIY Pro feature"
+          description="Free includes the Education Hub and one dispute letter. DIY Pro ($39/mo) adds full AI report analysis, unlimited disputes, and progress tracking."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-10">
