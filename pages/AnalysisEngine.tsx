@@ -11,6 +11,12 @@ import { Bureau, CreditAnalysisResult, NegativeItem } from '../types';
 import { vibrate, HAPTIC } from '../services/mobileService';
 import { useUser } from '../context/UserContext';
 import { saveUserToFirestore } from '../services/firebaseService';
+import { featureFlags } from '../services/featureFlags';
+import {
+  CREDIT_MONITORING_PROVIDER_CARDS,
+  getCreditMonitoringAffiliateUrl,
+  type CreditMonitoringProvider,
+} from '../constants/creditMonitoringProviders';
 
 const readFileAsDataUrl = (f: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -60,12 +66,13 @@ const AnalysisEngine: React.FC = () => {
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [connectLoading, setConnectLoading] = useState(false);
   const [connectForm, setConnectForm] = useState({
-    provider: 'IdentityIQ',
+    provider: 'SmartCredit' as CreditMonitoringProvider,
     username: '',
     password: ''
   });
   const hasPremiumAccess =
-    user.role === 'ADMIN'
+    featureFlags.nextLevelDIY
+    || user.role === 'ADMIN'
     || user.role === 'SUPER_ADMIN'
     || user.subscriptionTier === 'PRO'
     || user.subscriptionStatus === 'ACTIVE'
@@ -167,17 +174,9 @@ const AnalysisEngine: React.FC = () => {
     }, 2000);
   };
 
-  const handleAffiliateClick = (providerName: string) => {
+  const handleAffiliateClick = (provider: CreditMonitoringProvider) => {
     vibrate(HAPTIC.MEDIUM);
-    // In production, these would be real affiliate links
-    let url = '#';
-    switch (providerName) {
-      case 'IdentityIQ': url = 'https://www.identityiq.com'; break;
-      case 'SmartCredit': url = 'https://www.smartcredit.com'; break;
-      case 'MyFreeScoreNow': url = 'https://www.myfreescorenow.com'; break;
-      case 'PrivacyGuard': url = 'https://www.privacyguard.com'; break;
-    }
-    window.open(url, '_blank');
+    window.open(getCreditMonitoringAffiliateUrl(provider), '_blank', 'noopener,noreferrer');
   };
 
   const handleAnalysis = async () => {
@@ -319,7 +318,7 @@ const AnalysisEngine: React.FC = () => {
                       </div>
                       <div className="text-left">
                           <h3 className="font-bold text-white group-hover:text-orange-500">Connect Provider</h3>
-                          <p className="text-sm text-slate-400">IdentityIQ, SmartCredit, etc.</p>
+                          <p className="text-sm text-slate-400">SmartCredit or MyFreeScoreNow</p>
                       </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-orange-500" />
@@ -331,17 +330,12 @@ const AnalysisEngine: React.FC = () => {
                     <span className="text-[10px] text-green-500 bg-green-900/20 px-2 py-0.5 rounded border border-green-900/30">Get for $1</span>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3">
-                {[
-                    { name: 'IdentityIQ', offer: 'Get for $1', desc: 'Detailed 3-Bureau Report', color: 'text-blue-400', hoverColor: 'hover:border-blue-500/30 hover:shadow-blue-500/10' },
-                    { name: 'SmartCredit', offer: 'Get for $1', desc: 'Best for Score Tracking', color: 'text-green-400', hoverColor: 'hover:border-green-500/30 hover:shadow-green-500/10' },
-                    { name: 'MyFreeScoreNow', offer: 'Free Trial', desc: 'Fastest Updates', color: 'text-red-400', hoverColor: 'hover:border-red-500/30 hover:shadow-red-500/10' },
-                    { name: 'PrivacyGuard', offer: 'Get for $1', desc: 'Identity Protection', color: 'text-purple-400', hoverColor: 'hover:border-purple-500/30 hover:shadow-purple-500/10' },
-                ].map((provider) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {CREDIT_MONITORING_PROVIDER_CARDS.map((provider) => (
                     <div 
-                    key={provider.name}
-                    onClick={() => handleAffiliateClick(provider.name)}
-                    className={`bg-[#0A0A0A] border border-slate-800 p-4 rounded-xl cursor-pointer transition-all duration-300 group flex flex-col justify-between h-32 relative overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 ${provider.hoverColor}`}
+                    key={provider.id}
+                    onClick={() => handleAffiliateClick(provider.id)}
+                    className={`bg-[#0A0A0A] border border-slate-800 p-4 rounded-xl cursor-pointer transition-all duration-300 group flex flex-col justify-between min-h-[8rem] relative overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 ${provider.hoverColor}`}
                     >
                     <div className="flex justify-between items-start z-10">
                         <div className="w-8 h-8 rounded-full bg-[#050505] flex items-center justify-center border border-slate-800 group-hover:border-slate-700 transition-colors">
@@ -350,7 +344,8 @@ const AnalysisEngine: React.FC = () => {
                         <ExternalLink className="w-3 h-3 text-slate-600 group-hover:text-white transition-colors" />
                     </div>
                     <div className="z-10">
-                        <h4 className="font-bold text-white text-xs truncate mb-1">{provider.name}</h4>
+                        <h4 className="font-bold text-white text-xs truncate mb-1">{provider.id}</h4>
+                        <p className="text-[10px] text-slate-500 leading-tight mb-2 line-clamp-2">{provider.desc}</p>
                         <span className="inline-block bg-slate-900 text-slate-300 text-[10px] font-medium px-2 py-0.5 rounded border border-slate-800 group-hover:border-slate-700 transition-colors">
                         {provider.offer}
                         </span>
@@ -621,13 +616,11 @@ const AnalysisEngine: React.FC = () => {
                         <label className="block text-sm font-bold text-slate-300 mb-1">Provider</label>
                         <select 
                             value={connectForm.provider}
-                            onChange={(e) => setConnectForm({...connectForm, provider: e.target.value})}
+                            onChange={(e) => setConnectForm({ ...connectForm, provider: e.target.value as CreditMonitoringProvider })}
                             className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                         >
-                            <option value="IdentityIQ">IdentityIQ</option>
                             <option value="SmartCredit">SmartCredit</option>
-                            <option value="PrivacyGuard">PrivacyGuard</option>
-                            <option value="MyScoreIQ">MyScoreIQ</option>
+                            <option value="MyFreeScoreNow">MyFreeScoreNow</option>
                         </select>
                     </div>
                     <div>

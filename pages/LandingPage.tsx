@@ -92,7 +92,7 @@ const LandingPage: React.FC = () => {
           </h1>
           
           <p className="text-lg lg:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Connect your monitoring provider for automatic report import, then let AI extract negative items and launch targeted dispute letters with guided next-best actions.
+            Connect SmartCredit or MyFreeScoreNow for monitoring-aligned workflows, then let AI extract negative items and launch targeted dispute letters with guided next-best actions.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -168,7 +168,7 @@ const LandingPage: React.FC = () => {
               {
                 icon: UploadCloud,
                 title: "Automatic Report Import",
-                desc: "Connect your provider to pull new reports automatically. Manual PDF/image upload remains available as a backup."
+                desc: "Connect SmartCredit or MyFreeScoreNow when you’re ready; manual PDF or image upload is always available as a backup."
               },
               {
                 icon: ScanLine,
@@ -300,11 +300,10 @@ const LandingPage: React.FC = () => {
       {/* --- TOOLS & INTEGRATIONS --- */}
       <section className="py-16 bg-[#0A0A0A] border-y border-slate-900">
         <div className="max-w-7xl mx-auto px-6">
-           <p className="text-center text-slate-500 text-sm font-semibold uppercase tracking-widest mb-10">Works with all major bureaus & providers</p>
+           <p className="text-center text-slate-500 text-sm font-semibold uppercase tracking-widest mb-10">Monitoring partners & major bureaus</p>
            <div className="flex flex-wrap justify-center gap-12 lg:gap-20 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-              {/* Simple Text Logos for Demo */}
-              <div className="flex items-center gap-2 text-xl font-bold text-slate-300"><Shield className="w-6 h-6" /> IdentityIQ</div>
               <div className="flex items-center gap-2 text-xl font-bold text-slate-300"><ShieldCheck className="w-6 h-6" /> SmartCredit</div>
+              <div className="flex items-center gap-2 text-xl font-bold text-slate-300"><Shield className="w-6 h-6" /> MyFreeScoreNow</div>
               <div className="flex items-center gap-2 text-xl font-bold text-slate-300"><Building2 className="w-6 h-6" /> Equifax</div>
               <div className="flex items-center gap-2 text-xl font-bold text-slate-300"><Building2 className="w-6 h-6" /> Experian</div>
               <div className="flex items-center gap-2 text-xl font-bold text-slate-300"><Building2 className="w-6 h-6" /> TransUnion</div>

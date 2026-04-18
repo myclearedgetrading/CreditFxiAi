@@ -10,6 +10,11 @@ import { vibrate, HAPTIC } from '../services/mobileService';
 import { registerWithEmail } from '../services/firebaseService';
 import { useUser } from '../context/UserContext';
 import { User as UserType } from '../types';
+import {
+  CREDIT_MONITORING_PROVIDER_CARDS,
+  getCreditMonitoringAffiliateUrl,
+  type CreditMonitoringProvider,
+} from '../constants/creditMonitoringProviders';
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
@@ -41,7 +46,7 @@ const Onboarding: React.FC = () => {
   
   // Connection Modal
   const [showConnect, setShowConnect] = useState(false);
-  const [connectProvider, setConnectProvider] = useState('IdentityIQ');
+  const [connectProvider, setConnectProvider] = useState<CreditMonitoringProvider>('SmartCredit');
   const [connectUser, setConnectUser] = useState('');
   const [connectPass, setConnectPass] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
@@ -108,17 +113,9 @@ const Onboarding: React.FC = () => {
     }
   };
 
-  const handleAffiliateClick = (providerName: string) => {
+  const handleAffiliateClick = (provider: CreditMonitoringProvider) => {
     vibrate(HAPTIC.MEDIUM);
-    // In production, these would be real affiliate links
-    let url = '#';
-    switch (providerName) {
-      case 'IdentityIQ': url = 'https://www.identityiq.com'; break;
-      case 'SmartCredit': url = 'https://www.smartcredit.com'; break;
-      case 'MyFreeScoreNow': url = 'https://www.myfreescorenow.com'; break;
-      case 'PrivacyGuard': url = 'https://www.privacyguard.com'; break;
-    }
-    window.open(url, '_blank');
+    window.open(getCreditMonitoringAffiliateUrl(provider), '_blank', 'noopener,noreferrer');
   };
 
   const completeOnboarding = async () => {
@@ -392,7 +389,7 @@ const Onboarding: React.FC = () => {
               </div>
               <div className="text-left">
                 <h3 className="font-bold text-white text-sm group-hover:text-orange-400 transition-colors">Connect Monitoring</h3>
-                <p className="text-slate-500 text-xs mt-0.5">IdentityIQ, SmartCredit, etc.</p>
+                <p className="text-slate-500 text-xs mt-0.5">SmartCredit or MyFreeScoreNow</p>
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
@@ -423,16 +420,11 @@ const Onboarding: React.FC = () => {
             <span className="text-green-500 text-[10px] bg-green-900/20 px-2 py-0.5 rounded border border-green-900/30">Best for Metro 2</span>
           </label>
           
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { name: 'IdentityIQ', offer: 'Get for $1', desc: 'Detailed 3-Bureau Report', color: 'text-blue-400', hoverColor: 'hover:border-blue-500/30 hover:shadow-blue-500/10' },
-              { name: 'SmartCredit', offer: 'Get for $1', desc: 'Best for Score Tracking', color: 'text-green-400', hoverColor: 'hover:border-green-500/30 hover:shadow-green-500/10' },
-              { name: 'MyFreeScoreNow', offer: 'Free Trial', desc: 'Fastest Updates', color: 'text-red-400', hoverColor: 'hover:border-red-500/30 hover:shadow-red-500/10' },
-              { name: 'PrivacyGuard', offer: 'Get for $1', desc: 'Identity Protection', color: 'text-purple-400', hoverColor: 'hover:border-purple-500/30 hover:shadow-purple-500/10' },
-            ].map((provider) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {CREDIT_MONITORING_PROVIDER_CARDS.map((provider) => (
               <div 
-                key={provider.name}
-                onClick={() => handleAffiliateClick(provider.name)}
+                key={provider.id}
+                onClick={() => handleAffiliateClick(provider.id)}
                 className={`bg-[#0F0F0F] border border-slate-800 p-4 rounded-2xl cursor-pointer transition-all duration-300 group flex flex-col justify-between h-36 relative overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 ${provider.hoverColor}`}
               >
                 <div className="flex justify-between items-start z-10">
@@ -442,7 +434,7 @@ const Onboarding: React.FC = () => {
                   <ExternalLink className="w-3 h-3 text-slate-600 group-hover:text-white transition-colors" />
                 </div>
                 <div className="z-10">
-                  <h4 className="font-bold text-white text-sm truncate mb-1">{provider.name}</h4>
+                  <h4 className="font-bold text-white text-sm truncate mb-1">{provider.id}</h4>
                   <p className="text-[10px] text-slate-500 leading-tight mb-2 line-clamp-2">{provider.desc}</p>
                   <span className="inline-block bg-orange-500/10 text-orange-400 text-[10px] font-bold px-2 py-1 rounded border border-orange-500/20 group-hover:bg-orange-500/20 transition-colors">
                     {provider.offer}
@@ -605,12 +597,11 @@ const Onboarding: React.FC = () => {
                   <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Provider</label>
                   <select 
                     value={connectProvider}
-                    onChange={e => setConnectProvider(e.target.value)}
+                    onChange={e => setConnectProvider(e.target.value as CreditMonitoringProvider)}
                     className="w-full bg-[#050505] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500"
                   >
-                    <option>IdentityIQ</option>
-                    <option>SmartCredit</option>
-                    <option>PrivacyGuard</option>
+                    <option value="SmartCredit">SmartCredit</option>
+                    <option value="MyFreeScoreNow">MyFreeScoreNow</option>
                   </select>
                 </div>
                 <div>

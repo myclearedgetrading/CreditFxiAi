@@ -33,17 +33,17 @@ Additional routes:
 
 There are **no Firebase Cloud Functions** in `firebase.json`; server logic for this repo is intended to run on **Vercel** alongside the static SPA.
 
-## Feature flags (staged rollout)
+## Feature flags (MVP demo defaults on)
 
-Set in `.env.local` (see `.env.example`):
+`.env.example` ships with **both flags enabled** for the full DIY loop (dispute rounds, tasks, template experiments). Override in `.env.local` if you need a slimmer build:
 
 ```env
-VITE_ENABLE_NEXT_LEVEL_DIY=false
-VITE_ENABLE_TEMPLATE_EXPERIMENTS=false
+VITE_ENABLE_NEXT_LEVEL_DIY=true
+VITE_ENABLE_TEMPLATE_EXPERIMENTS=true
 ```
 
-- **`VITE_ENABLE_NEXT_LEVEL_DIY`** — Extra dashboard/dispute steps (e.g. task lists, extended dispute wizard sections).
-- **`VITE_ENABLE_TEMPLATE_EXPERIMENTS`** — Template experiment tracking on disputes and extra analytics on Progress Tracker.
+- **`VITE_ENABLE_NEXT_LEVEL_DIY`** — Closed-loop dispute UX (tasks/deadlines on Overview, dispute rounds + orchestration, Pro-tier dispute/analysis affordances without a paid subscription).
+- **`VITE_ENABLE_TEMPLATE_EXPERIMENTS`** — Template experiment exposures on generate and extra blocks on Progress Tracker.
 
 ## API key setup (Gemini)
 

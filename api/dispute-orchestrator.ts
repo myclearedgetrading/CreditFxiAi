@@ -83,6 +83,20 @@ export function assertLegalTransition(currentStatus: string, nextStatus: string)
   }
 }
 
+/** LLMs often return `SENT` when the dispute is already `SENT`; map to a legal next state. */
+export function sanitizeNextDisputeStatus(currentStatus: string, proposed: string): string {
+  const allowed = ALLOWED_TRANSITIONS[currentStatus] || [];
+  if (allowed.includes(proposed)) return proposed;
+  if (currentStatus === 'SENT') {
+    if (proposed === 'SENT' || proposed === 'DRAFT') return 'RESPONDED';
+    return allowed[0] || 'RESPONDED';
+  }
+  if (currentStatus === 'DRAFT' && !allowed.includes(proposed)) return 'SENT';
+  if (currentStatus === 'RESPONDED' && !allowed.includes(proposed)) return allowed[0] || 'SENT';
+  if (currentStatus === 'ESCALATED' && !allowed.includes(proposed)) return allowed[0] || 'SENT';
+  return allowed[0] || proposed;
+}
+
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -142,7 +156,13 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       template: { subject: string; body: string; checklist: string[] };
     };
 
-    assertLegalTransition(payload.currentStatus, orchestration.workflow.nextStatus);
+    const wf = orchestration.workflow;
+    if (!wf?.nextStatus) {
+      return res.status(500).json({ error: 'Invalid orchestration response' });
+    }
+    const nextStatus = sanitizeNextDisputeStatus(payload.currentStatus, wf.nextStatus);
+    orchestration.workflow = { ...wf, nextStatus };
+    assertLegalTransition(payload.currentStatus, nextStatus);
 
     const db = getAdminDb();
     const now = new Date().toISOString();

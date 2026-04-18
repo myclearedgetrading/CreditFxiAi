@@ -474,6 +474,8 @@ export async function runDetermineDisputeNextActions(payload: {
   const prompt = `
     You are a dispute workflow strategist.
     Determine the best next actions from this response state.
+    Current workflow status (dispute letter lifecycle): ${payload.status}
+    If status is SENT, the consumer already mailed the dispute and the text below is the bureau/furnisher reply — nextStatus MUST be one of RESPONDED, ESCALATED, or CLOSED (never SENT or DRAFT).
     Return JSON only:
     {
       "nextStatus": "RESPONDED"|"ESCALATED"|"CLOSED"|"SENT",

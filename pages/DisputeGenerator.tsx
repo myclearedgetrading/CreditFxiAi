@@ -9,7 +9,6 @@ import {
   createDeadline,
   createDisputeRecord,
   createDisputeRound,
-  createResponseIngestion,
   createRepairTask,
   createDisputeTemplate,
   createTemplateExposure,
@@ -270,7 +269,8 @@ const DisputeGenerator: React.FC = () => {
   const myNegativeItems = user.negativeItems || [];
   const selectedItem = myNegativeItems.find(i => i.id === selectedItemId);
   const hasPremiumAccess =
-    user.role === 'ADMIN'
+    featureFlags.nextLevelDIY
+    || user.role === 'ADMIN'
     || user.role === 'SUPER_ADMIN'
     || user.subscriptionTier === 'PRO'
     || user.subscriptionStatus === 'ACTIVE'
@@ -722,21 +722,7 @@ const DisputeGenerator: React.FC = () => {
         clientName: `${user.firstName} ${user.lastName}`.trim() || 'Client',
       });
 
-      await createResponseIngestion(companyId, {
-        clientId: user.id,
-        disputeId,
-        disputeRoundId: latestRound.id,
-        source: 'UPLOAD',
-        fileName: responseFile?.name || 'response-text',
-        mimeType: responseFile?.type || 'text/plain',
-        parseStatus: 'SUCCESS',
-        ocrStatus: 'SUCCESS',
-        parseConfidence: orchestration.orchestration.parsedResponse.confidence || 0,
-        summary: orchestration.orchestration.parsedResponse.summary,
-        outcomes: (orchestration.orchestration as any).parsedResponse.outcomes || [],
-        errors: [],
-        processedAt: new Date().toISOString(),
-      });
+      // Response ingestion is persisted by `/api/dispute-orchestrator` (Admin SDK); avoid duplicate client writes.
 
       setOrchestrationResult({
         nextStatus: orchestration.orchestration.workflow.nextStatus,

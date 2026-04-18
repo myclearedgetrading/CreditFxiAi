@@ -87,7 +87,8 @@ const Dashboard: React.FC = () => {
   const [todayTasks, setTodayTasks] = useState<RepairTask[]>([]);
   const [upcomingDeadlines, setUpcomingDeadlines] = useState<Deadline[]>([]);
   const hasPremiumAccess =
-    user.role === 'ADMIN'
+    featureFlags.nextLevelDIY
+    || user.role === 'ADMIN'
     || user.role === 'SUPER_ADMIN'
     || user.subscriptionTier === 'PRO'
     || user.subscriptionStatus === 'ACTIVE'
