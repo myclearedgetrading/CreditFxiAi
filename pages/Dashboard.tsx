@@ -91,10 +91,10 @@ const Dashboard: React.FC = () => {
   const tier = getEffectiveTier(user);
   const isPaidDiy = isDiyProOrAgency(user);
   const membershipTitle =
-    tier === 'FREE' ? 'Free plan' : tier === 'DIY_PRO' ? 'DIY Pro' : 'Agency';
+    tier === 'NONE' ? 'No subscription' : tier === 'DIY_PRO' ? 'DIY Pro' : 'Agency';
   const membershipDetail =
-    tier === 'FREE'
-      ? 'Education Hub and one dispute letter. Upgrade for AI report analysis, unlimited disputes, and progress tracking.'
+    tier === 'NONE'
+      ? 'Subscribe in Settings to unlock disputes, AI analysis, and education.'
       : tier === 'DIY_PRO'
         ? 'Full AI analysis, unlimited disputes, progress tracking, and education.'
         : 'Multi-client CRM, full feature set, and all DIY Pro capabilities.';
@@ -199,12 +199,12 @@ const Dashboard: React.FC = () => {
               {membershipDetail}
             </p>
           </div>
-          {tier === 'FREE' && (
+          {tier === 'NONE' && (
             <button
               onClick={() => navigate('/settings')}
               className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-black rounded-lg font-semibold"
             >
-              {`Upgrade to DIY Pro — $${PLAN_PRICES.DIY_PRO_MONTHLY_USD}/mo`}
+              {`Subscribe — DIY Pro from $${PLAN_PRICES.DIY_PRO_MONTHLY_USD}/mo`}
             </button>
           )}
           {tier === 'DIY_PRO' && (

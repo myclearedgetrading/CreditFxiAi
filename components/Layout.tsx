@@ -8,38 +8,40 @@ import {
   ShoppingBag, BarChart3, Users, MessageCircle, HelpCircle
 } from 'lucide-react';
 import MobileNav from './MobileNav';
+import SubscriptionGate from './SubscriptionGate';
 import { useUser } from '../context/UserContext';
 import { logoutUser, isPlatformAdmin } from '../services/firebaseService';
-import { getEffectiveTier, type PlanTier } from '../services/access';
+import { getEffectiveTier, isDiyProOrAgency, type PlanTier } from '../services/access';
 import type { LucideIcon } from 'lucide-react';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
-type NavTier = 'free' | 'diy' | 'agency';
+/** `base` = dashboard + settings (signed-in); `subscribed` = DIY Pro / Agency; `agency` = CRM. */
+type NavTier = 'base' | 'subscribed' | 'agency';
 
 type NavDef = { path: string; label: string; icon: LucideIcon; tier: NavTier };
 
 const ALL_NAV: NavDef[] = [
-  { path: '/dashboard', label: 'Overview', icon: LayoutDashboard, tier: 'free' },
-  { path: '/analysis', label: 'Credit Audit', icon: ScanSearch, tier: 'diy' },
-  { path: '/disputes', label: 'Dispute Center', icon: ShieldCheck, tier: 'free' },
-  { path: '/analytics', label: 'Progress Tracker', icon: LineChart, tier: 'diy' },
-  { path: '/learning', label: 'Education Hub', icon: GraduationCap, tier: 'free' },
-  { path: '/marketplace', label: 'Marketplace', icon: ShoppingBag, tier: 'diy' },
-  { path: '/funding', label: 'Business Funding', icon: Building2, tier: 'diy' },
-  { path: '/rewards', label: 'Rewards', icon: Trophy, tier: 'diy' },
-  { path: '/communication', label: 'Messages', icon: MessageCircle, tier: 'diy' },
-  { path: '/support', label: 'Support', icon: HelpCircle, tier: 'diy' },
+  { path: '/dashboard', label: 'Overview', icon: LayoutDashboard, tier: 'base' },
+  { path: '/analysis', label: 'Credit Audit', icon: ScanSearch, tier: 'subscribed' },
+  { path: '/disputes', label: 'Dispute Center', icon: ShieldCheck, tier: 'subscribed' },
+  { path: '/analytics', label: 'Progress Tracker', icon: LineChart, tier: 'subscribed' },
+  { path: '/learning', label: 'Education Hub', icon: GraduationCap, tier: 'subscribed' },
+  { path: '/marketplace', label: 'Marketplace', icon: ShoppingBag, tier: 'subscribed' },
+  { path: '/funding', label: 'Business Funding', icon: Building2, tier: 'subscribed' },
+  { path: '/rewards', label: 'Rewards', icon: Trophy, tier: 'subscribed' },
+  { path: '/communication', label: 'Messages', icon: MessageCircle, tier: 'subscribed' },
+  { path: '/support', label: 'Support', icon: HelpCircle, tier: 'subscribed' },
   { path: '/clients', label: 'Clients', icon: Users, tier: 'agency' },
-  { path: '/settings', label: 'Settings', icon: Settings, tier: 'free' },
+  { path: '/settings', label: 'Settings', icon: Settings, tier: 'base' },
 ];
 
 function filterNavForTier(tier: PlanTier): NavDef[] {
   return ALL_NAV.filter((item) => {
-    if (item.tier === 'free') return true;
-    if (item.tier === 'diy') return tier === 'DIY_PRO' || tier === 'AGENCY';
+    if (item.tier === 'base') return true;
+    if (item.tier === 'subscribed') return tier === 'DIY_PRO' || tier === 'AGENCY';
     if (item.tier === 'agency') return tier === 'AGENCY';
     return false;
   });
@@ -51,6 +53,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const { user, logout } = useUser();
   const planTier = getEffectiveTier(user);
+  const paid = isDiyProOrAgency(user);
 
   const navItems = useMemo(() => filterNavForTier(planTier), [planTier]);
 
@@ -66,7 +69,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const sidebarLabel = planTier === 'AGENCY' ? 'Agency workspace' : 'DIY credit repair';
+  const sidebarLabel =
+    planTier === 'NONE' ? 'Subscribe to continue' : planTier === 'AGENCY' ? 'Agency workspace' : 'DIY credit repair';
 
   return (
     <div className="flex h-screen bg-[#050505] text-white overflow-hidden transition-colors duration-300">
@@ -97,8 +101,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         <div className="px-6 pt-6 pb-2">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{sidebarLabel}</p>
-          {planTier === 'FREE' && (
-            <p className="text-[10px] text-amber-500/90 font-semibold mb-1">Free plan</p>
+          {planTier === 'NONE' && (
+            <p className="text-[10px] text-amber-500/90 font-semibold mb-1">No active plan</p>
           )}
           {planTier === 'DIY_PRO' && (
             <p className="text-[10px] text-emerald-400/90 font-semibold mb-1">DIY Pro</p>
@@ -148,7 +152,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
              <div className="overflow-hidden">
                <p className="text-sm font-bold text-white truncate">{user.firstName} {user.lastName}</p>
                <p className="text-xs text-slate-400 truncate">
-                 {planTier === 'AGENCY' ? 'Agency account' : 'Personal account'}
+                 {planTier === 'AGENCY' ? 'Agency account' : planTier === 'NONE' ? 'Subscribe to unlock' : 'Personal account'}
                </p>
              </div>
           </div>
@@ -180,7 +184,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#050505] p-4 lg:p-6 pb-20 lg:pb-6 transition-colors">
           <div className="max-w-7xl mx-auto h-full">
-            {children}
+            {!paid && location.pathname !== '/settings' ? <SubscriptionGate /> : children}
           </div>
         </main>
 

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, MessageCircle, ScanLine, Menu, ShoppingBag, GraduationCap, Settings } from 'lucide-react';
 import { vibrate, HAPTIC } from '../services/mobileService';
 import type { PlanTier } from '../services/access';
@@ -11,6 +11,7 @@ interface MobileNavProps {
 }
 
 const MobileNav: React.FC<MobileNavProps> = ({ onMenuClick, planTier }) => {
+  const navigate = useNavigate();
   const handleClick = () => vibrate(HAPTIC.LIGHT);
   const isDiyPlus = planTier === 'DIY_PRO' || planTier === 'AGENCY';
 
@@ -55,13 +56,13 @@ const MobileNav: React.FC<MobileNavProps> = ({ onMenuClick, planTier }) => {
             <ScanLine className="w-6 h-6" />
           </NavLink>
         ) : (
-          <NavLink 
-            to="/disputes" 
-            onClick={handleClick}
-            className="relative -top-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full p-4 shadow-[0_0_15px_rgba(249,115,22,0.4)] text-white transform transition-transform active:scale-95 border-4 border-[#050505]"
+          <button
+            type="button"
+            onClick={() => { handleClick(); navigate('/settings'); }}
+            className="relative -top-6 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full px-5 py-3 shadow-[0_0_15px_rgba(249,115,22,0.4)] text-white text-xs font-bold border-4 border-[#050505]"
           >
-            <MessageCircle className="w-6 h-6" />
-          </NavLink>
+            Subscribe
+          </button>
         )}
 
         {isDiyPlus ? (

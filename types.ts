@@ -70,15 +70,13 @@ export interface User {
   lastEstimatedScoreImprovement?: number;
   lastNegativeItemCount?: number;
   /**
-   * `PRO` is legacy — treated as DIY Pro in access helpers.
-   * `FREE` = 1 dispute letter, no AI credit analysis, education hub.
-   * `DIY_PRO` = full analysis, unlimited disputes, progress tracking.
-   * `AGENCY` = multi-client CRM + all DIY Pro capabilities.
+   * Pay-to-play: `NONE` (or unset) = not subscribed; `DIY_PRO` / `AGENCY` = paid.
+   * Legacy `PRO` → DIY Pro; legacy `FREE` → treated as unpaid in access helpers.
    */
-  subscriptionTier?: 'FREE' | 'DIY_PRO' | 'AGENCY' | 'PRO';
+  subscriptionTier?: 'NONE' | 'DIY_PRO' | 'AGENCY' | 'PRO' | 'FREE';
   subscriptionStatus?: 'NONE' | 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED';
   trialEndsAt?: string;
-  /** Letters completed via Dispute Center (Gemini generation). Free tier max 1. */
+  /** Letters completed via Dispute Center (Gemini generation). */
   disputeLettersGeneratedCount?: number;
 }
 

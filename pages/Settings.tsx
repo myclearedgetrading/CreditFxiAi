@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   Settings as SettingsIcon, Blocks, Bot, ShieldCheck, 
   BrainCircuit, Trophy, User, CreditCard, UploadCloud, Check, FileCheck, Info
@@ -16,22 +17,27 @@ import { getEffectiveTier, isDiyProOrAgency } from '../services/access';
 import { PLAN_COPY, PLAN_PRICES } from '../constants/plans';
 
 const Settings: React.FC = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('profile');
   const { user, updateUser } = useUser();
   const [isSaving, setIsSaving] = useState(false);
   const tier = getEffectiveTier(user);
   const hasPremiumAccess = isDiyProOrAgency(user);
   const currentPlanName =
-    tier === 'FREE' ? PLAN_COPY.free.name : tier === 'DIY_PRO' ? PLAN_COPY.diyPro.name : PLAN_COPY.agency.name;
+    tier === 'NONE' ? 'No subscription' : tier === 'DIY_PRO' ? PLAN_COPY.diyPro.name : PLAN_COPY.agency.name;
   const currentPlanPrice =
-    tier === 'FREE' ? PLAN_COPY.free.priceLabel : tier === 'DIY_PRO' ? PLAN_COPY.diyPro.priceLabel : PLAN_COPY.agency.priceLabel;
+    tier === 'NONE' ? '—' : tier === 'DIY_PRO' ? PLAN_COPY.diyPro.priceLabel : PLAN_COPY.agency.priceLabel;
   const currentPlanBlurb =
-    tier === 'FREE' ? PLAN_COPY.free.blurb : tier === 'DIY_PRO' ? PLAN_COPY.diyPro.blurb : PLAN_COPY.agency.blurb;
+    tier === 'NONE'
+      ? 'Subscribe to DIY Pro or Agency to unlock the full product.'
+      : tier === 'DIY_PRO'
+        ? PLAN_COPY.diyPro.blurb
+        : PLAN_COPY.agency.blurb;
 
-  const simulatePlan = async (next: 'FREE' | 'DIY_PRO' | 'AGENCY') => {
+  const simulatePlan = async (next: 'NONE' | 'DIY_PRO' | 'AGENCY') => {
     const patch: Partial<UserProfile> = {
       subscriptionTier: next,
-      subscriptionStatus: next === 'FREE' ? 'NONE' : 'ACTIVE',
+      subscriptionStatus: next === 'NONE' ? 'NONE' : 'ACTIVE',
     };
     updateUser(patch);
     if (user.id) {
@@ -69,6 +75,11 @@ const Settings: React.FC = () => {
       email: user.email || ''
     });
   }, [user]);
+
+  useEffect(() => {
+    const tab = (location.state as { tab?: string } | null)?.tab;
+    if (tab === 'billing') setActiveTab('billing');
+  }, [location.state]);
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -314,7 +325,7 @@ const Settings: React.FC = () => {
                   ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400'
                   : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400'
               }`}>
-                {tier === 'FREE' ? 'FREE' : tier === 'DIY_PRO' ? 'DIY PRO' : 'AGENCY'}
+                {tier === 'NONE' ? 'UNPAID' : tier === 'DIY_PRO' ? 'DIY PRO' : 'AGENCY'}
               </span>
             </div>
 
@@ -324,16 +335,18 @@ const Settings: React.FC = () => {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className={`rounded-xl border p-4 flex flex-col ${tier === 'FREE' ? 'border-orange-500/50 bg-orange-950/20' : 'border-slate-200 dark:border-slate-800'}`}>
-                <h4 className="font-bold text-slate-800 dark:text-white">{PLAN_COPY.free.name}</h4>
-                <p className="text-2xl font-bold text-slate-800 dark:text-white mt-2">{PLAN_COPY.free.priceLabel}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex-1">{PLAN_COPY.free.blurb}</p>
+              <div className={`rounded-xl border p-4 flex flex-col ${tier === 'NONE' ? 'border-orange-500/50 bg-orange-950/20' : 'border-slate-200 dark:border-slate-800'}`}>
+                <h4 className="font-bold text-slate-800 dark:text-white">Unpaid</h4>
+                <p className="text-2xl font-bold text-slate-800 dark:text-white mt-2">—</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex-1">
+                  No plan — app features stay locked until you subscribe (for testing only).
+                </p>
                 <button
                   type="button"
-                  onClick={() => simulatePlan('FREE')}
+                  onClick={() => simulatePlan('NONE')}
                   className="mt-4 w-full py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-900"
                 >
-                  Simulate Free
+                  Simulate unpaid (NONE)
                 </button>
               </div>
               <div className={`rounded-xl border p-4 flex flex-col ${tier === 'DIY_PRO' ? 'border-orange-500/50 bg-orange-950/20' : 'border-slate-200 dark:border-slate-800'}`}>

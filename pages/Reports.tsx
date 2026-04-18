@@ -68,8 +68,8 @@ const Reports: React.FC = () => {
           </p>
         </div>
         <TierUpgradePrompt
-          title="Progress tracking is included with DIY Pro"
-          description="Free includes the Education Hub and one dispute letter. DIY Pro ($39/mo) adds AI progress insights, unlimited disputes, and full credit report analysis."
+          title="Progress tracking requires a subscription"
+          description="DIY Pro ($39/mo) or Agency ($99/mo) includes AI progress insights, unlimited disputes, and full credit report analysis."
         />
       </div>
     );

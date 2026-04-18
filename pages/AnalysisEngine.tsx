@@ -178,7 +178,7 @@ const AnalysisEngine: React.FC = () => {
   const handleAnalysis = async () => {
     if (!preview || !file) return;
     if (!canUseAiCreditAnalysis(user)) {
-      setError('AI credit report analysis is included with DIY Pro and Agency. Upgrade in Settings.');
+      setError('AI credit report analysis requires an active DIY Pro or Agency subscription. Open Settings to subscribe.');
       return;
     }
 
@@ -247,8 +247,8 @@ const AnalysisEngine: React.FC = () => {
           </p>
         </div>
         <TierUpgradePrompt
-          title="AI Credit Audit is a DIY Pro feature"
-          description="Free includes the Education Hub and one dispute letter. DIY Pro ($39/mo) adds full AI report analysis, unlimited disputes, and progress tracking."
+          title="AI Credit Audit requires a subscription"
+          description="Subscribe to DIY Pro ($39/mo) or Agency ($99/mo) for full AI report analysis, unlimited disputes, progress tracking, and education."
         />
       </div>
     );

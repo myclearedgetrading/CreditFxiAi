@@ -199,12 +199,12 @@ const Login: React.FC = () => {
             <p className="text-slate-500 text-sm">
               Don&apos;t have an account?{' '}
               <Link to="/onboarding" className="font-bold text-orange-500 hover:text-orange-400 transition-colors">
-                Start Free Trial
+                Create account
               </Link>
             </p>
             {showLocalDemo === false && (
               <p className="text-slate-600 text-[11px] mt-2">
-                You can skip the credit-import step during sign-up to browse first.
+                After sign-up, choose DIY Pro or Agency to unlock the app.
               </p>
             )}
           </div>

@@ -5,11 +5,6 @@ export const PLAN_PRICES = {
 } as const;
 
 export const PLAN_COPY = {
-  free: {
-    name: 'Free',
-    priceLabel: '$0',
-    blurb: 'Education and one dispute letter — no AI credit report analysis.',
-  },
   diyPro: {
     name: 'DIY Pro',
     priceLabel: `$${PLAN_PRICES.DIY_PRO_MONTHLY_USD}/mo`,

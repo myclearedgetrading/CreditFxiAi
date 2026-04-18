@@ -124,7 +124,7 @@ const Onboarding: React.FC = () => {
 
     try {
       const newUserProfile: Partial<UserType> = {
-        subscriptionTier: 'FREE',
+        subscriptionTier: 'NONE',
         subscriptionStatus: 'NONE',
         disputeLettersGeneratedCount: 0,
         firstName: formData.firstName || 'Guest',
@@ -173,7 +173,7 @@ const Onboarding: React.FC = () => {
       const fullUser = await registerWithEmail(formData.email, formData.password, newUserProfile);
       
       login(fullUser);
-      navigate('/dashboard');
+      navigate('/settings', { state: { tab: 'billing' } });
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to create account. Please try again.");

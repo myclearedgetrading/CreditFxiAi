@@ -68,7 +68,7 @@ const LandingPage: React.FC = () => {
               onClick={() => navigate('/onboarding')}
               className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(234,88,12,0.3)]"
             >
-              Start Free Preview
+              Get started
             </button>
           </div>
         </div>
@@ -101,13 +101,13 @@ const LandingPage: React.FC = () => {
               onClick={() => navigate('/onboarding')}
               className="bg-orange-600 text-white px-10 py-4 rounded-full font-bold text-lg transition-all hover:bg-orange-500 hover:shadow-[0_0_30px_rgba(234,88,12,0.4)] flex items-center justify-center gap-2 active:scale-95"
             >
-              Start Free Preview <ArrowRight className="w-5 h-5" />
+              Get started <ArrowRight className="w-5 h-5" />
             </button>
           </div>
 
           <div className="mt-12 pt-8 border-t border-slate-800/50 flex flex-col md:flex-row justify-center items-center gap-8 text-sm text-slate-500">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-orange-500" /> No Credit Card Required
+              <CheckCircle2 className="w-4 h-4 text-orange-500" /> From $39/mo — subscribe to unlock
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-orange-500" /> 256-bit Encryption
@@ -319,28 +319,10 @@ const LandingPage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
              <h2 className="text-3xl font-bold text-white mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-slate-400">Start free, upgrade to DIY Pro for full AI workflows, or run an agency on the CRM tier.</p>
+            <p className="text-slate-400">Pay to play — choose DIY Pro for individuals or Agency for multi-client CRM.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-[#0A0A0A] rounded-2xl p-8 border border-slate-800 flex flex-col">
-              <h3 className="text-lg font-bold text-white mb-1">{PLAN_COPY.free.name}</h3>
-              <div className="text-4xl font-bold text-white mb-2">{PLAN_COPY.free.priceLabel}</div>
-              <p className="text-sm text-slate-400 mb-6 flex-1">{PLAN_COPY.free.blurb}</p>
-              <ul className="space-y-3 text-sm text-slate-300 mb-8">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" /> Education Hub</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" /> 1 dispute letter (total)</li>
-                <li className="flex items-center gap-2"><X className="w-4 h-4 text-slate-600 shrink-0" /> AI credit report analysis</li>
-              </ul>
-              <button
-                type="button"
-                onClick={() => navigate('/onboarding')}
-                className="w-full py-3 border border-slate-600 text-white rounded-xl font-bold hover:bg-slate-900 transition-colors"
-              >
-                Start free
-              </button>
-            </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div className="bg-gradient-to-br from-orange-900/30 to-[#0A0A0A] rounded-2xl p-8 border border-orange-500/40 flex flex-col relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
               <h3 className="text-lg font-bold text-white mb-1">{PLAN_COPY.diyPro.name}</h3>

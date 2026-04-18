@@ -78,7 +78,7 @@ export const buildUserProfileFromAuthUser = (fbUser: FirebaseUser): User => {
     createdAt: new Date().toISOString(),
     creditScore: { equifax: 0, experian: 0, transunion: 0 },
     negativeItems: [],
-    subscriptionTier: 'FREE',
+    subscriptionTier: 'NONE',
     subscriptionStatus: 'NONE',
     disputeLettersGeneratedCount: 0,
   };
@@ -102,7 +102,7 @@ export const registerWithEmail = async (email: string, pass: string, userData: P
     role: merged.role || 'USER',
     companyId: merged.companyId ?? uid,
     createdAt: merged.createdAt ?? new Date().toISOString(),
-    subscriptionTier: merged.subscriptionTier ?? 'FREE',
+    subscriptionTier: merged.subscriptionTier ?? 'NONE',
     subscriptionStatus: merged.subscriptionStatus ?? 'NONE',
     disputeLettersGeneratedCount: merged.disputeLettersGeneratedCount ?? 0,
   };

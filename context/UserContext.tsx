@@ -26,7 +26,7 @@ const DEFAULT_USER: User = {
   email: '',
   phone: '',
   role: 'USER',
-  subscriptionTier: 'FREE',
+  subscriptionTier: 'NONE',
   subscriptionStatus: 'NONE',
   disputeLettersGeneratedCount: 0,
   creditScore: {
