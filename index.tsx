@@ -4,20 +4,19 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles.css';
 
-// NOTE: Service Worker registration has been disabled to prevent "invalid state" errors 
-// in preview environments. To enable PWA features later, uncomment this block when 
-// running in a standard HTTPS environment.
-/*
+// PWA: cache shell + offline fallback; requires HTTPS or localhost. Files live in /public for Vite `dist` output.
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(registration => {
-        console.log('SW registered: ', registration);
+    navigator.serviceWorker
+      .register('/service-worker.js', { scope: '/' })
+      .then((registration) => {
+        console.log('SW registered:', registration.scope);
       })
-      .catch(registrationError => console.log('SW registration failed: ', registrationError));
+      .catch((registrationError) => {
+        console.warn('SW registration failed:', registrationError);
+      });
   });
 }
-*/
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

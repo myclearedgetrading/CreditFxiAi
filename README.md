@@ -120,7 +120,7 @@ Composite indexes are listed in **`firestore.indexes.json`** (e.g. `tickets` by 
 ## PWA / offline
 
 - `manifest.json` and install UI (`beforeinstallprompt`) support “add to home screen” behavior.
-- A **service worker** file exists (`service-worker.js`), but registration is **commented out** in `index.tsx` to avoid preview-environment issues; re-enable when you want full offline caching.
+- **`public/service-worker.js`** is registered from `index.tsx` for offline shell caching (navigation network-first, then cache). It is emitted at `/service-worker.js` in `dist` with `manifest.json` from `public/`.
 
 ## Folder structure (high level)
 
