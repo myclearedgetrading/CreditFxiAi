@@ -21,6 +21,8 @@ import {
 } from '../services/firebaseService';
 import { runDisputeOrchestration } from '../services/disputeOrchestratorService';
 import { featureFlags } from '../services/featureFlags';
+import { canGenerateDisputeLetters, hasProSubscription } from '../services/access';
+import { downloadDisputeLetterPdf } from '../services/disputeLetterExport';
 
 /** Escape text for safe insertion into a print HTML document */
 const escapeHtml = (s: string) =>
@@ -268,13 +270,8 @@ const DisputeGenerator: React.FC = () => {
 
   const myNegativeItems = user.negativeItems || [];
   const selectedItem = myNegativeItems.find(i => i.id === selectedItemId);
-  const hasPremiumAccess =
-    featureFlags.nextLevelDIY
-    || user.role === 'ADMIN'
-    || user.role === 'SUPER_ADMIN'
-    || user.subscriptionTier === 'PRO'
-    || user.subscriptionStatus === 'ACTIVE'
-    || user.subscriptionStatus === 'TRIAL';
+  const canGenerateLetters = canGenerateDisputeLetters(user);
+  const isProMember = hasProSubscription(user);
 
   // Effect to load saved documents preferences from User Profile
   useEffect(() => {
@@ -505,8 +502,8 @@ const DisputeGenerator: React.FC = () => {
 
   const handleGenerate = async () => {
     if (!selectedItem || selectedBureaus.length === 0) return;
-    if (!hasPremiumAccess) {
-      setError('Premium membership required to generate dispute letters. Upgrade to activate unlimited letter generation and workflow automation.');
+    if (!canGenerateLetters) {
+      setError('Sign in to generate dispute letters.');
       return;
     }
 
@@ -804,15 +801,27 @@ const DisputeGenerator: React.FC = () => {
     }, 250);
   };
 
+  const letterDownloadBase = () => `dispute-letters-${new Date().toISOString().slice(0, 10)}`;
+
   const handleDownloadTxt = () => {
     if (!generatedLetter) return;
     const blob = new Blob([generatedLetter], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `dispute-letters-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.download = `${letterDownloadBase()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadPdf = () => {
+    if (!generatedLetter) return;
+    try {
+      downloadDisputeLetterPdf(generatedLetter, letterDownloadBase());
+    } catch (e) {
+      console.error(e);
+      setError('Could not create PDF. Try Download (.txt) or Print instead.');
+    }
   };
 
   return (
@@ -1131,7 +1140,7 @@ const DisputeGenerator: React.FC = () => {
 
             <button 
               onClick={handleGenerate}
-              disabled={!selectedItem || isLoading || selectedBureaus.length === 0 || !hasPremiumAccess}
+              disabled={!selectedItem || isLoading || selectedBureaus.length === 0 || !canGenerateLetters}
               className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
@@ -1147,23 +1156,14 @@ const DisputeGenerator: React.FC = () => {
               )}
             </button>
 
-            {!hasPremiumAccess && (
-              <div className="rounded-lg border border-amber-700/40 bg-amber-900/20 p-3 mt-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-amber-300 flex items-center gap-2">
-                  <Crown className="w-3.5 h-3.5" />
-                  Premium Activation Required
-                </p>
-                <p className="text-xs text-amber-100/80 mt-1 leading-relaxed">
-                  You can analyze reports for free. Activate Pro to generate dispute letters, save templates, and run full workflow orchestration.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => navigate('/settings')}
-                  className="mt-2 w-full py-2 text-xs font-semibold rounded bg-amber-500 hover:bg-amber-400 text-black"
-                >
-                  Upgrade to Pro - $49/mo
+            {!isProMember && (
+              <p className="text-[11px] text-slate-500 mt-3 text-center leading-relaxed">
+                <Crown className="w-3 h-3 inline-block text-amber-500/80 mr-1 align-text-bottom" />
+                Pro unlocks saved templates and advanced automation.{' '}
+                <button type="button" onClick={() => navigate('/settings')} className="text-orange-400 hover:text-orange-300 font-medium">
+                  View plans
                 </button>
-              </div>
+              </p>
             )}
           </div>
         </div>
@@ -1196,6 +1196,15 @@ const DisputeGenerator: React.FC = () => {
                           <Printer className="w-4 h-4 mr-2" />
                           <span className="hidden sm:inline">Print to mail</span>
                           <span className="sm:hidden">Print</span>
+                       </button>
+                       <button 
+                         type="button"
+                         onClick={handleDownloadPdf}
+                         className="flex items-center px-3 py-1.5 text-sm text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md transition-colors"
+                       >
+                          <FileText className="w-4 h-4 mr-2" />
+                          <span className="hidden sm:inline">Download PDF</span>
+                          <span className="sm:hidden">PDF</span>
                        </button>
                        <button 
                          type="button"
@@ -1264,6 +1273,14 @@ const DisputeGenerator: React.FC = () => {
                             >
                               <Printer className="w-4 h-4 mr-2" />
                               Print letters
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleDownloadPdf}
+                              className="inline-flex items-center px-3 py-2 text-sm font-semibold text-white bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded-lg"
+                            >
+                              <FileText className="w-4 h-4 mr-2" />
+                              Download PDF
                             </button>
                             <button
                               type="button"

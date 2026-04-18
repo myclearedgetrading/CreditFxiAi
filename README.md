@@ -22,6 +22,10 @@ A **DIY-first personal credit repair** web application: audit imported reports, 
 
 **Public:** landing (`/`), login, onboarding. **Authenticated:** everything under `Layout` except `/admin`, which adds an extra admin gate.
 
+**Onboarding** centers on **“Upload your credit report to get started”** (primary action); users can defer and are told to use **Credit Audit** after signup.
+
+**Core DIY vs Pro:** Any signed-in user can run **Credit Audit** and **generate / download dispute letters** (including PDF). **Pro** (or admin/trial) is positioned for saved templates, automation, and other premium surfaces — see `services/access.ts` (`canGenerateDisputeLetters`, `hasProSubscription`).
+
 ## AI and server API
 
 Browser code calls **`POST /api/gemini`** with `{ action, payload }` and a Firebase ID token. The handler (`api/gemini.ts`) validates actions, applies rate limits, and dispatches to Gemini. Examples of actions include dispute letters, credit report analysis (HTML/image/PDF), executive summaries, education/quiz generation, support ticket analysis, dispute outcome prediction, and closed-loop repair orchestration helpers.
@@ -42,7 +46,7 @@ VITE_ENABLE_NEXT_LEVEL_DIY=true
 VITE_ENABLE_TEMPLATE_EXPERIMENTS=true
 ```
 
-- **`VITE_ENABLE_NEXT_LEVEL_DIY`** — Closed-loop dispute UX (tasks/deadlines on Overview, dispute rounds + orchestration, Pro-tier dispute/analysis affordances without a paid subscription).
+- **`VITE_ENABLE_NEXT_LEVEL_DIY`** — Closed-loop extras: repair tasks on Overview, dispute rounds + Firestore tracking, orchestrator UI, extended wizard sections. **Does not gate** basic letter generation (that is available to all signed-in users).
 - **`VITE_ENABLE_TEMPLATE_EXPERIMENTS`** — Template experiment exposures on generate and extra blocks on Progress Tracker.
 
 ## API key setup (Gemini)

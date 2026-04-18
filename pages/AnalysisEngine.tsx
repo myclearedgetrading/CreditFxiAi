@@ -4,14 +4,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   UploadCloud, FileText, AlertTriangle, CheckCircle2, BrainCircuit, 
   ArrowRight, TrendingUp, Scale, Loader2, ScanLine, Camera, Zap, 
-  ChevronRight, Lock, X, ExternalLink, Shield, Crown
+  ChevronRight, Lock, X, ExternalLink, Shield
 } from 'lucide-react';
 import { analyzeCreditReportImage, analyzeCreditReportPdf } from '../services/geminiService';
 import { Bureau, CreditAnalysisResult, NegativeItem } from '../types';
 import { vibrate, HAPTIC } from '../services/mobileService';
 import { useUser } from '../context/UserContext';
 import { saveUserToFirestore } from '../services/firebaseService';
-import { featureFlags } from '../services/featureFlags';
+import { canGenerateDisputeLetters } from '../services/access';
 import {
   CREDIT_MONITORING_PROVIDER_CARDS,
   getCreditMonitoringAffiliateUrl,
@@ -70,13 +70,7 @@ const AnalysisEngine: React.FC = () => {
     username: '',
     password: ''
   });
-  const hasPremiumAccess =
-    featureFlags.nextLevelDIY
-    || user.role === 'ADMIN'
-    || user.role === 'SUPER_ADMIN'
-    || user.subscriptionTier === 'PRO'
-    || user.subscriptionStatus === 'ACTIVE'
-    || user.subscriptionStatus === 'TRIAL';
+  const canOpenDisputes = canGenerateDisputeLetters(user);
 
   const persistAnalysisToProfile = async (
     analysisResult: CreditAnalysisResult,
@@ -439,7 +433,7 @@ const AnalysisEngine: React.FC = () => {
               </p>
             </div>
             <div className="flex gap-2">
-              {hasPremiumAccess ? (
+              {canOpenDisputes ? (
                 <button
                   onClick={() => navigate('/disputes')}
                   className="px-4 py-2 text-sm bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-semibold"
@@ -448,11 +442,10 @@ const AnalysisEngine: React.FC = () => {
                 </button>
               ) : (
                 <button
-                  onClick={() => navigate('/settings')}
+                  onClick={() => navigate('/login')}
                   className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-black rounded-lg font-semibold inline-flex items-center gap-2"
                 >
-                  <Crown className="w-4 h-4" />
-                  Upgrade to Unlock Letters
+                  Sign in to generate letters
                 </button>
               )}
               <button

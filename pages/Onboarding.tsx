@@ -370,62 +370,69 @@ const Onboarding: React.FC = () => {
   // --- RENDER STEP 3: SOURCE ---
   const renderStep3 = () => (
     <div className="animate-fade-in flex flex-col h-full">
-      <div className="flex-1 flex flex-col justify-start py-6 overflow-y-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Import your credit.</h1>
-          <p className="text-slate-400 text-sm">We need your report to identify negative items.</p>
+      <div className="flex-1 flex flex-col justify-start py-4 overflow-y-auto">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-3 leading-tight">
+            Upload your credit report to get started
+          </h1>
+          <p className="text-slate-400 text-sm max-w-md mx-auto">
+            We&apos;ll use AI to find negative items and prep dispute letters. PDF or HTML export from your bureau or monitoring site works best.
+          </p>
         </div>
 
-        {/* Existing Accounts */}
-        <div className="space-y-3 mb-8">
-          <label className="text-xs font-bold text-slate-500 uppercase ml-1">I have a report</label>
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept=".pdf,.html"
+          onChange={handleFileUpload}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            vibrate(HAPTIC.MEDIUM);
+            fileInputRef.current?.click();
+          }}
+          className="w-full py-4 px-4 bg-orange-600 hover:bg-orange-500 text-white rounded-2xl font-bold text-base shadow-lg shadow-orange-900/30 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] mb-6"
+        >
+          <Upload className="w-6 h-6" />
+          Upload your credit report
+        </button>
+
+        <div className="space-y-3 mb-6">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide text-center">More ways to continue</p>
           <button
+            type="button"
             onClick={() => setShowConnect(true)}
-            className="w-full p-5 bg-[#0F0F0F] border border-slate-800 hover:border-orange-500/50 hover:bg-slate-900/50 rounded-2xl flex items-center justify-between group transition-all shadow-md"
+            className="w-full p-4 bg-[#0F0F0F] border border-slate-800 hover:border-orange-500/40 hover:bg-slate-900/50 rounded-xl flex items-center justify-between group transition-all"
           >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-[#050505] rounded-xl text-orange-500 border border-slate-800 group-hover:border-orange-500/30 transition-colors">
-                <Zap className="w-6 h-6 fill-current" />
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-[#050505] rounded-lg text-orange-500 border border-slate-800">
+                <Zap className="w-5 h-5 fill-current" />
               </div>
               <div className="text-left">
-                <h3 className="font-bold text-white text-sm group-hover:text-orange-400 transition-colors">Connect Monitoring</h3>
-                <p className="text-slate-500 text-xs mt-0.5">SmartCredit or MyFreeScoreNow</p>
+                <h3 className="font-bold text-white text-sm">Connect monitoring</h3>
+                <p className="text-slate-500 text-xs">SmartCredit or MyFreeScoreNow</p>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
-          </button>
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full p-5 bg-[#0F0F0F] border border-slate-800 hover:border-slate-600 hover:bg-slate-900/50 rounded-2xl flex items-center justify-between group transition-all shadow-md"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-[#050505] rounded-xl text-slate-400 border border-slate-800 group-hover:text-white transition-colors">
-                <Upload className="w-6 h-6" />
-              </div>
-              <div className="text-left">
-                <h3 className="font-bold text-white text-sm group-hover:text-slate-300 transition-colors">Upload File</h3>
-                <p className="text-slate-500 text-xs mt-0.5">PDF or HTML report</p>
-              </div>
-            </div>
-            <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.html" onChange={handleFileUpload} />
-            <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-white group-hover:translate-x-1 transition-all" />
+            <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-orange-500" />
           </button>
         </div>
 
-        {/* Affiliate Options */}
-        <div className="space-y-3 mb-8">
-          <label className="text-xs font-bold text-slate-500 uppercase ml-1 flex justify-between">
-            <span>I need a report</span>
-            <span className="text-green-500 text-[10px] bg-green-900/20 px-2 py-0.5 rounded border border-green-900/30">Best for Metro 2</span>
+        <div className="space-y-3 mb-4">
+          <label className="text-xs font-bold text-slate-500 uppercase ml-1 flex justify-between items-center">
+            <span>Need a report first?</span>
+            <span className="text-green-500 text-[10px] bg-green-900/20 px-2 py-0.5 rounded border border-green-900/30">Partner offers</span>
           </label>
-          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {CREDIT_MONITORING_PROVIDER_CARDS.map((provider) => (
-              <div 
+              <div
                 key={provider.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => handleAffiliateClick(provider.id)}
-                className={`bg-[#0F0F0F] border border-slate-800 p-4 rounded-2xl cursor-pointer transition-all duration-300 group flex flex-col justify-between h-36 relative overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 ${provider.hoverColor}`}
+                onKeyDown={(e) => e.key === 'Enter' && handleAffiliateClick(provider.id)}
+                className={`bg-[#0F0F0F] border border-slate-800 p-4 rounded-2xl cursor-pointer transition-all duration-300 group flex flex-col justify-between min-h-[7.5rem] relative overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-0.5 ${provider.hoverColor}`}
               >
                 <div className="flex justify-between items-start z-10">
                   <div className="w-9 h-9 rounded-full bg-[#050505] flex items-center justify-center border border-slate-800 group-hover:border-slate-700 transition-colors">
@@ -440,7 +447,6 @@ const Onboarding: React.FC = () => {
                     {provider.offer}
                   </span>
                 </div>
-                {/* Background Gradient Effect on Hover */}
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               </div>
             ))}
@@ -448,16 +454,16 @@ const Onboarding: React.FC = () => {
         </div>
       </div>
 
-      <div className="pt-6 border-t border-slate-800/80 mt-4">
+      <div className="pt-4 border-t border-slate-800/80 mt-auto">
         <button
           type="button"
           onClick={skipImportAndFinish}
-          className="w-full py-3.5 text-slate-400 hover:text-white text-sm font-semibold rounded-2xl border border-slate-800 hover:border-slate-600 bg-[#0A0A0A] transition-all"
+          className="w-full py-3 text-slate-500 hover:text-slate-300 text-sm font-medium rounded-xl transition-colors"
         >
-          Skip for now — explore the app
+          I&apos;ll upload my report later — continue
         </button>
         <p className="text-center text-[11px] text-slate-600 mt-2 px-2">
-          You can import or connect a report anytime from the dashboard or Credit Audit.
+          After signup, open <span className="text-slate-400 font-semibold">Credit Audit</span> from the menu to upload anytime.
         </p>
       </div>
     </div>
@@ -487,8 +493,9 @@ const Onboarding: React.FC = () => {
             <Sparkles className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">You&apos;re all set</h1>
-          <p className="text-slate-400 mb-8 text-sm leading-relaxed">
-            Create your account to open the dashboard. Add a credit report when you&apos;re ready — nothing is required to look around.
+          <p className="text-slate-400 mb-6 text-sm leading-relaxed">
+            Create your account, then go to <span className="text-white font-semibold">Credit Audit</span> and{' '}
+            <span className="text-orange-400 font-semibold">upload your credit report</span> to run AI analysis and unlock disputes.
           </p>
 
           {error && (
@@ -507,7 +514,7 @@ const Onboarding: React.FC = () => {
                 <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating Account...
                 </>
-            ) : "Create account & go to dashboard"}
+            ) : "Create account — then upload in Credit Audit"}
           </button>
         </div>
       ) : (
@@ -515,9 +522,10 @@ const Onboarding: React.FC = () => {
           <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-900/20">
             <CheckCircle2 className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Analysis Complete!</h1>
-          <p className="text-slate-400 mb-8">
-            We found <span className="text-white font-bold">2 negative items</span> hurting your score. We can help you remove them.
+          <h1 className="text-3xl font-bold text-white mb-2">Preview complete</h1>
+          <p className="text-slate-400 mb-4">
+            We found <span className="text-white font-bold">2 negative items</span> in this demo. After signup, upload a real report in{' '}
+            <span className="text-white font-semibold">Credit Audit</span> for live AI analysis.
           </p>
 
           <div className="bg-[#0F0F0F] rounded-2xl p-5 border border-slate-800 mb-8 text-left shadow-xl">
@@ -547,7 +555,7 @@ const Onboarding: React.FC = () => {
                 <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating Account...
                 </>
-            ) : "View My Dashboard"}
+            ) : "Create account & open dashboard"}
           </button>
         </div>
       )}
