@@ -1,105 +1,137 @@
 
-# CreditFix AI - CRM Platform
+# CreditFix AI
 
-A comprehensive, AI-powered Credit Repair Business CRM built with React, Firebase, and Gemini API.
+A **DIY-first personal credit repair** web application: audit imported reports, draft AI-assisted disputes, track progress, and learn credit concepts. The Firebase data model is **multi-tenant** (companies, roles, shared `companyId`) so the same codebase can support agencies and platform operations, but the **primary navigation and copy target individual consumers**, not a full agency CRM workflow.
 
-## Features
+**Stack:** React 18 + TypeScript, Vite, Tailwind CSS, React Router (**HashRouter**), Firebase (Auth, Firestore, Storage), and **Vercel serverless** routes that proxy Google Gemini (`@google/genai`) so API keys stay on the server.
 
-- **AI Dispute Engine**: Generates factual dispute letters using Google Gemini models.
-- **Credit Analysis**: OCR and document analysis for credit reports.
-- **Client CRM**: Manage leads, clients, and negative items.
-- **Predictive Analytics**: Forecast credit score improvements and business revenue.
-- **Automation**: Workflow builder for email sequences and task management.
-- **Secure**: Role-based access control and encrypted document storage.
+## What’s in the app
 
-## Tech Stack
+- **Overview (`/dashboard`)** — Score snapshot, quick actions, optional repair tasks/deadlines when advanced DIY features are enabled.
+- **Credit Audit (`/analysis`)** — Upload and analyze credit report content (HTML, images, PDF) via Gemini-backed server actions.
+- **Dispute Center (`/disputes`)** — Guided dispute letter generation, evidence attachment, and (when enabled) closed-loop / template experiment flows.
+- **Progress Tracker (`/analytics`)** — Charts and an AI “coach” summary; template variant analytics when `VITE_ENABLE_TEMPLATE_EXPERIMENTS` is on.
+- **Education Hub (`/learning`)** — Learning content and tutor-style interactions powered by Gemini.
+- **Marketplace (`/marketplace`)** — Credit-product style listings and AI-assisted recommendations (see `services/marketplaceService.ts`).
+- **Business Funding (`/funding`)** — Funding-plan style flows (Gemini `generateFundingPlan`).
+- **Rewards (`/rewards`)** — Gamification center.
+- **Settings (`/settings`)** — Profile, subscription, documents, and tabs for **Integrations**, **Automation**, and **Security** (embedded pages).
+- **Communication (`/communication`)**, **Support (`/support`)** — In-app hubs for messaging/help workflows.
+- **Clients (`/clients`)** — List view wired to Firestore; some actions are still placeholder UI (e.g. “add client” alerts).
+- **Admin (`/admin`)** — Platform admins only (`AdminRoute` + `isPlatformAdmin`); user provisioning uses `/api/admin` with Firebase Admin SDK.
 
-- **Frontend**: React 18, Tailwind CSS, Lucide Icons, Recharts
-- **Backend**: Firebase (Auth, Firestore, Storage, Functions)
-- **AI**: Google Gemini API (`@google/genai`)
-- **Build Tool**: Vite
+**Public:** landing (`/`), login, onboarding. **Authenticated:** everything under `Layout` except `/admin`, which adds an extra admin gate.
 
-## API key setup (Gemini)
+## AI and server API
 
-The app calls **`/api/gemini`** on the server so your Gemini key is **never** embedded in the Vite client bundle.
+Browser code calls **`POST /api/gemini`** with `{ action, payload }` and a Firebase ID token. The handler (`api/gemini.ts`) validates actions, applies rate limits, and dispatches to Gemini. Examples of actions include dispute letters, credit report analysis (HTML/image/PDF), executive summaries, education/quiz generation, support ticket analysis, dispute outcome prediction, and closed-loop repair orchestration helpers.
 
-1. Get a key from [Google AI Studio](https://aistudio.google.com/).
-2. **Local:** add to `.env` or `.env.local` (loaded by Vite for Firebase vars; Vercel CLI also reads `.env` for serverless):
-   ```env
-   API_KEY=your_api_key_here
-   ```
-   You can use `GEMINI_API_KEY` instead of `API_KEY` if you prefer.
-3. **Vercel:** set `API_KEY` or `GEMINI_API_KEY` in the project **Environment Variables** (Production / Preview).
-4. **Local AI routes:** plain `npm run dev` does not run Vercel functions. Use **`npm run dev:vercel`** (requires [Vercel CLI](https://vercel.com/docs/cli)) so `/api/gemini` is available, or test AI after deploy.
+Additional routes:
 
-## Setup
+- **`/api/dispute-orchestrator`** — Authenticated dispute round orchestration (state transitions + Gemini).
+- **`/api/admin`** — Authenticated admin operations (e.g. creating users); requires `FIREBASE_SERVICE_ACCOUNT_KEY` (or equivalent Admin setup) in the server environment.
 
-1. **Clone the repository**
-2. **Install dependencies**: `npm install`
-3. **Environment**
-   - Add Firebase client keys: `VITE_FIREBASE_*` (see below).
-   - Add **`API_KEY`** (or `GEMINI_API_KEY`) for Gemini on the **server** (see above).
-   - Optional: `FIREBASE_SERVICE_ACCOUNT_KEY` (JSON string) for `/api/admin` user provisioning.
-4. **Run app**
-   - UI only: `npm run dev`
-   - UI + API routes: `npm run dev:vercel`
+There are **no Firebase Cloud Functions** in `firebase.json`; server logic for this repo is intended to run on **Vercel** alongside the static SPA.
 
-### Feature flags (staged rollout)
+## Feature flags (staged rollout)
 
-Set in `.env.local`:
+Set in `.env.local` (see `.env.example`):
 
 ```env
 VITE_ENABLE_NEXT_LEVEL_DIY=false
 VITE_ENABLE_TEMPLATE_EXPERIMENTS=false
 ```
 
-Set both to `true` when you are ready to enable the full closed-loop DIY workflows.
+- **`VITE_ENABLE_NEXT_LEVEL_DIY`** — Extra dashboard/dispute steps (e.g. task lists, extended dispute wizard sections).
+- **`VITE_ENABLE_TEMPLATE_EXPERIMENTS`** — Template experiment tracking on disputes and extra analytics on Progress Tracker.
 
-## Firebase Setup
+## API key setup (Gemini)
 
-1. Create a project in the Firebase Console.
-2. Enable **Authentication** (Email/Password, Google).
-3. Enable **Firestore Database**.
-4. Enable **Storage**.
-5. Copy the configuration object to `.env.local`.
+The app never embeds the Gemini key in the Vite client bundle.
 
-### Data model (Path A — multi-tenant)
+1. Create a key in [Google AI Studio](https://aistudio.google.com/).
+2. **Local:** add to `.env` or `.env.local`:
+   ```env
+   API_KEY=your_api_key_here
+   ```
+   `GEMINI_API_KEY` is also accepted.
+3. **Vercel:** set `API_KEY` or `GEMINI_API_KEY` for Production / Preview.
+4. **Local API routes:** `npm run dev` only runs Vite; use **`npm run dev:vercel`** so `/api/*` is served (requires [Vercel CLI](https://vercel.com/docs/cli)), or test AI after deploy.
 
-- Root collections: `users`, `companies`, `clients`, `disputes`, `tickets`, `activityLogs`.
-- Every tenant has a **`companyId`**. Solo DIY users use **`companyId === their Firebase uid`** (the app sets this on register and when bootstrapping profiles).
-- Agency staff share the same **`companyId`**; **`role`** distinguishes `USER` / `ADMIN` / `SPECIALIST` / etc.
-- Documents in `clients`, `disputes`, `tickets`, and `activityLogs` must include **`companyId`** matching the signed-in user’s profile (see `firestore.rules`).
+## Setup
 
-### Deploy rules and indexes
+1. Clone the repository.
+2. **Install dependencies:** `npm install`
+3. **Environment**
+   - Firebase web config (used by the client), e.g. in `.env.local`:
+     ```env
+     VITE_FIREBASE_API_KEY=
+     VITE_FIREBASE_AUTH_DOMAIN=
+     VITE_FIREBASE_PROJECT_ID=
+     VITE_FIREBASE_STORAGE_BUCKET=
+     VITE_FIREBASE_MESSAGING_SENDER_ID=
+     VITE_FIREBASE_APP_ID=
+     ```
+   - **`API_KEY`** or **`GEMINI_API_KEY`** for server-side Gemini (see above).
+   - Optional: **`FIREBASE_SERVICE_ACCOUNT_KEY`** (JSON string) for `/api/admin` and Admin SDK usage in API routes.
+   - Feature flags (optional): see previous section.
+4. **Run**
+   - UI only: `npm run dev` (default Vite port **3000** per `vite.config.ts`).
+   - UI + API: `npm run dev:vercel`
 
-From the project root (with Firebase CLI linked to this project):
+## Firebase
+
+1. Create a project in the [Firebase Console](https://console.firebase.google.com/).
+2. Enable **Authentication** (the in-app `Login` page uses **Email/Password**; you can add other providers in Firebase if you extend the UI).
+3. Enable **Firestore** and **Storage**.
+4. Deploy rules and indexes (CLI must target this project):
 
 ```bash
 firebase deploy --only firestore:rules,firestore:indexes,storage
 ```
 
-Pre-flight check before deploy:
+Pre-flight:
 
 ```bash
 npm run check:firebase:ready
 ```
 
-Seed baseline template experiment data (server key required):
+Seed template experiment baseline (server credentials required):
 
 ```bash
 npm run seed:template-experiment -- <companyId>
 ```
 
-Composite indexes for tenant queries are defined in **`firestore.indexes.json`** (`tickets` by `companyId` + `updatedAt`, `disputes` by `companyId` + `clientId`). If the CLI reports missing indexes, you can also create them from the error link in the browser console.
+### Data model (multi-tenant)
 
-## Folder Structure
+- Collections include `users`, `companies`, `clients`, `disputes`, `tickets`, `activityLogs`, and (when experiments are on) `templateExperiments`.
+- Tenant isolation uses **`companyId`**. Solo DIY users typically use **`companyId === their Firebase uid`** (see app bootstrap / `tenantCompanyId` in `firebaseService`).
+- Agency staff share a **`companyId`**; **`role`** distinguishes `USER`, `SPECIALIST`, `ADMIN`, etc.
+- Documents that are tenant-scoped should include **`companyId`** consistent with the signed-in profile (see `firestore.rules`).
 
-- `/pages`: React components for each route.
-- `/components`: Reusable UI components.
-- `/services`: API wrappers (Gemini, Firebase, Integration).
-- `/api`: Vercel serverless handlers (e.g. Gemini proxy, Admin SDK).
-- `/types`: Shared TypeScript types.
+Composite indexes are listed in **`firestore.indexes.json`** (e.g. `tickets` by `companyId` + `updatedAt`, `disputes` by `companyId` + `clientId`). Create missing indexes from CLI output or the console link in the browser if Firestore requests them.
+
+## Security notes
+
+- **Vercel** `vercel.json` sets CSP, HSTS, frame denial, and related headers for production-style deployments.
+- **Firestore** and **Storage** rules in-repo should be deployed with the project.
+- Gemini and admin operations run **only** on the server (`/api/*`), not in the client bundle.
+
+## PWA / offline
+
+- `manifest.json` and install UI (`beforeinstallprompt`) support “add to home screen” behavior.
+- A **service worker** file exists (`service-worker.js`), but registration is **commented out** in `index.tsx` to avoid preview-environment issues; re-enable when you want full offline caching.
+
+## Folder structure (high level)
+
+- **`/pages`** — Route-level screens.
+- **`/components`** — Layout, routes, shared UI.
+- **`/context`** — Theme and user session context.
+- **`/services`** — Firebase, Gemini client wrapper, integrations, mobile helpers, feature flags.
+- **`/api`** — Vercel serverless handlers (`gemini`, `admin`, `dispute-orchestrator`) and shared `lib/`.
+- **`/tests`** — Firestore and Storage rules tests (`npm run test:security`).
 
 ## Testing
 
-- Manual: use `SupportCenter`, `AnalysisEngine`, or sample data in `constants.ts`.
+- **Security rules:** `npm run test:security` (Firestore + Storage rules tests via emulators).
+- **Manual:** exercise flows from Support, Credit Audit, or sample data in `constants.ts` where applicable.
