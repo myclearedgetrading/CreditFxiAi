@@ -1,6 +1,6 @@
-import { dispatchGeminiAction } from './lib/geminiCore';
-import { extractBearerToken, getAdminAuth, getAdminDb } from './lib/firebaseAdmin';
-import { consumeRateLimit } from './lib/rateLimit';
+import { dispatchGeminiAction } from './lib/geminiCore.js';
+import { extractBearerToken, getAdminAuth, getAdminDb } from './lib/firebaseAdmin.js';
+import { consumeRateLimit } from './lib/rateLimit.js';
 
 /**
  * Vercel serverless: POST { action: string, payload: unknown } -> { result: unknown }

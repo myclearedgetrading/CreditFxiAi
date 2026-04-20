@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
-import { extractBearerToken, getAdminAuth, getAdminDb } from './lib/firebaseAdmin';
-import { consumeRateLimit } from './lib/rateLimit';
+import { extractBearerToken, getAdminAuth, getAdminDb } from './lib/firebaseAdmin.js';
+import { consumeRateLimit } from './lib/rateLimit.js';
 
 type ApiRequest = {
   method?: string;

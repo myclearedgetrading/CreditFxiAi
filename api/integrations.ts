@@ -1,6 +1,6 @@
-import { extractBearerToken, getAdminAuth, getAdminDb } from './lib/firebaseAdmin';
-import { consumeRateLimit } from './lib/rateLimit';
-import { encryptString } from './lib/crypto';
+import { extractBearerToken, getAdminAuth, getAdminDb } from './lib/firebaseAdmin.js';
+import { consumeRateLimit } from './lib/rateLimit.js';
+import { encryptString } from './lib/crypto.js';
 
 type ApiRequest = {
   method?: string;

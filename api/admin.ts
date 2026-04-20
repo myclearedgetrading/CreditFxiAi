@@ -1,4 +1,4 @@
-import { extractBearerToken, getAdminAuth, getAdminDb } from './lib/firebaseAdmin';
+import { extractBearerToken, getAdminAuth, getAdminDb } from './lib/firebaseAdmin.js';
 
 type ApiRequest = {
   method?: string;
