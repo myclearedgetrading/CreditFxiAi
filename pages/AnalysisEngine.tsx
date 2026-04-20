@@ -765,14 +765,14 @@ const AnalysisEngine: React.FC = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-sm p-4 animate-fade-in">
             <div className="bg-[#0A0A0A] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-700">
                 <div className="p-4 border-b border-slate-700 flex justify-between items-center">
-                    <h3 className="font-bold text-lg text-white">Connect Report</h3>
+                    <h3 className="font-bold text-lg text-white">Connect Your Credit Report</h3>
                     <button onClick={() => setShowConnectModal(false)} className="text-slate-400 hover:text-white">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
                 <form onSubmit={handleConnectSubmit} className="p-6 space-y-4">
                     <div>
-                        <label className="block text-sm font-bold text-slate-300 mb-1">Provider</label>
+                        <label className="block text-sm font-bold text-slate-300 mb-1">Credit report provider</label>
                         <select
                             value={connectForm.provider}
                             onChange={(e) => setConnectForm({ ...connectForm, provider: e.target.value as CreditProviderId })}
@@ -784,78 +784,103 @@ const AnalysisEngine: React.FC = () => {
                     </div>
                     {connectForm.provider === 'MyFreeScoreNow' && (
                       <>
+                        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100">
+                          <p className="font-semibold text-amber-200">Best for advanced connections</p>
+                          <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
+                            First-time clients usually find report upload easier. Direct MyFreeScoreNow sync needs both your normal login and special API access from MyFreeScoreNow or your support team.
+                          </p>
+                        </div>
                         <div>
-                          <label className="block text-sm font-bold text-slate-300 mb-1">Member username</label>
+                          <label className="block text-sm font-bold text-slate-300 mb-1">Login email or username</label>
                           <input
                             type="text"
-                            placeholder="Member portal username"
+                            placeholder="The login you use on MyFreeScoreNow"
                             value={connectForm.memberUsername}
                             onChange={(e) => setConnectForm({ ...connectForm, memberUsername: e.target.value })}
                             className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-bold text-slate-300 mb-1">Member password</label>
+                          <label className="block text-sm font-bold text-slate-300 mb-1">Login password</label>
                           <input
                             type="password"
-                            placeholder="Member portal password"
+                            placeholder="Your MyFreeScoreNow password"
                             value={connectForm.memberPassword}
                             onChange={(e) => setConnectForm({ ...connectForm, memberPassword: e.target.value })}
                             className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-bold text-slate-300 mb-1">Report type</label>
+                          <label className="block text-sm font-bold text-slate-300 mb-1">Import format</label>
                           <select
                             value={connectForm.reportVariant}
                             onChange={(e) => setConnectForm({ ...connectForm, reportVariant: e.target.value as MyFreeScoreNowReportVariant })}
                             className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                           >
-                            <option value="standard">3 Bureau JSON</option>
-                            <option value="epic">Epic 3 Bureau JSON</option>
+                            <option value="standard">Standard 3-bureau import</option>
+                            <option value="epic">Epic 3-bureau import</option>
                           </select>
                         </div>
                       </>
                     )}
-                    <div>
-                        <label className="block text-sm font-bold text-slate-300 mb-1">
-                          {connectForm.provider === 'MyFreeScoreNow' ? 'API access token' : 'Access token'}
-                        </label>
-                        <input 
-                            type="password"
-                            placeholder={connectForm.provider === 'MyFreeScoreNow' ? 'Bearer token from MyFreeScoreNow API Access' : 'Paste token from your provider portal'}
-                            value={connectForm.accessToken}
-                            onChange={(e) => setConnectForm({...connectForm, accessToken: e.target.value})}
-                            className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        />
-                    </div>
-                    {connectForm.provider === 'MyFreeScoreNow' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-sm font-bold text-slate-300 mb-1">API access email</label>
-                          <input
-                            type="email"
-                            placeholder="Optional if token is blank"
-                            value={connectForm.apiAccessEmail}
-                            onChange={(e) => setConnectForm({ ...connectForm, apiAccessEmail: e.target.value })}
-                            className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                          />
+                    {connectForm.provider === 'MyFreeScoreNow' ? (
+                      <details className="rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3">
+                        <summary className="cursor-pointer list-none text-sm font-semibold text-slate-200">
+                          Advanced setup: API access details
+                        </summary>
+                        <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                          Only use this section if MyFreeScoreNow or your support team gave you API access details.
+                        </p>
+                        <div className="mt-3 space-y-3">
+                          <div>
+                              <label className="block text-sm font-bold text-slate-300 mb-1">API token</label>
+                              <input 
+                                  type="password"
+                                  placeholder="Paste your API bearer token"
+                                  value={connectForm.accessToken}
+                                  onChange={(e) => setConnectForm({...connectForm, accessToken: e.target.value})}
+                                  className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                              />
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-bold text-slate-300 mb-1">API email</label>
+                              <input
+                                type="email"
+                                placeholder="Optional if you use a token"
+                                value={connectForm.apiAccessEmail}
+                                onChange={(e) => setConnectForm({ ...connectForm, apiAccessEmail: e.target.value })}
+                                className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-bold text-slate-300 mb-1">API password</label>
+                              <input
+                                type="password"
+                                placeholder="Optional if you use a token"
+                                value={connectForm.apiAccessPassword}
+                                onChange={(e) => setConnectForm({ ...connectForm, apiAccessPassword: e.target.value })}
+                                className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-300 mb-1">API access password</label>
-                          <input
-                            type="password"
-                            placeholder="Used only if token is blank"
-                            value={connectForm.apiAccessPassword}
-                            onChange={(e) => setConnectForm({ ...connectForm, apiAccessPassword: e.target.value })}
-                            className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      </details>
+                    ) : (
+                      <div>
+                          <label className="block text-sm font-bold text-slate-300 mb-1">Access token</label>
+                          <input 
+                              type="password"
+                              placeholder="Paste token from your provider portal"
+                              value={connectForm.accessToken}
+                              onChange={(e) => setConnectForm({...connectForm, accessToken: e.target.value})}
+                              className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                           />
-                        </div>
                       </div>
                     )}
                     <p className="text-xs text-slate-500 leading-relaxed">
                       {connectForm.provider === 'MyFreeScoreNow'
-                        ? 'MyFreeScoreNow imports need member credentials plus either a direct API token or API access email/password. Everything is stored encrypted server-side.'
+                        ? 'Need help? If you do not have API access details yet, use report upload instead. Everything entered here is stored encrypted server-side.'
                         : 'SmartCredit still uses the simpler token connection path.'}
                     </p>
                     

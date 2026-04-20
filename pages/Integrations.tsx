@@ -411,10 +411,10 @@ const Integrations: React.FC = () => {
                 <div className="text-center py-6">
                   <div className="space-y-4 text-left">
                     <p className="text-sm text-slate-600 dark:text-slate-300">
-                      Connect a live credit-monitoring provider using the credential flow that provider actually supports.
+                      Connect a live credit-monitoring provider using a guided setup.
                     </p>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Provider</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Credit report provider</label>
                       <select
                         value={creditProviderForm.provider}
                         onChange={(e) => setCreditProviderForm({ ...creditProviderForm, provider: e.target.value as CreditProviderId })}
@@ -426,80 +426,105 @@ const Integrations: React.FC = () => {
                     </div>
                     {creditProviderForm.provider === 'MyFreeScoreNow' && (
                       <>
+                        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+                          <p className="font-semibold">Best for advanced connections</p>
+                          <p className="mt-1 text-xs leading-relaxed text-amber-800 dark:text-amber-100/80">
+                            First-time clients usually find report upload easier. Direct MyFreeScoreNow sync needs your normal login plus special API access from MyFreeScoreNow or your support team.
+                          </p>
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Member username</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Login email or username</label>
                             <input
                               type="text"
                               className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
-                              placeholder="Member portal username"
+                              placeholder="The login used on MyFreeScoreNow"
                               value={creditProviderForm.memberUsername}
                               onChange={(e) => setCreditProviderForm({ ...creditProviderForm, memberUsername: e.target.value })}
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Member password</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Login password</label>
                             <input
                               type="password"
                               className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
-                              placeholder="Member portal password"
+                              placeholder="Your MyFreeScoreNow password"
                               value={creditProviderForm.memberPassword}
                               onChange={(e) => setCreditProviderForm({ ...creditProviderForm, memberPassword: e.target.value })}
                             />
                           </div>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Report type</label>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Import format</label>
                           <select
                             value={creditProviderForm.reportVariant}
                             onChange={(e) => setCreditProviderForm({ ...creditProviderForm, reportVariant: e.target.value as MyFreeScoreNowReportVariant })}
                             className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
                           >
-                            <option value="standard">3 Bureau JSON</option>
-                            <option value="epic">Epic 3 Bureau JSON</option>
+                            <option value="standard">Standard 3-bureau import</option>
+                            <option value="epic">Epic 3-bureau import</option>
                           </select>
                         </div>
                       </>
                     )}
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                        {creditProviderForm.provider === 'MyFreeScoreNow' ? 'API access token' : 'Access token'}
-                      </label>
-                      <input
-                        type="password"
-                        className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm bg-white dark:bg-[#111] dark:text-white"
-                        placeholder={creditProviderForm.provider === 'MyFreeScoreNow' ? 'Bearer token from MyFreeScoreNow API Access' : 'token_...'}
-                        value={creditProviderForm.accessToken}
-                        onChange={(e) => setCreditProviderForm({ ...creditProviderForm, accessToken: e.target.value })}
-                      />
-                    </div>
-                    {creditProviderForm.provider === 'MyFreeScoreNow' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API access email</label>
-                          <input
-                            type="email"
-                            className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
-                            placeholder="Optional if token is blank"
-                            value={creditProviderForm.apiAccessEmail}
-                            onChange={(e) => setCreditProviderForm({ ...creditProviderForm, apiAccessEmail: e.target.value })}
-                          />
+                    {creditProviderForm.provider === 'MyFreeScoreNow' ? (
+                      <details className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/60">
+                        <summary className="cursor-pointer list-none text-sm font-semibold text-slate-700 dark:text-slate-200">
+                          Advanced setup: API access details
+                        </summary>
+                        <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                          Only use this section if MyFreeScoreNow or your support team gave you API access details.
+                        </p>
+                        <div className="mt-3 space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API token</label>
+                            <input
+                              type="password"
+                              className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm bg-white dark:bg-[#111] dark:text-white"
+                              placeholder="Paste your API bearer token"
+                              value={creditProviderForm.accessToken}
+                              onChange={(e) => setCreditProviderForm({ ...creditProviderForm, accessToken: e.target.value })}
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API email</label>
+                              <input
+                                type="email"
+                                className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
+                                placeholder="Optional if you use a token"
+                                value={creditProviderForm.apiAccessEmail}
+                                onChange={(e) => setCreditProviderForm({ ...creditProviderForm, apiAccessEmail: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API password</label>
+                              <input
+                                type="password"
+                                className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
+                                placeholder="Optional if you use a token"
+                                value={creditProviderForm.apiAccessPassword}
+                                onChange={(e) => setCreditProviderForm({ ...creditProviderForm, apiAccessPassword: e.target.value })}
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API access password</label>
-                          <input
-                            type="password"
-                            className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
-                            placeholder="Used only if token is blank"
-                            value={creditProviderForm.apiAccessPassword}
-                            onChange={(e) => setCreditProviderForm({ ...creditProviderForm, apiAccessPassword: e.target.value })}
-                          />
-                        </div>
+                      </details>
+                    ) : (
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Access token</label>
+                        <input
+                          type="password"
+                          className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm bg-white dark:bg-[#111] dark:text-white"
+                          placeholder="token_..."
+                          value={creditProviderForm.accessToken}
+                          onChange={(e) => setCreditProviderForm({ ...creditProviderForm, accessToken: e.target.value })}
+                        />
                       </div>
                     )}
                     <p className="text-xs text-slate-400 mt-1">
                       {creditProviderForm.provider === 'MyFreeScoreNow'
-                        ? 'MyFreeScoreNow imports need member credentials plus either a direct API token or API access email/password. We store everything encrypted server-side.'
+                        ? 'Need help? If you do not have API access details yet, use report upload instead. Everything entered here is stored encrypted server-side.'
                         : 'We store this token encrypted server-side.'}
                     </p>
                     <button
