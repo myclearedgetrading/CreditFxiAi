@@ -5,7 +5,16 @@ import {
   Zap, FileSpreadsheet, ShieldCheck, Users, Search, 
   CheckCircle2, XCircle, RefreshCw, AlertTriangle, Blocks, Link as LinkIcon
 } from 'lucide-react';
-import { getIntegrations, connectIntegration, disconnectIntegration, syncIntegration, getWebhookLogs } from '../services/integrationService';
+import {
+  getIntegrations,
+  connectIntegration,
+  disconnectIntegration,
+  syncIntegration,
+  getWebhookLogs,
+  type CreditProviderConnectPayload,
+  type CreditProviderId,
+  type MyFreeScoreNowReportVariant,
+} from '../services/integrationService';
 import { Integration, IntegrationCategory, WebhookEvent } from '../types';
 
 const CATEGORIES: { id: IntegrationCategory | 'ALL', label: string }[] = [
@@ -34,6 +43,45 @@ const IntegrationIcon: React.FC<{ name: string, className?: string }> = ({ name,
   }
 };
 
+type CreditProviderForm = {
+  provider: CreditProviderId;
+  accessToken: string;
+  memberUsername: string;
+  memberPassword: string;
+  apiAccessEmail: string;
+  apiAccessPassword: string;
+  reportVariant: MyFreeScoreNowReportVariant;
+};
+
+const createCreditProviderForm = (): CreditProviderForm => ({
+  provider: 'SmartCredit',
+  accessToken: '',
+  memberUsername: '',
+  memberPassword: '',
+  apiAccessEmail: '',
+  apiAccessPassword: '',
+  reportVariant: 'standard',
+});
+
+const canSubmitCreditProviderForm = (form: CreditProviderForm) => {
+  if (form.provider === 'MyFreeScoreNow') {
+    const hasDirectToken = form.accessToken.trim().length >= 10;
+    const hasApiLogin = form.apiAccessEmail.trim().length >= 3 && form.apiAccessPassword.trim().length >= 3;
+    return Boolean(form.memberUsername.trim() && form.memberPassword && (hasDirectToken || hasApiLogin));
+  }
+  return form.accessToken.trim().length >= 10;
+};
+
+const toCreditProviderPayload = (form: CreditProviderForm): CreditProviderConnectPayload => ({
+  provider: form.provider,
+  accessToken: form.accessToken.trim() || undefined,
+  memberUsername: form.provider === 'MyFreeScoreNow' ? form.memberUsername.trim() || undefined : undefined,
+  memberPassword: form.provider === 'MyFreeScoreNow' ? form.memberPassword || undefined : undefined,
+  apiAccessEmail: form.provider === 'MyFreeScoreNow' ? form.apiAccessEmail.trim() || undefined : undefined,
+  apiAccessPassword: form.provider === 'MyFreeScoreNow' ? form.apiAccessPassword || undefined : undefined,
+  reportVariant: form.provider === 'MyFreeScoreNow' ? form.reportVariant : undefined,
+});
+
 const Integrations: React.FC = () => {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,8 +95,7 @@ const Integrations: React.FC = () => {
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [apiKey, setApiKey] = useState('');
-  const [providerToken, setProviderToken] = useState('');
-  const [creditProvider, setCreditProvider] = useState<'SmartCredit' | 'MyFreeScoreNow'>('SmartCredit');
+  const [creditProviderForm, setCreditProviderForm] = useState<CreditProviderForm>(createCreditProviderForm);
   const [deliveryProvider, setDeliveryProvider] = useState<'MOCK' | 'CLICK2MAIL' | 'LETTERSTREAM'>('MOCK');
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -74,7 +121,7 @@ const Integrations: React.FC = () => {
     setSelectedIntegration(int);
     setShowConnectModal(true);
     setApiKey('');
-    setProviderToken('');
+    setCreditProviderForm(createCreditProviderForm());
     setActionError(null);
   };
 
@@ -86,7 +133,14 @@ const Integrations: React.FC = () => {
 
     try {
       if (selectedIntegration.id === 'credit_provider') {
-        await connectIntegration(selectedIntegration.id, { provider: creditProvider, accessToken: providerToken });
+        if (!canSubmitCreditProviderForm(creditProviderForm)) {
+          throw new Error(
+            creditProviderForm.provider === 'MyFreeScoreNow'
+              ? 'MyFreeScoreNow requires member credentials plus either an API token or API access login.'
+              : 'Enter a valid provider access token to continue.',
+          );
+        }
+        await connectIntegration(selectedIntegration.id, toCreditProviderPayload(creditProviderForm));
         await syncIntegration(selectedIntegration.id);
       } else if (selectedIntegration.id === 'delivery_mailfax') {
         await connectIntegration(selectedIntegration.id, { provider: deliveryProvider, apiKey });
@@ -357,33 +411,100 @@ const Integrations: React.FC = () => {
                 <div className="text-center py-6">
                   <div className="space-y-4 text-left">
                     <p className="text-sm text-slate-600 dark:text-slate-300">
-                      Connect a credit-monitoring provider using a provider-generated token.
+                      Connect a live credit-monitoring provider using the credential flow that provider actually supports.
                     </p>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Provider</label>
                       <select
-                        value={creditProvider}
-                        onChange={(e) => setCreditProvider(e.target.value as any)}
+                        value={creditProviderForm.provider}
+                        onChange={(e) => setCreditProviderForm({ ...creditProviderForm, provider: e.target.value as CreditProviderId })}
                         className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
                       >
                         <option value="SmartCredit">SmartCredit</option>
                         <option value="MyFreeScoreNow">MyFreeScoreNow</option>
                       </select>
                     </div>
+                    {creditProviderForm.provider === 'MyFreeScoreNow' && (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Member username</label>
+                            <input
+                              type="text"
+                              className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
+                              placeholder="Member portal username"
+                              value={creditProviderForm.memberUsername}
+                              onChange={(e) => setCreditProviderForm({ ...creditProviderForm, memberUsername: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Member password</label>
+                            <input
+                              type="password"
+                              className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
+                              placeholder="Member portal password"
+                              value={creditProviderForm.memberPassword}
+                              onChange={(e) => setCreditProviderForm({ ...creditProviderForm, memberPassword: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Report type</label>
+                          <select
+                            value={creditProviderForm.reportVariant}
+                            onChange={(e) => setCreditProviderForm({ ...creditProviderForm, reportVariant: e.target.value as MyFreeScoreNowReportVariant })}
+                            className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
+                          >
+                            <option value="standard">3 Bureau JSON</option>
+                            <option value="epic">Epic 3 Bureau JSON</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Access token</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        {creditProviderForm.provider === 'MyFreeScoreNow' ? 'API access token' : 'Access token'}
+                      </label>
                       <input
                         type="password"
                         className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm bg-white dark:bg-[#111] dark:text-white"
-                        placeholder="token_..."
-                        value={providerToken}
-                        onChange={(e) => setProviderToken(e.target.value)}
+                        placeholder={creditProviderForm.provider === 'MyFreeScoreNow' ? 'Bearer token from MyFreeScoreNow API Access' : 'token_...'}
+                        value={creditProviderForm.accessToken}
+                        onChange={(e) => setCreditProviderForm({ ...creditProviderForm, accessToken: e.target.value })}
                       />
-                      <p className="text-xs text-slate-400 mt-1">We store this encrypted server-side.</p>
                     </div>
+                    {creditProviderForm.provider === 'MyFreeScoreNow' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API access email</label>
+                          <input
+                            type="email"
+                            className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
+                            placeholder="Optional if token is blank"
+                            value={creditProviderForm.apiAccessEmail}
+                            onChange={(e) => setCreditProviderForm({ ...creditProviderForm, apiAccessEmail: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API access password</label>
+                          <input
+                            type="password"
+                            className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
+                            placeholder="Used only if token is blank"
+                            value={creditProviderForm.apiAccessPassword}
+                            onChange={(e) => setCreditProviderForm({ ...creditProviderForm, apiAccessPassword: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <p className="text-xs text-slate-400 mt-1">
+                      {creditProviderForm.provider === 'MyFreeScoreNow'
+                        ? 'MyFreeScoreNow imports need member credentials plus either a direct API token or API access email/password. We store everything encrypted server-side.'
+                        : 'We store this token encrypted server-side.'}
+                    </p>
                     <button
                       onClick={handleConnectSubmit}
-                      disabled={providerToken.trim().length < 10}
+                      disabled={!canSubmitCreditProviderForm(creditProviderForm)}
                       className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Connect provider

@@ -2,6 +2,20 @@
 import { Integration, WebhookEvent } from "../types";
 import { auth } from './firebaseConfig';
 
+export type CreditProviderId = 'SmartCredit' | 'MyFreeScoreNow';
+export type MyFreeScoreNowReportVariant = 'standard' | 'epic';
+
+export type CreditProviderConnectPayload = {
+  provider: CreditProviderId;
+  accessToken?: string;
+  externalUserId?: string;
+  memberUsername?: string;
+  memberPassword?: string;
+  apiAccessEmail?: string;
+  apiAccessPassword?: string;
+  reportVariant?: MyFreeScoreNowReportVariant;
+};
+
 export const getIntegrations = async (): Promise<Integration[]> => {
   const tokenProvider = auth?.currentUser?.getIdToken;
   if (typeof tokenProvider !== 'function') return [];

@@ -25,6 +25,9 @@ type IntegrationRecord = {
   createdAt: string;
 };
 
+type CreditProviderName = 'GENERIC' | 'SmartCredit' | 'MyFreeScoreNow';
+type MyFreeScoreNowReportVariant = 'standard' | 'epic';
+
 const INTEGRATION_CATALOG: Record<IntegrationId, { name: string; category: string; description: string; icon: string; requiresOAuth: boolean }> = {
   credit_provider: {
     name: 'Credit Data Provider',
@@ -55,6 +58,22 @@ function getClientIp(req: ApiRequest): string {
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+function trimString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : String(value || '').trim();
+}
+
+function asString(value: unknown): string {
+  return typeof value === 'string' ? value : String(value || '');
+}
+
+function encryptOptionalString(value: string) {
+  return value ? encryptString(value) : null;
+}
+
+function normalizeMfsnReportVariant(value: unknown): MyFreeScoreNowReportVariant {
+  return trimString(value).toLowerCase() === 'epic' ? 'epic' : 'standard';
 }
 
 async function requireUser(req: ApiRequest) {
@@ -161,9 +180,46 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
     if (action === 'connect') {
       if (integrationId === 'credit_provider') {
-        const provider = String(body.payload?.provider || 'GENERIC');
-        const accessToken = String(body.payload?.accessToken || '');
-        const externalUserId = String(body.payload?.externalUserId || '');
+        const provider = (trimString(body.payload?.provider) || 'GENERIC') as CreditProviderName;
+        const accessToken = trimString(body.payload?.accessToken).replace(/^Bearer\s+/i, '');
+        const externalUserId = trimString(body.payload?.externalUserId);
+
+        if (provider === 'MyFreeScoreNow') {
+          const memberUsername = trimString(body.payload?.memberUsername);
+          const memberPassword = asString(body.payload?.memberPassword);
+          const apiAccessEmail = trimString(body.payload?.apiAccessEmail);
+          const apiAccessPassword = asString(body.payload?.apiAccessPassword);
+          const reportVariant = normalizeMfsnReportVariant(body.payload?.reportVariant);
+          const hasDirectToken = accessToken.length >= 10;
+          const hasApiLogin = apiAccessEmail.length >= 3 && apiAccessPassword.length >= 3;
+
+          if (!memberUsername || !memberPassword) {
+            return res.status(400).json({ error: 'MyFreeScoreNow requires member username and password.' });
+          }
+          if (!hasDirectToken && !hasApiLogin) {
+            return res.status(400).json({ error: 'Provide either a MyFreeScoreNow API access token or API access email/password.' });
+          }
+
+          await getAdminDb().collection('providerConnections').doc(companyId).set({
+            companyId,
+            provider,
+            enabled: true,
+            externalUserId,
+            accessTokenEnc: encryptOptionalString(accessToken),
+            apiAccessEmailEnc: encryptOptionalString(apiAccessEmail),
+            apiAccessPasswordEnc: encryptOptionalString(apiAccessPassword),
+            memberUsernameEnc: encryptOptionalString(memberUsername),
+            memberPasswordEnc: encryptOptionalString(memberPassword),
+            reportVariant,
+            lastError: null,
+            createdAt: nowIso(),
+            updatedAt: nowIso(),
+          }, { merge: true });
+
+          await upsertIntegration(companyId, integrationId, { status: 'CONNECTED', health: 95 });
+          return res.status(200).json({ ok: true });
+        }
+
         if (!accessToken || accessToken.length < 10) {
           return res.status(400).json({ error: 'Missing accessToken' });
         }
@@ -173,6 +229,12 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           enabled: true,
           externalUserId,
           accessTokenEnc: encryptString(accessToken),
+          apiAccessEmailEnc: null,
+          apiAccessPasswordEnc: null,
+          memberUsernameEnc: null,
+          memberPasswordEnc: null,
+          reportVariant: null,
+          lastError: null,
           createdAt: nowIso(),
           updatedAt: nowIso(),
         }, { merge: true });

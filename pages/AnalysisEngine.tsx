@@ -18,7 +18,13 @@ import {
   getCreditMonitoringAffiliateUrl,
   type CreditMonitoringProvider,
 } from '../constants/creditMonitoringProviders';
-import { connectIntegration, fetchCreditReport } from '../services/integrationService';
+import {
+  connectIntegration,
+  fetchCreditReport,
+  type CreditProviderConnectPayload,
+  type CreditProviderId,
+  type MyFreeScoreNowReportVariant,
+} from '../services/integrationService';
 
 const readFileAsDataUrl = (f: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -111,6 +117,45 @@ const providerImportToAnalysisResult = (
 
 const MAX_PDF_SIZE_BYTES = 4.5 * 1024 * 1024;
 
+type ProviderConnectForm = {
+  provider: CreditProviderId;
+  accessToken: string;
+  memberUsername: string;
+  memberPassword: string;
+  apiAccessEmail: string;
+  apiAccessPassword: string;
+  reportVariant: MyFreeScoreNowReportVariant;
+};
+
+const createEmptyProviderConnectForm = (): ProviderConnectForm => ({
+  provider: 'SmartCredit',
+  accessToken: '',
+  memberUsername: '',
+  memberPassword: '',
+  apiAccessEmail: '',
+  apiAccessPassword: '',
+  reportVariant: 'standard',
+});
+
+const canSubmitProviderConnectForm = (form: ProviderConnectForm) => {
+  if (form.provider === 'MyFreeScoreNow') {
+    const hasDirectToken = form.accessToken.trim().length >= 10;
+    const hasApiLogin = form.apiAccessEmail.trim().length >= 3 && form.apiAccessPassword.trim().length >= 3;
+    return Boolean(form.memberUsername.trim() && form.memberPassword && (hasDirectToken || hasApiLogin));
+  }
+  return form.accessToken.trim().length >= 10;
+};
+
+const toCreditProviderPayload = (form: ProviderConnectForm): CreditProviderConnectPayload => ({
+  provider: form.provider,
+  accessToken: form.accessToken.trim() || undefined,
+  memberUsername: form.provider === 'MyFreeScoreNow' ? form.memberUsername.trim() || undefined : undefined,
+  memberPassword: form.provider === 'MyFreeScoreNow' ? form.memberPassword || undefined : undefined,
+  apiAccessEmail: form.provider === 'MyFreeScoreNow' ? form.apiAccessEmail.trim() || undefined : undefined,
+  apiAccessPassword: form.provider === 'MyFreeScoreNow' ? form.apiAccessPassword || undefined : undefined,
+  reportVariant: form.provider === 'MyFreeScoreNow' ? form.reportVariant : undefined,
+});
+
 const AnalysisEngine: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -126,10 +171,7 @@ const AnalysisEngine: React.FC = () => {
   // Connect Modal State
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [connectLoading, setConnectLoading] = useState(false);
-  const [connectForm, setConnectForm] = useState({
-    provider: 'SmartCredit' as CreditMonitoringProvider,
-    accessToken: ''
-  });
+  const [connectForm, setConnectForm] = useState<ProviderConnectForm>(createEmptyProviderConnectForm);
   const canOpenDisputes = Boolean(user?.id);
   const aiAnalysisAllowed = canUseAiCreditAnalysis(user);
 
@@ -219,16 +261,20 @@ const AnalysisEngine: React.FC = () => {
       setError('Sign in to connect a provider.');
       return;
     }
-    if (!connectForm.accessToken || connectForm.accessToken.trim().length < 10) return;
+    if (!canSubmitProviderConnectForm(connectForm)) {
+      setError(
+        connectForm.provider === 'MyFreeScoreNow'
+          ? 'MyFreeScoreNow requires member credentials plus either an API token or API access login.'
+          : 'Enter a valid provider access token to continue.',
+      );
+      return;
+    }
 
     setConnectLoading(true);
     vibrate(HAPTIC.MEDIUM);
 
     try {
-      await connectIntegration('credit_provider', {
-        provider: connectForm.provider,
-        accessToken: connectForm.accessToken.trim(),
-      });
+      await connectIntegration('credit_provider', toCreditProviderPayload(connectForm));
       const syncResult = await fetchCreditReport(connectForm.provider, {});
       const refreshedUser = await getUserFromFirestore(user.id);
       if (refreshedUser) {
@@ -246,9 +292,9 @@ const AnalysisEngine: React.FC = () => {
             [],
             connectForm.provider,
             {
-              equifax: Math.max(0, Number(syncResult.imported.score || 0) - 8),
-              experian: Number(syncResult.imported.score || 0),
-              transunion: Math.max(0, Number(syncResult.imported.score || 0) - 4),
+              equifax: Number(syncResult.imported.scores?.equifax || 0),
+              experian: Number(syncResult.imported.scores?.experian || syncResult.imported.score || 0),
+              transunion: Number(syncResult.imported.scores?.transunion || 0),
             }
           )
         );
@@ -727,32 +773,95 @@ const AnalysisEngine: React.FC = () => {
                 <form onSubmit={handleConnectSubmit} className="p-6 space-y-4">
                     <div>
                         <label className="block text-sm font-bold text-slate-300 mb-1">Provider</label>
-                        <select 
+                        <select
                             value={connectForm.provider}
-                            onChange={(e) => setConnectForm({ ...connectForm, provider: e.target.value as CreditMonitoringProvider })}
+                            onChange={(e) => setConnectForm({ ...connectForm, provider: e.target.value as CreditProviderId })}
                             className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                         >
                             <option value="SmartCredit">SmartCredit</option>
                             <option value="MyFreeScoreNow">MyFreeScoreNow</option>
                         </select>
                     </div>
+                    {connectForm.provider === 'MyFreeScoreNow' && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-bold text-slate-300 mb-1">Member username</label>
+                          <input
+                            type="text"
+                            placeholder="Member portal username"
+                            value={connectForm.memberUsername}
+                            onChange={(e) => setConnectForm({ ...connectForm, memberUsername: e.target.value })}
+                            className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-slate-300 mb-1">Member password</label>
+                          <input
+                            type="password"
+                            placeholder="Member portal password"
+                            value={connectForm.memberPassword}
+                            onChange={(e) => setConnectForm({ ...connectForm, memberPassword: e.target.value })}
+                            className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-slate-300 mb-1">Report type</label>
+                          <select
+                            value={connectForm.reportVariant}
+                            onChange={(e) => setConnectForm({ ...connectForm, reportVariant: e.target.value as MyFreeScoreNowReportVariant })}
+                            className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          >
+                            <option value="standard">3 Bureau JSON</option>
+                            <option value="epic">Epic 3 Bureau JSON</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
                     <div>
-                        <label className="block text-sm font-bold text-slate-300 mb-1">Access token</label>
+                        <label className="block text-sm font-bold text-slate-300 mb-1">
+                          {connectForm.provider === 'MyFreeScoreNow' ? 'API access token' : 'Access token'}
+                        </label>
                         <input 
                             type="password"
-                            placeholder="Paste token from your provider portal"
+                            placeholder={connectForm.provider === 'MyFreeScoreNow' ? 'Bearer token from MyFreeScoreNow API Access' : 'Paste token from your provider portal'}
                             value={connectForm.accessToken}
                             onChange={(e) => setConnectForm({...connectForm, accessToken: e.target.value})}
                             className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                         />
                     </div>
+                    {connectForm.provider === 'MyFreeScoreNow' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-bold text-slate-300 mb-1">API access email</label>
+                          <input
+                            type="email"
+                            placeholder="Optional if token is blank"
+                            value={connectForm.apiAccessEmail}
+                            onChange={(e) => setConnectForm({ ...connectForm, apiAccessEmail: e.target.value })}
+                            className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-slate-300 mb-1">API access password</label>
+                          <input
+                            type="password"
+                            placeholder="Used only if token is blank"
+                            value={connectForm.apiAccessPassword}
+                            onChange={(e) => setConnectForm({ ...connectForm, apiAccessPassword: e.target.value })}
+                            className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          />
+                        </div>
+                      </div>
+                    )}
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      For security, don’t paste your account password here. Use a provider-generated token when available.
+                      {connectForm.provider === 'MyFreeScoreNow'
+                        ? 'MyFreeScoreNow imports need member credentials plus either a direct API token or API access email/password. Everything is stored encrypted server-side.'
+                        : 'SmartCredit still uses the simpler token connection path.'}
                     </p>
                     
                     <button 
                         type="submit"
-                        disabled={connectLoading || !connectForm.accessToken || connectForm.accessToken.trim().length < 10}
+                        disabled={connectLoading || !canSubmitProviderConnectForm(connectForm)}
                         className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {connectLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Zap className="w-5 h-5" />}
