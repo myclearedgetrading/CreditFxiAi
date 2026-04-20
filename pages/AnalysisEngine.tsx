@@ -118,6 +118,9 @@ const providerImportToAnalysisResult = (
 const isParseLimitationResult = (analysis: CreditAnalysisResult | null) =>
   Boolean(analysis?.discrepancies?.some((disc) => disc.type === 'PARSE_LIMITATION'));
 
+const MFSN_COMING_SOON_MESSAGE =
+  'MyFreeScoreNow direct login is coming soon. For now, upload a PDF or screenshots for the easiest setup.';
+
 const MAX_PDF_SIZE_BYTES = 4.5 * 1024 * 1024;
 
 type ProviderConnectForm = {
@@ -141,11 +144,7 @@ const createEmptyProviderConnectForm = (): ProviderConnectForm => ({
 });
 
 const canSubmitProviderConnectForm = (form: ProviderConnectForm) => {
-  if (form.provider === 'MyFreeScoreNow') {
-    const hasDirectToken = form.accessToken.trim().length >= 10;
-    const hasApiLogin = form.apiAccessEmail.trim().length >= 3 && form.apiAccessPassword.trim().length >= 3;
-    return Boolean(form.memberUsername.trim() && form.memberPassword && (hasDirectToken || hasApiLogin));
-  }
+  if (form.provider === 'MyFreeScoreNow') return false;
   return form.accessToken.trim().length >= 10;
 };
 
@@ -268,7 +267,7 @@ const AnalysisEngine: React.FC = () => {
     if (!canSubmitProviderConnectForm(connectForm)) {
       setError(
         connectForm.provider === 'MyFreeScoreNow'
-          ? 'MyFreeScoreNow requires member credentials plus either an API token or API access login.'
+          ? MFSN_COMING_SOON_MESSAGE
           : 'Enter a valid provider access token to continue.',
       );
       return;
@@ -849,90 +848,26 @@ const AnalysisEngine: React.FC = () => {
                         </select>
                     </div>
                     {connectForm.provider === 'MyFreeScoreNow' && (
-                      <>
-                        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100">
-                          <p className="font-semibold text-amber-200">Best for advanced connections</p>
-                          <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
-                            First-time clients usually find report upload easier. Direct MyFreeScoreNow sync needs both your normal login and special API access from MyFreeScoreNow or your support team.
-                          </p>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-300 mb-1">Login email or username</label>
-                          <input
-                            type="text"
-                            placeholder="The login you use on MyFreeScoreNow"
-                            value={connectForm.memberUsername}
-                            onChange={(e) => setConnectForm({ ...connectForm, memberUsername: e.target.value })}
-                            className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-300 mb-1">Login password</label>
-                          <input
-                            type="password"
-                            placeholder="Your MyFreeScoreNow password"
-                            value={connectForm.memberPassword}
-                            onChange={(e) => setConnectForm({ ...connectForm, memberPassword: e.target.value })}
-                            className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-300 mb-1">Import format</label>
-                          <select
-                            value={connectForm.reportVariant}
-                            onChange={(e) => setConnectForm({ ...connectForm, reportVariant: e.target.value as MyFreeScoreNowReportVariant })}
-                            className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                          >
-                            <option value="standard">Standard 3-bureau import</option>
-                            <option value="epic">Epic 3-bureau import</option>
-                          </select>
-                        </div>
-                      </>
-                    )}
-                    {connectForm.provider === 'MyFreeScoreNow' ? (
-                      <details className="rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3">
-                        <summary className="cursor-pointer list-none text-sm font-semibold text-slate-200">
-                          Advanced setup: API access details
-                        </summary>
-                        <p className="mt-2 text-xs leading-relaxed text-slate-400">
-                          Only use this section if MyFreeScoreNow or your support team gave you API access details.
+                      <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+                        <p className="font-semibold text-amber-200">MyFreeScoreNow direct login is coming soon</p>
+                        <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
+                          {MFSN_COMING_SOON_MESSAGE}
                         </p>
-                        <div className="mt-3 space-y-3">
-                          <div>
-                              <label className="block text-sm font-bold text-slate-300 mb-1">API token</label>
-                              <input 
-                                  type="password"
-                                  placeholder="Paste your API bearer token"
-                                  value={connectForm.accessToken}
-                                  onChange={(e) => setConnectForm({...connectForm, accessToken: e.target.value})}
-                                  className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                              />
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-sm font-bold text-slate-300 mb-1">API email</label>
-                              <input
-                                type="email"
-                                placeholder="Optional if you use a token"
-                                value={connectForm.apiAccessEmail}
-                                onChange={(e) => setConnectForm({ ...connectForm, apiAccessEmail: e.target.value })}
-                                className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-bold text-slate-300 mb-1">API password</label>
-                              <input
-                                type="password"
-                                placeholder="Optional if you use a token"
-                                value={connectForm.apiAccessPassword}
-                                onChange={(e) => setConnectForm({ ...connectForm, apiAccessPassword: e.target.value })}
-                                className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                              />
-                            </div>
-                          </div>
+                        <div className="mt-3 flex flex-wrap gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowConnectModal(false);
+                              navigate('/analysis');
+                            }}
+                            className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-semibold"
+                          >
+                            Upload Report Instead
+                          </button>
                         </div>
-                      </details>
-                    ) : (
+                      </div>
+                    )}
+                    {connectForm.provider !== 'MyFreeScoreNow' && (
                       <div>
                           <label className="block text-sm font-bold text-slate-300 mb-1">Access token</label>
                           <input 
@@ -946,7 +881,7 @@ const AnalysisEngine: React.FC = () => {
                     )}
                     <p className="text-xs text-slate-500 leading-relaxed">
                       {connectForm.provider === 'MyFreeScoreNow'
-                        ? 'Need help? If you do not have API access details yet, use report upload instead. Everything entered here is stored encrypted server-side.'
+                        ? 'We’ll simplify this to a normal username and password login as soon as MyFreeScoreNow releases the new API.'
                         : 'SmartCredit still uses the simpler token connection path.'}
                     </p>
                     
@@ -956,7 +891,9 @@ const AnalysisEngine: React.FC = () => {
                         className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {connectLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Zap className="w-5 h-5" />}
-                        {connectLoading ? 'Verifying...' : 'Secure Connect'}
+                        {connectForm.provider === 'MyFreeScoreNow'
+                          ? 'Coming Soon'
+                          : connectLoading ? 'Verifying...' : 'Secure Connect'}
                     </button>
                 </form>
             </div>
