@@ -115,6 +115,9 @@ const providerImportToAnalysisResult = (
   };
 };
 
+const isParseLimitationResult = (analysis: CreditAnalysisResult | null) =>
+  Boolean(analysis?.discrepancies?.some((disc) => disc.type === 'PARSE_LIMITATION'));
+
 const MAX_PDF_SIZE_BYTES = 4.5 * 1024 * 1024;
 
 type ProviderConnectForm = {
@@ -174,6 +177,7 @@ const AnalysisEngine: React.FC = () => {
   const [connectForm, setConnectForm] = useState<ProviderConnectForm>(createEmptyProviderConnectForm);
   const canOpenDisputes = Boolean(user?.id);
   const aiAnalysisAllowed = canUseAiCreditAnalysis(user);
+  const hasParseLimitation = isParseLimitationResult(result);
 
   const persistAnalysisToProfile = async (
     analysisResult: CreditAnalysisResult,
@@ -558,6 +562,55 @@ const AnalysisEngine: React.FC = () => {
 
       {result && (
         <div className="space-y-8 animate-fade-in pb-20">
+          {hasParseLimitation && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-5">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-amber-500/15 rounded-lg">
+                  <AlertTriangle className="w-5 h-5 text-amber-300" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-white">We couldn&apos;t read this PDF clearly</h3>
+                  <p className="text-sm text-slate-300 mt-1">
+                    That usually means the PDF is image-based, scanned, or exported in a format that does not include readable account text.
+                  </p>
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                    <div className="rounded-xl border border-slate-700 bg-[#0A0A0A] p-4">
+                      <p className="font-semibold text-white">Best option</p>
+                      <p className="text-slate-400 mt-1">Upload clear screenshots of the negative accounts, account details, and bureau summary pages.</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-700 bg-[#0A0A0A] p-4">
+                      <p className="font-semibold text-white">Also works</p>
+                      <p className="text-slate-400 mt-1">Use a text-based PDF export from your provider if they offer one.</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-700 bg-[#0A0A0A] p-4">
+                      <p className="font-semibold text-white">Advanced option</p>
+                      <p className="text-slate-400 mt-1">Connect your provider directly if you already have the required access details.</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      onClick={() => {
+                        setResult(null);
+                        setFile(null);
+                        setPreview(null);
+                        setError(null);
+                      }}
+                      className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-semibold"
+                    >
+                      Try Another Upload
+                    </button>
+                    <button
+                      onClick={() => setShowConnectModal(true)}
+                      className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-slate-200 rounded-lg font-semibold"
+                    >
+                      Connect Provider Instead
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-[#0A0A0A] p-6 rounded-xl shadow-sm border border-slate-800">
@@ -627,50 +680,51 @@ const AnalysisEngine: React.FC = () => {
             {/* Left Column: Analysis & Strategies */}
             <div className="lg:col-span-2 space-y-6">
               
-              {/* Recommendations Section */}
-              <div className="bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-800 overflow-hidden">
-                <div className="p-6 border-b border-slate-800 bg-slate-900/50">
-                  <h3 className="text-lg font-bold text-white">AI Strategy Recommendations</h3>
-                </div>
-                <div className="p-6 space-y-6">
-                  {result.recommendations.map((rec, idx) => (
-                    <div key={idx} className="border border-slate-700 rounded-lg p-5 hover:border-orange-500 transition-colors">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="font-bold text-white text-lg">{rec.creditorName}</h4>
-                          <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Target: {rec.bureauToTarget}</span>
+              {!hasParseLimitation && (
+                <div className="bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+                  <div className="p-6 border-b border-slate-800 bg-slate-900/50">
+                    <h3 className="text-lg font-bold text-white">AI Strategy Recommendations</h3>
+                  </div>
+                  <div className="p-6 space-y-6">
+                    {result.recommendations.map((rec, idx) => (
+                      <div key={idx} className="border border-slate-700 rounded-lg p-5 hover:border-orange-500 transition-colors">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h4 className="font-bold text-white text-lg">{rec.creditorName}</h4>
+                            <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Target: {rec.bureauToTarget}</span>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${getConfidenceColor(rec.confidenceScore)}`}>
+                            {rec.confidenceScore}% Match
+                          </span>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${getConfidenceColor(rec.confidenceScore)}`}>
-                          {rec.confidenceScore}% Match
-                        </span>
-                      </div>
-                      
-                      <div className="bg-slate-800 p-4 rounded-lg mb-3">
-                        <div className="flex items-center gap-2 mb-1">
-                          <CheckCircle2 className="w-4 h-4 text-orange-500" />
-                          <span className="text-sm font-semibold text-orange-200">Recommended Strategy: {rec.recommendedStrategy}</span>
+                        
+                        <div className="bg-slate-800 p-4 rounded-lg mb-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <CheckCircle2 className="w-4 h-4 text-orange-500" />
+                            <span className="text-sm font-semibold text-orange-200">Recommended Strategy: {rec.recommendedStrategy}</span>
+                          </div>
+                          <p className="text-sm text-slate-300 leading-relaxed pl-6">{rec.reasoning}</p>
                         </div>
-                        <p className="text-sm text-slate-300 leading-relaxed pl-6">{rec.reasoning}</p>
-                      </div>
 
-                      <div className="flex gap-2 mt-4">
-                        <button
-                          onClick={() => navigate('/disputes', {
-                            state: {
-                              prefillStrategy: rec.recommendedStrategy,
-                              prefillBureau: rec.bureauToTarget,
-                              prefillCreditor: rec.creditorName,
-                            },
-                          })}
-                          className="flex-1 py-3 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition-colors active:bg-orange-800"
-                        >
-                          Generate {rec.recommendedStrategy} Letter
-                        </button>
+                        <div className="flex gap-2 mt-4">
+                          <button
+                            onClick={() => navigate('/disputes', {
+                              state: {
+                                prefillStrategy: rec.recommendedStrategy,
+                                prefillBureau: rec.bureauToTarget,
+                                prefillCreditor: rec.creditorName,
+                              },
+                            })}
+                            className="flex-1 py-3 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition-colors active:bg-orange-800"
+                          >
+                            Generate {rec.recommendedStrategy} Letter
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Action Plan */}
               <div className="bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-800 overflow-hidden">
@@ -703,56 +757,68 @@ const AnalysisEngine: React.FC = () => {
 
             {/* Right Column: Discrepancies & Stats */}
             <div className="space-y-6">
+              {!hasParseLimitation && (
+                <div className="bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+                  <div className="p-6 border-b border-slate-800 bg-slate-900/50">
+                    <h3 className="text-lg font-bold text-white">Cross-Bureau Inconsistencies</h3>
+                  </div>
+                  <div className="divide-y divide-slate-800">
+                    {result.discrepancies.length === 0 ? (
+                      <div className="p-6 text-center text-slate-500 text-sm">No inconsistencies detected.</div>
+                    ) : (
+                      result.discrepancies.map((disc, idx) => (
+                        <div key={idx} className="p-4">
+                          <div className="flex items-start gap-3">
+                            <AlertTriangle className={`w-5 h-5 flex-shrink-0 ${disc.severity === 'HIGH' ? 'text-red-500' : 'text-orange-500'}`} />
+                            <div>
+                              <h5 className="text-sm font-semibold text-slate-200">{disc.type.replace('_', ' ')}</h5>
+                              <p className="text-xs text-slate-400 mt-1">{disc.description}</p>
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {disc.itemsInvolved.map((item, i) => (
+                                  <span key={i} className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
+                                    {item}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Parsed Items List */}
               <div className="bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-800 overflow-hidden">
                 <div className="p-6 border-b border-slate-800 bg-slate-900/50">
-                  <h3 className="text-lg font-bold text-white">Cross-Bureau Inconsistencies</h3>
+                  <h3 className="text-lg font-bold text-white">
+                    {hasParseLimitation ? 'What We Need Next' : 'Identified Negative Items'}
+                  </h3>
                 </div>
                 <div className="divide-y divide-slate-800">
-                  {result.discrepancies.length === 0 ? (
-                    <div className="p-6 text-center text-slate-500 text-sm">No inconsistencies detected.</div>
+                  {result.negativeItems.length === 0 ? (
+                    <div className="p-6 text-sm text-slate-400">
+                      {hasParseLimitation
+                        ? 'Upload screenshots or a text-based PDF and we’ll list the negative accounts here for you.'
+                        : 'No negative items were extracted from this upload.'}
+                    </div>
                   ) : (
-                    result.discrepancies.map((disc, idx) => (
-                      <div key={idx} className="p-4">
-                        <div className="flex items-start gap-3">
-                          <AlertTriangle className={`w-5 h-5 flex-shrink-0 ${disc.severity === 'HIGH' ? 'text-red-500' : 'text-orange-500'}`} />
-                          <div>
-                            <h5 className="text-sm font-semibold text-slate-200">{disc.type.replace('_', ' ')}</h5>
-                            <p className="text-xs text-slate-400 mt-1">{disc.description}</p>
-                            <div className="mt-2 flex flex-wrap gap-1">
-                              {disc.itemsInvolved.map((item, i) => (
-                                <span key={i} className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
-                                  {item}
-                                </span>
-                              ))}
-                            </div>
+                    result.negativeItems.map((item, idx) => (
+                      <div key={idx} className="p-4 flex justify-between items-center">
+                        <div>
+                          <div className="font-medium text-slate-200">{item.creditor}</div>
+                          <div className="text-xs text-slate-400">{item.accountType} • {item.date}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-slate-300">${item.amount}</div>
+                          <div className="text-[10px] font-bold text-orange-400 bg-orange-900/30 px-2 py-0.5 rounded-full inline-block">
+                            {item.bureau}
                           </div>
                         </div>
                       </div>
                     ))
                   )}
-                </div>
-              </div>
-
-              {/* Parsed Items List */}
-              <div className="bg-[#0A0A0A] rounded-xl shadow-sm border border-slate-800 overflow-hidden">
-                <div className="p-6 border-b border-slate-800 bg-slate-900/50">
-                  <h3 className="text-lg font-bold text-white">Identified Negative Items</h3>
-                </div>
-                <div className="divide-y divide-slate-800">
-                  {result.negativeItems.map((item, idx) => (
-                    <div key={idx} className="p-4 flex justify-between items-center">
-                      <div>
-                        <div className="font-medium text-slate-200">{item.creditor}</div>
-                        <div className="text-xs text-slate-400">{item.accountType} • {item.date}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-slate-300">${item.amount}</div>
-                        <div className="text-[10px] font-bold text-orange-400 bg-orange-900/30 px-2 py-0.5 rounded-full inline-block">
-                          {item.bureau}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>

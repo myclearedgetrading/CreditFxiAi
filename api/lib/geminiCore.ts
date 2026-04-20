@@ -203,7 +203,7 @@ export async function runAnalyzeCreditReportPdf(
           discrepancies: [
             {
               type: 'PARSE_LIMITATION',
-              description: 'This PDF appears image-heavy or non-extractable. We could not reliably parse account-level text from the document.',
+              description: 'We could not read enough text from this PDF to safely pull out account details. This usually happens with scanned or image-based reports.',
               severity: 'LOW',
               itemsInvolved: ['PDF_IMPORT'],
             },
@@ -213,11 +213,11 @@ export async function runAnalyzeCreditReportPdf(
             {
               phase: 'Capture Readable Report Data',
               actions: [
-                'Export a text-based PDF from your provider when possible.',
-                'Upload clear screenshots of key sections (negative accounts, account details, bureau summary).',
-                'Re-run analysis for full item extraction and strategy recommendations.',
+                'Try a text-based PDF export from your credit report provider if you have one.',
+                'Or upload clear screenshots of the key pages, especially negative accounts, account details, and bureau summaries.',
+                'Then run the analysis again so we can extract items and suggest the best dispute strategy.',
               ],
-              expectedOutcome: 'Obtain parseable report data for complete dispute analysis.',
+              expectedOutcome: 'Get a cleaner upload we can read and turn into a full credit repair plan.',
             },
           ],
         };
@@ -254,7 +254,7 @@ export async function runAnalyzeCreditReportPdf(
         discrepancies: [
           {
             type: 'PARSE_LIMITATION',
-            description: 'We could not decode this PDF format reliably. Try a provider-exported text PDF or upload report screenshots for best results.',
+            description: 'We could not read this PDF clearly enough to pull out the report details. A text-based PDF or clear screenshots will usually work better.',
             severity: 'LOW',
             itemsInvolved: ['PDF_IMPORT'],
           },
@@ -264,11 +264,11 @@ export async function runAnalyzeCreditReportPdf(
           {
             phase: 'Retry with Alternative Format',
             actions: [
-              'Use provider auto-import when available.',
-              'Upload screenshots of negative accounts and bureau details.',
-              'Re-run analysis to generate dispute-ready item extraction.',
+              'If your provider offers a downloadable text PDF, try that version first.',
+              'If not, upload clear screenshots of the negative accounts, account details, and bureau summary pages.',
+              'Then re-run the analysis so we can pull out the items and build your next steps.',
             ],
-            expectedOutcome: 'Successful extraction of negative items and strategies.',
+            expectedOutcome: 'A readable report upload that lets us generate a full analysis.',
           },
         ],
       };

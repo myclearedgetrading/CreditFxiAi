@@ -224,7 +224,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     console.error('api/gemini error:', err);
     const message = err instanceof Error ? err.message : '';
     if (message.includes('PDF parsing failed')) {
-      return res.status(422).json({ error: 'PDF parsing failed. Try a text-based PDF or clear report screenshots.' });
+      return res.status(422).json({ error: 'We could not read that PDF clearly. Try a text-based PDF, or upload clear screenshots instead.' });
     }
     return res.status(500).json({ error: 'AI request failed' });
   }
