@@ -236,3 +236,108 @@ describe('firestore rules: dispute workflow collections', () => {
     await assertFails(getDoc(doc(readerDb, 'disputeRounds', 'round-tenant-b')));
   });
 });
+
+describe('firestore rules: integrations and delivery collections', () => {
+  test('tenant member can create and read own delivery', async () => {
+    await seedUserDoc('delUserA', {
+      id: 'delUserA',
+      email: 'delUserA@example.com',
+      role: 'USER',
+      companyId: 'tenantA',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      firstName: 'Del',
+      lastName: 'UserA',
+      creditScore: { equifax: 0, experian: 0, transunion: 0 },
+      negativeItems: [],
+    });
+
+    const db = testEnv.authenticatedContext('delUserA').firestore();
+    await assertSucceeds(setDoc(doc(db, 'deliveries', 'delivery-a1'), {
+      id: 'delivery-a1',
+      companyId: 'tenantA',
+      clientId: 'delUserA',
+      disputeId: 'd1',
+      disputeRoundId: 'r1',
+      channel: 'MAIL',
+      provider: 'MOCK',
+      status: 'SENT',
+      recipients: [{ label: 'Equifax', address: '123 Main St' }],
+      createdAt: '2026-01-02T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    }));
+
+    await assertSucceeds(getDoc(doc(db, 'deliveries', 'delivery-a1')));
+  });
+
+  test('tenant member cannot create delivery in another tenant', async () => {
+    await seedUserDoc('delUserB', {
+      id: 'delUserB',
+      email: 'delUserB@example.com',
+      role: 'USER',
+      companyId: 'tenantB',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      firstName: 'Del',
+      lastName: 'UserB',
+      creditScore: { equifax: 0, experian: 0, transunion: 0 },
+      negativeItems: [],
+    });
+
+    const db = testEnv.authenticatedContext('delUserB').firestore();
+    await assertFails(setDoc(doc(db, 'deliveries', 'delivery-cross'), {
+      id: 'delivery-cross',
+      companyId: 'tenantA',
+      clientId: 'delUserB',
+      disputeId: 'd1',
+      disputeRoundId: 'r1',
+      channel: 'MAIL',
+      provider: 'MOCK',
+      status: 'SENT',
+      recipients: [{ label: 'Equifax', address: '123 Main St' }],
+      createdAt: '2026-01-02T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    }));
+  });
+
+  test('tenant member cannot read other tenant delivery', async () => {
+    await seedUserDoc('delReaderA', {
+      id: 'delReaderA',
+      email: 'delReaderA@example.com',
+      role: 'USER',
+      companyId: 'tenantA',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      firstName: 'Del',
+      lastName: 'ReaderA',
+      creditScore: { equifax: 0, experian: 0, transunion: 0 },
+      negativeItems: [],
+    });
+    await seedUserDoc('delWriterB', {
+      id: 'delWriterB',
+      email: 'delWriterB@example.com',
+      role: 'USER',
+      companyId: 'tenantB',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      firstName: 'Del',
+      lastName: 'WriterB',
+      creditScore: { equifax: 0, experian: 0, transunion: 0 },
+      negativeItems: [],
+    });
+
+    const writerDb = testEnv.authenticatedContext('delWriterB').firestore();
+    await assertSucceeds(setDoc(doc(writerDb, 'deliveries', 'delivery-b1'), {
+      id: 'delivery-b1',
+      companyId: 'tenantB',
+      clientId: 'delWriterB',
+      disputeId: 'd1',
+      disputeRoundId: 'r1',
+      channel: 'MAIL',
+      provider: 'MOCK',
+      status: 'SENT',
+      recipients: [{ label: 'Experian', address: '999 State St' }],
+      createdAt: '2026-01-02T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    }));
+
+    const readerDb = testEnv.authenticatedContext('delReaderA').firestore();
+    await assertFails(getDoc(doc(readerDb, 'deliveries', 'delivery-b1')));
+  });
+});

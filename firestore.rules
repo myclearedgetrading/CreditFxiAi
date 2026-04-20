@@ -220,5 +220,65 @@ service cloud.firestore {
             && (userData().role == 'ADMIN' || userData().role == 'SUPER_ADMIN'));
       allow delete: if isPlatformAdmin();
     }
+
+    // --- Integrations and provider/delivery data (tenant-scoped) ---
+
+    match /integrations/{integrationDocId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create, update: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(
+          request.resource.data.companyId != null ? request.resource.data.companyId : resource.data.companyId
+        )
+        && isTenantStaff();
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /providerConnections/{companyId} {
+      allow read: if isPlatformAdmin() || (isSignedIn() && hasUserProfile() && isCompanyMember(companyId));
+      allow create, update: if isSignedIn() && hasUserProfile() && isCompanyMember(companyId) && isTenantStaff();
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /deliveryProviders/{companyId} {
+      allow read: if isPlatformAdmin() || (isSignedIn() && hasUserProfile() && isCompanyMember(companyId));
+      allow create, update: if isSignedIn() && hasUserProfile() && isCompanyMember(companyId) && isTenantStaff();
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /creditReports/{reportId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
+      allow update, delete: if isPlatformAdmin();
+    }
+
+    match /scores/{scoreId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
+      allow update, delete: if isPlatformAdmin();
+    }
+
+    match /deliveries/{deliveryId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
+      allow update: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(resource.data.companyId) && isTenantStaff()
+        && request.resource.data.companyId == resource.data.companyId;
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /deliveryEvents/{eventId} {
+      allow read: if isPlatformAdmin()
+        || (isSignedIn() && hasUserProfile() && isCompanyMember(resource.data.companyId));
+      allow create: if isSignedIn() && hasUserProfile()
+        && isCompanyMember(request.resource.data.companyId) && isTenantStaff();
+      allow update, delete: if isPlatformAdmin();
+    }
   }
 }

@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   UploadCloud, FileText, AlertTriangle, CheckCircle2, BrainCircuit, 
   ArrowRight, TrendingUp, Scale, Loader2, ScanLine, Camera, Zap, 
-  ChevronRight, Lock, X, ExternalLink, Shield
+  ChevronRight, X, ExternalLink, Shield
 } from 'lucide-react';
 import { analyzeCreditReportImage, analyzeCreditReportPdf } from '../services/geminiService';
 import { Bureau, CreditAnalysisResult, NegativeItem } from '../types';
@@ -18,6 +18,7 @@ import {
   getCreditMonitoringAffiliateUrl,
   type CreditMonitoringProvider,
 } from '../constants/creditMonitoringProviders';
+import { connectIntegration, fetchCreditReport } from '../services/integrationService';
 
 const readFileAsDataUrl = (f: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -68,8 +69,7 @@ const AnalysisEngine: React.FC = () => {
   const [connectLoading, setConnectLoading] = useState(false);
   const [connectForm, setConnectForm] = useState({
     provider: 'SmartCredit' as CreditMonitoringProvider,
-    username: '',
-    password: ''
+    accessToken: ''
   });
   const canOpenDisputes = Boolean(user?.id);
   const aiAnalysisAllowed = canUseAiCreditAnalysis(user);
@@ -154,20 +154,31 @@ const AnalysisEngine: React.FC = () => {
     }
   };
 
-  const handleConnectSubmit = (e: React.FormEvent) => {
+  const handleConnectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!connectForm.username || !connectForm.password) return;
+    if (!user.id) {
+      setError('Sign in to connect a provider.');
+      return;
+    }
+    if (!connectForm.accessToken || connectForm.accessToken.trim().length < 10) return;
 
     setConnectLoading(true);
     vibrate(HAPTIC.MEDIUM);
 
-    setTimeout(() => {
-        setConnectLoading(false);
-        setShowConnectModal(false);
-        // This would call a backend service to scrape/fetch the report
-        alert("Integrations are currently disabled. Please upload a file manually.");
-        vibrate(HAPTIC.WARNING);
-    }, 2000);
+    try {
+      await connectIntegration('credit_provider', {
+        provider: connectForm.provider,
+        accessToken: connectForm.accessToken.trim(),
+      });
+      await fetchCreditReport(connectForm.provider, {});
+      setShowConnectModal(false);
+      vibrate(HAPTIC.SUCCESS);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to connect provider.');
+      vibrate(HAPTIC.ERROR);
+    } finally {
+      setConnectLoading(false);
+    }
   };
 
   const handleAffiliateClick = (provider: CreditMonitoringProvider) => {
@@ -643,32 +654,22 @@ const AnalysisEngine: React.FC = () => {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-bold text-slate-300 mb-1">Username / Email</label>
+                        <label className="block text-sm font-bold text-slate-300 mb-1">Access token</label>
                         <input 
-                            type="text" 
-                            placeholder="Enter username"
-                            value={connectForm.username}
-                            onChange={(e) => setConnectForm({...connectForm, username: e.target.value})}
+                            type="password"
+                            placeholder="Paste token from your provider portal"
+                            value={connectForm.accessToken}
+                            onChange={(e) => setConnectForm({...connectForm, accessToken: e.target.value})}
                             className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                         />
                     </div>
-                    <div>
-                        <label className="block text-sm font-bold text-slate-300 mb-1">Password</label>
-                        <div className="relative">
-                            <input 
-                                type="password" 
-                                placeholder="Enter password"
-                                value={connectForm.password}
-                                onChange={(e) => setConnectForm({...connectForm, password: e.target.value})}
-                                className="w-full p-3 border border-slate-600 rounded-xl bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            />
-                            <Lock className="absolute right-3 top-3.5 w-4 h-4 text-slate-400" />
-                        </div>
-                    </div>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      For security, don’t paste your account password here. Use a provider-generated token when available.
+                    </p>
                     
                     <button 
                         type="submit"
-                        disabled={connectLoading || !connectForm.username || !connectForm.password}
+                        disabled={connectLoading || !connectForm.accessToken || connectForm.accessToken.trim().length < 10}
                         className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {connectLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Zap className="w-5 h-5" />}

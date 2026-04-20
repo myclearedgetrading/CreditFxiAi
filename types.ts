@@ -617,6 +617,27 @@ export interface WebhookEvent {
   payload: any;
 }
 
+export type DeliveryChannel = 'MAIL' | 'FAX';
+export type DeliveryStatus = 'DRAFT' | 'SENDING' | 'SENT' | 'DELIVERED' | 'FAILED';
+
+export interface Delivery {
+  id: string;
+  companyId?: string;
+  clientId: string;
+  disputeId: string;
+  disputeRoundId: string;
+  channel: DeliveryChannel;
+  provider: string;
+  status: DeliveryStatus;
+  trackingId?: string;
+  recipients: { label: string; address: string }[];
+  costCents?: number;
+  sentAt?: string;
+  deliveredAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ModelFeedback {
   id: string;
   originalInput?: string;

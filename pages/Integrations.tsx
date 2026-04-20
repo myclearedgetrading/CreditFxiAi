@@ -47,6 +47,9 @@ const Integrations: React.FC = () => {
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [apiKey, setApiKey] = useState('');
+  const [providerToken, setProviderToken] = useState('');
+  const [creditProvider, setCreditProvider] = useState<'SmartCredit' | 'MyFreeScoreNow'>('SmartCredit');
+  const [deliveryProvider, setDeliveryProvider] = useState<'MOCK' | 'CLICK2MAIL' | 'LETTERSTREAM'>('MOCK');
 
   useEffect(() => {
     fetchData();
@@ -70,6 +73,7 @@ const Integrations: React.FC = () => {
     setSelectedIntegration(int);
     setShowConnectModal(true);
     setApiKey('');
+    setProviderToken('');
   };
 
   const handleConnectSubmit = async () => {
@@ -77,7 +81,13 @@ const Integrations: React.FC = () => {
     setConnectingId(selectedIntegration.id);
     setShowConnectModal(false);
     
-    await connectIntegration(selectedIntegration.id, { apiKey });
+    if (selectedIntegration.id === 'credit_provider') {
+      await connectIntegration(selectedIntegration.id, { provider: creditProvider, accessToken: providerToken });
+    } else if (selectedIntegration.id === 'delivery_mailfax') {
+      await connectIntegration(selectedIntegration.id, { provider: deliveryProvider, apiKey });
+    } else {
+      await connectIntegration(selectedIntegration.id, { apiKey });
+    }
     
     setIntegrations(prev => prev.map(i => 
       i.id === selectedIntegration.id ? { ...i, status: 'CONNECTED', health: 100, lastSync: 'Just now' } : i
@@ -321,21 +331,60 @@ const Integrations: React.FC = () => {
                 </div>
               </div>
 
-              {selectedIntegration.requiresOAuth ? (
+              {selectedIntegration.id === 'credit_provider' ? (
                 <div className="text-center py-6">
-                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
-                    You will be redirected to {selectedIntegration.name} to authorize access to your account.
-                  </p>
-                  <button 
-                    onClick={handleConnectSubmit}
-                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
-                  >
-                    <LinkIcon className="w-4 h-4" />
-                    Authorize with OAuth
-                  </button>
+                  <div className="space-y-4 text-left">
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      Connect a credit-monitoring provider using a provider-generated token.
+                    </p>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Provider</label>
+                      <select
+                        value={creditProvider}
+                        onChange={(e) => setCreditProvider(e.target.value as any)}
+                        className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
+                      >
+                        <option value="SmartCredit">SmartCredit</option>
+                        <option value="MyFreeScoreNow">MyFreeScoreNow</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Access token</label>
+                      <input
+                        type="password"
+                        className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm bg-white dark:bg-[#111] dark:text-white"
+                        placeholder="token_..."
+                        value={providerToken}
+                        onChange={(e) => setProviderToken(e.target.value)}
+                      />
+                      <p className="text-xs text-slate-400 mt-1">We store this encrypted server-side.</p>
+                    </div>
+                    <button
+                      onClick={handleConnectSubmit}
+                      disabled={providerToken.trim().length < 10}
+                      className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Connect provider
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {selectedIntegration.id === 'delivery_mailfax' && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Delivery provider</label>
+                      <select
+                        value={deliveryProvider}
+                        onChange={(e) => setDeliveryProvider(e.target.value as any)}
+                        className="w-full border border-slate-200 dark:border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-[#111] dark:text-white"
+                      >
+                        <option value="MOCK">Mock (dev/testing)</option>
+                        <option value="CLICK2MAIL">Click2Mail (requires key)</option>
+                        <option value="LETTERSTREAM">LetterStream (requires key)</option>
+                      </select>
+                      <p className="text-xs text-slate-400 mt-1">Mock mode records tracking without sending.</p>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API Key / Secret</label>
                     <input 
@@ -349,7 +398,7 @@ const Integrations: React.FC = () => {
                   </div>
                   <button 
                     onClick={handleConnectSubmit}
-                    disabled={apiKey.length < 5}
+                    disabled={selectedIntegration.id === 'delivery_mailfax' ? (deliveryProvider !== 'MOCK' && apiKey.length < 5) : apiKey.length < 5}
                     className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Connect API

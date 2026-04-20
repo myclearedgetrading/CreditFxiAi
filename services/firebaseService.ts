@@ -216,6 +216,34 @@ export const getClientDisputes = async (companyId: string, clientId: string) => 
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
+// --- DELIVERIES / SCORES (DIY metrics) ---
+
+export const getClientDeliveries = async (companyId: string, clientId: string) => {
+  if (!db.app) return [];
+  const q = query(
+    collection(db, 'deliveries'),
+    where('companyId', '==', companyId),
+    where('clientId', '==', clientId),
+    orderBy('createdAt', 'desc'),
+    limit(50)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+};
+
+export const getClientScores = async (companyId: string, clientId: string) => {
+  if (!db.app) return [];
+  const q = query(
+    collection(db, 'scores'),
+    where('companyId', '==', companyId),
+    where('userId', '==', clientId),
+    orderBy('capturedAt', 'asc'),
+    limit(90)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+};
+
 export const createDisputeRecord = async (companyId: string, dispute: Partial<Dispute>) => {
   if (!db.app) return { id: 'mock-dispute' } as any;
   const payload: Omit<Dispute, 'id'> = {

@@ -78,4 +78,26 @@ describe('storage rules: tenant document isolation', () => {
     const attackerRef = attackerStorage.ref('companies/companyA/clients/client2/documents/statement.pdf');
     await assertFails(attackerRef.getDownloadURL());
   });
+
+  test('user can upload and read own dispute packet under tenant', async () => {
+    await seedUserDoc('companyAUser2', 'companyA');
+    const storage = storageForUser('companyAUser2');
+    const fileRef = storage.ref('companies/companyA/users/companyAUser2/disputes/d1/packets/packet.pdf');
+    await assertSucceeds(
+      fileRef.putString('packet', 'raw', { contentType: 'application/pdf' })
+    );
+    await assertSucceeds(fileRef.getDownloadURL());
+  });
+
+  test('other tenant cannot read dispute packet', async () => {
+    await seedUserDoc('companyAUser3', 'companyA');
+    await seedUserDoc('companyBUser2', 'companyB');
+    const ownerStorage = storageForUser('companyAUser3');
+    const ownerRef = ownerStorage.ref('companies/companyA/users/companyAUser3/disputes/d1/packets/packet.pdf');
+    await assertSucceeds(ownerRef.putString('packet', 'raw', { contentType: 'application/pdf' }));
+
+    const attackerStorage = storageForUser('companyBUser2');
+    const attackerRef = attackerStorage.ref('companies/companyA/users/companyAUser3/disputes/d1/packets/packet.pdf');
+    await assertFails(attackerRef.getDownloadURL());
+  });
 });

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { generateExecutiveSummary } from '../services/geminiService';
 import { useUser } from '../context/UserContext';
-import { getTemplateExperiments, getTemplateOutcomeSummary, tenantCompanyId } from '../services/firebaseService';
+import { getClientDeliveries, getClientDisputes, getClientScores, getTemplateExperiments, getTemplateOutcomeSummary, tenantCompanyId } from '../services/firebaseService';
 import { canUseProgressTracking } from '../services/access';
 import TierUpgradePrompt from '../components/TierUpgradePrompt';
 import { TemplateExperiment } from '../types';
@@ -21,11 +21,18 @@ const Reports: React.FC = () => {
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [experiments, setExperiments] = useState<TemplateExperiment[]>([]);
   const [variantPerformance, setVariantPerformance] = useState<{ variantId: string; total: number; deletedRate: number }[]>([]);
+  const [activeDisputesCount, setActiveDisputesCount] = useState<number>(0);
+  const [itemsDeletedCount, setItemsDeletedCount] = useState<number>(0);
+  const [scoreHistory, setScoreHistory] = useState<{ date: string; score: number }[]>([]);
   const { user } = useUser();
   const progressAllowed = canUseProgressTracking(user);
 
   useEffect(() => {
     if (!canUseProgressTracking(user)) return;
+    if (user.id) {
+      const companyId = tenantCompanyId(user);
+      void loadMetrics(companyId, user.id);
+    }
     // Only load summary if there is meaningful data
     if (user.creditScore.equifax > 0) {
       loadPersonalSummary();
@@ -36,6 +43,29 @@ const Reports: React.FC = () => {
       void getTemplateOutcomeSummary(companyId).then(setVariantPerformance).catch(() => setVariantPerformance([]));
     }
   }, [user]);
+
+  const loadMetrics = async (companyId: string, clientId: string) => {
+    try {
+      const [disputes, deliveries, scores] = await Promise.all([
+        getClientDisputes(companyId, clientId),
+        getClientDeliveries(companyId, clientId),
+        getClientScores(companyId, clientId),
+      ]);
+      void deliveries;
+      const active = disputes.filter((d: any) => d.overallStatus !== 'CLOSED').length;
+      setActiveDisputesCount(active);
+      setItemsDeletedCount((user.negativeItems || []).filter((i) => i.status === 'Deleted').length);
+      const history = (scores || []).map((s: any) => ({
+        date: String(s.capturedAt || s.createdAt || '').slice(0, 10) || 'unknown',
+        score: Number(s.score || 0),
+      })).filter((p) => p.score > 0);
+      setScoreHistory(history.slice(-24));
+    } catch {
+      setActiveDisputesCount(0);
+      setItemsDeletedCount((user.negativeItems || []).filter((i) => i.status === 'Deleted').length);
+      setScoreHistory([]);
+    }
+  };
 
   const loadPersonalSummary = async () => {
     if (!canUseProgressTracking(user)) return;
@@ -117,7 +147,7 @@ const Reports: React.FC = () => {
             <CheckCircle2 className="w-4 h-4 text-green-500" />
             <span className="text-xs font-bold uppercase">Items Deleted</span>
           </div>
-          <p className="text-2xl font-bold text-slate-800 dark:text-white">0</p>
+          <p className="text-2xl font-bold text-slate-800 dark:text-white">{itemsDeletedCount}</p>
           <p className="text-xs text-slate-400 mt-1">Total removed</p>
         </div>
 
@@ -126,7 +156,7 @@ const Reports: React.FC = () => {
             <Activity className="w-4 h-4 text-blue-500" />
             <span className="text-xs font-bold uppercase">Active Disputes</span>
           </div>
-          <p className="text-2xl font-bold text-slate-800 dark:text-white">0</p>
+          <p className="text-2xl font-bold text-slate-800 dark:text-white">{activeDisputesCount}</p>
           <p className="text-xs text-slate-400 mt-1">In progress</p>
         </div>
 
@@ -144,8 +174,10 @@ const Reports: React.FC = () => {
             <Calendar className="w-4 h-4 text-orange-500" />
             <span className="text-xs font-bold uppercase">Est. Completion</span>
           </div>
-          <p className="text-2xl font-bold text-slate-800 dark:text-white">-</p>
-          <p className="text-xs text-slate-400 mt-1">Pending analysis</p>
+          <p className="text-2xl font-bold text-slate-800 dark:text-white">
+            {activeDisputesCount > 0 ? `${Math.min(90, 30 + activeDisputesCount * 15)}d` : '-'}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">{activeDisputesCount > 0 ? 'Estimated' : 'No active disputes'}</p>
         </div>
       </div>
 
@@ -156,12 +188,27 @@ const Reports: React.FC = () => {
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-slate-800 dark:text-white">Score History</h3>
           </div>
-          <div className="h-72 flex items-center justify-center border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900">
-             <div className="text-center text-slate-400">
-               <TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-20" />
-               <p>No history data available yet.</p>
-             </div>
-          </div>
+          {scoreHistory.length > 1 ? (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={scoreHistory}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                  <YAxis domain={[300, 850]} />
+                  <RechartsTooltip />
+                  <Line type="monotone" dataKey="score" stroke="#4f46e5" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-72 flex items-center justify-center border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900">
+              <div className="text-center text-slate-400">
+                <TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                <p>No history data available yet.</p>
+                <p className="text-xs mt-1">Connect a provider and sync to start tracking scores.</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

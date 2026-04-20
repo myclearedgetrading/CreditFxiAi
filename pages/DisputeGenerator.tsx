@@ -27,6 +27,7 @@ import {
   isDiyProOrAgency,
 } from '../services/access';
 import { downloadDisputeLetterPdf } from '../services/disputeLetterExport';
+import { sendDisputeRoundDelivery } from '../services/deliveryService';
 
 /** Escape text for safe insertion into a print HTML document */
 const escapeHtml = (s: string) =>
@@ -255,6 +256,9 @@ const DisputeGenerator: React.FC = () => {
   const [responseIngestions, setResponseIngestions] = useState<ResponseIngestion[]>([]);
   const [responseFile, setResponseFile] = useState<File | null>(null);
   const [responseText, setResponseText] = useState('');
+  const [activeRoundId, setActiveRoundId] = useState<string>('');
+  const [sending, setSending] = useState(false);
+  const [recipientAddresses, setRecipientAddresses] = useState<Record<string, string>>({});
   const [orchestrationLoading, setOrchestrationLoading] = useState(false);
   const [orchestrationResult, setOrchestrationResult] = useState<null | {
     nextStatus: string;
@@ -598,6 +602,14 @@ const DisputeGenerator: React.FC = () => {
           summary: `Round ${currentRound} ready for delivery`,
           createdByUserId: user.id,
         });
+        setActiveRoundId(roundRef.id);
+        setRecipientAddresses((prev) => {
+          const next = { ...prev };
+          selectedBureaus.forEach((b) => {
+            if (!next[b]) next[b] = `${b} mailing address (paste here)`;
+          });
+          return next;
+        });
 
         // Template intelligence: assign active experiment variant when available.
         if (featureFlags.templateExperiments) {
@@ -662,8 +674,8 @@ const DisputeGenerator: React.FC = () => {
           status: 'OPEN',
           severity: 'HIGH',
         });
-        setRoundStatus('SENT');
-        await updateDisputeRound(roundRef.id, { status: 'SENT', sentAt: new Date().toISOString() });
+        setRoundStatus('READY_TO_SEND');
+        await updateDisputeRound(roundRef.id, { status: 'READY_TO_SEND' });
         setTimeline((prev) => ([
           ...prev,
           {
@@ -674,12 +686,11 @@ const DisputeGenerator: React.FC = () => {
             roundNumber: currentRound,
             strategy,
             targetBureaus: selectedBureaus,
-            status: 'SENT',
-            sentAt: new Date().toISOString(),
+            status: 'READY_TO_SEND',
             responseDueAt: dueIn30,
             outcome: 'PENDING',
             generatedLetter: fullBundle,
-            summary: `Round ${currentRound} sent`,
+            summary: `Round ${currentRound} ready to send`,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -689,6 +700,46 @@ const DisputeGenerator: React.FC = () => {
       setError(err.message || 'An unexpected error occurred.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSendNow = async () => {
+    if (!featureFlags.nextLevelDIY) {
+      setError('In-app sending requires the Next Level DIY feature flag.');
+      return;
+    }
+    if (!generatedLetter.trim() || !disputeId || !activeRoundId || !user.id) {
+      setError('Generate a letter first, then send.');
+      return;
+    }
+    try {
+      setSending(true);
+      setError(null);
+      const companyId = tenantCompanyId(user);
+      const recipients = selectedBureaus.map((b) => ({
+        label: b,
+        address: (recipientAddresses[b] || '').trim(),
+      })).filter((r) => r.address.length >= 10);
+      if (recipients.length === 0) {
+        setError('Add at least one recipient address (10+ chars).');
+        return;
+      }
+      await sendDisputeRoundDelivery({
+        companyId,
+        clientId: user.id,
+        disputeId,
+        disputeRoundId: activeRoundId,
+        channel: 'MAIL',
+        letterText: generatedLetter,
+        recipients,
+      });
+      setRoundStatus('SENT');
+      const refreshedRounds = await getDisputeRounds(companyId, disputeId);
+      setTimeline(refreshedRounds);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to send delivery.');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -1341,6 +1392,37 @@ const DisputeGenerator: React.FC = () => {
                             We are not affiliated with these providers. Compare pricing, certified-mail options, and privacy policies before you send personal information.
                           </p>
                         </div>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-4">
+                        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Option 3 — Send inside CreditFix AI</p>
+                        <p className="text-sm text-slate-400 leading-relaxed">
+                          Send the packet using your connected delivery provider. Add the recipient addresses below first.
+                        </p>
+                        <div className="space-y-2">
+                          {selectedBureaus.map((b) => (
+                            <div key={b} className="space-y-1">
+                              <label className="text-[11px] text-slate-500 font-bold uppercase tracking-wide">{b} address</label>
+                              <textarea
+                                value={recipientAddresses[b] || ''}
+                                onChange={(e) => setRecipientAddresses((prev) => ({ ...prev, [b]: e.target.value }))}
+                                className="w-full min-h-[64px] text-xs bg-[#0A0A0A] border border-slate-800 rounded p-2 text-slate-200"
+                                placeholder="Paste mailing address here..."
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleSendNow}
+                          disabled={sending || roundStatus === 'SENT' || !activeRoundId}
+                          className="w-full py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-sm font-semibold disabled:opacity-50"
+                        >
+                          {sending ? 'Sending...' : roundStatus === 'SENT' ? 'Sent' : 'Send now (Mail)'}
+                        </button>
+                        <p className="text-[11px] text-slate-600 leading-snug">
+                          Note: if your delivery integration is not configured, this will fail. Configure it under Settings → Integrations.
+                        </p>
                       </div>
 
                       {featureFlags.nextLevelDIY && (
