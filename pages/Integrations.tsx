@@ -50,6 +50,7 @@ const Integrations: React.FC = () => {
   const [providerToken, setProviderToken] = useState('');
   const [creditProvider, setCreditProvider] = useState<'SmartCredit' | 'MyFreeScoreNow'>('SmartCredit');
   const [deliveryProvider, setDeliveryProvider] = useState<'MOCK' | 'CLICK2MAIL' | 'LETTERSTREAM'>('MOCK');
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -74,25 +75,35 @@ const Integrations: React.FC = () => {
     setShowConnectModal(true);
     setApiKey('');
     setProviderToken('');
+    setActionError(null);
   };
 
   const handleConnectSubmit = async () => {
     if (!selectedIntegration) return;
     setConnectingId(selectedIntegration.id);
     setShowConnectModal(false);
-    
-    if (selectedIntegration.id === 'credit_provider') {
-      await connectIntegration(selectedIntegration.id, { provider: creditProvider, accessToken: providerToken });
-    } else if (selectedIntegration.id === 'delivery_mailfax') {
-      await connectIntegration(selectedIntegration.id, { provider: deliveryProvider, apiKey });
-    } else {
-      await connectIntegration(selectedIntegration.id, { apiKey });
+    setActionError(null);
+
+    try {
+      if (selectedIntegration.id === 'credit_provider') {
+        await connectIntegration(selectedIntegration.id, { provider: creditProvider, accessToken: providerToken });
+        await syncIntegration(selectedIntegration.id);
+      } else if (selectedIntegration.id === 'delivery_mailfax') {
+        await connectIntegration(selectedIntegration.id, { provider: deliveryProvider, apiKey });
+      } else {
+        await connectIntegration(selectedIntegration.id, { apiKey });
+      }
+
+      setIntegrations(prev => prev.map(i =>
+        i.id === selectedIntegration.id
+          ? { ...i, status: 'CONNECTED', health: 100, lastSync: 'Just now' }
+          : i
+      ));
+    } catch (err: any) {
+      setActionError(err?.message || 'Integration request failed.');
+    } finally {
+      setConnectingId(null);
     }
-    
-    setIntegrations(prev => prev.map(i => 
-      i.id === selectedIntegration.id ? { ...i, status: 'CONNECTED', health: 100, lastSync: 'Just now' } : i
-    ));
-    setConnectingId(null);
   };
 
   const handleDisconnect = async (id: string) => {
@@ -109,11 +120,17 @@ const Integrations: React.FC = () => {
 
   const handleSync = async (id: string) => {
     setSyncingId(id);
-    await syncIntegration(id);
-    setIntegrations(prev => prev.map(i => 
-      i.id === id ? { ...i, lastSync: 'Just now' } : i
-    ));
-    setSyncingId(null);
+    setActionError(null);
+    try {
+      await syncIntegration(id);
+      setIntegrations(prev => prev.map(i =>
+        i.id === id ? { ...i, lastSync: 'Just now' } : i
+      ));
+    } catch (err: any) {
+      setActionError(err?.message || 'Sync failed.');
+    } finally {
+      setSyncingId(null);
+    }
   };
 
   return (
@@ -141,6 +158,11 @@ const Integrations: React.FC = () => {
         
         {/* Main Content Area */}
         <div className="lg:col-span-2 space-y-6">
+          {actionError && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+              {actionError}
+            </div>
+          )}
           
           {/* Controls */}
           <div className="flex flex-col sm:flex-row gap-4">

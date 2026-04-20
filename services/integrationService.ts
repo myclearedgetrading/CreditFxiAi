@@ -50,6 +50,10 @@ export const disconnectIntegration = async (id: string): Promise<boolean> => {
 };
 
 export const syncIntegration = async (id: string): Promise<boolean> => {
+  if (id === 'credit_provider') {
+    const data = await fetchCreditReport('credit_provider', {});
+    return Boolean(data?.ok);
+  }
   const tokenProvider = auth?.currentUser?.getIdToken;
   if (typeof tokenProvider !== 'function') throw new Error('You must be signed in to sync integrations.');
   const idToken = await tokenProvider.call(auth.currentUser);

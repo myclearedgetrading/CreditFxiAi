@@ -10,7 +10,7 @@ import { analyzeCreditReportImage, analyzeCreditReportPdf } from '../services/ge
 import { Bureau, CreditAnalysisResult, NegativeItem } from '../types';
 import { vibrate, HAPTIC } from '../services/mobileService';
 import { useUser } from '../context/UserContext';
-import { saveUserToFirestore } from '../services/firebaseService';
+import { getUserFromFirestore, saveUserToFirestore } from '../services/firebaseService';
 import { canUseAiCreditAnalysis } from '../services/access';
 import TierUpgradePrompt from '../components/TierUpgradePrompt';
 import {
@@ -48,6 +48,65 @@ const toDisputableItems = (analysis: CreditAnalysisResult): NegativeItem[] => {
     bureau: parseBureaus(item.bureau || ''),
     status: 'Open',
   }));
+};
+
+const providerImportToAnalysisResult = (
+  importedItems: NegativeItem[],
+  provider: CreditMonitoringProvider,
+  scoreSnapshot: { equifax: number; experian: number; transunion: number }
+): CreditAnalysisResult => {
+  const totalNegativeItems = importedItems.length;
+  const estimatedScoreImprovement = Math.min(120, Math.max(15, totalNegativeItems * 12));
+  const topItems = importedItems.slice(0, 3);
+
+  return {
+    summary: {
+      totalNegativeItems,
+      estimatedScoreImprovement,
+      utilizationRate: 0,
+    },
+    negativeItems: importedItems.map((item) => ({
+      creditor: item.creditor,
+      accountType: item.type,
+      amount: item.amount,
+      bureau: item.bureau.join(', '),
+      date: item.dateReported,
+    })),
+    discrepancies: [],
+    recommendations: topItems.map((item) => ({
+      creditorName: item.creditor,
+      bureauToTarget: item.bureau[0] || Bureau.EXPERIAN,
+      recommendedStrategy: 'Factual Dispute',
+      confidenceScore: 74,
+      reasoning: `Imported from ${provider}. Start by challenging the accuracy and completeness of the ${item.type.toLowerCase()} reporting across the listed bureau(s).`,
+    })),
+    actionPlan: [
+      {
+        phase: 'Imported Report Review',
+        actions: [
+          `Review all ${totalNegativeItems} imported negative item(s) from ${provider}.`,
+          `Confirm the starting score snapshot: EQ ${scoreSnapshot.equifax}, EX ${scoreSnapshot.experian}, TU ${scoreSnapshot.transunion}.`,
+        ],
+        expectedOutcome: 'A verified baseline before generating disputes.',
+      },
+      {
+        phase: 'Dispute Launch',
+        actions: [
+          'Generate dispute letters for the highest-impact negative items first.',
+          'Track bureau-specific responses and save all outgoing correspondence.',
+        ],
+        expectedOutcome: 'Open the first dispute cycle with complete documentation.',
+      },
+      {
+        phase: 'Progress Tracking',
+        actions: [
+          'Re-sync the provider after updates post to the bureaus.',
+          'Compare new scores and item counts against this imported baseline.',
+        ],
+        expectedOutcome: 'Measure deletions, updates, and score movement over time.',
+      },
+    ],
+  };
 };
 
 const MAX_PDF_SIZE_BYTES = 4.5 * 1024 * 1024;
@@ -170,7 +229,31 @@ const AnalysisEngine: React.FC = () => {
         provider: connectForm.provider,
         accessToken: connectForm.accessToken.trim(),
       });
-      await fetchCreditReport(connectForm.provider, {});
+      const syncResult = await fetchCreditReport(connectForm.provider, {});
+      const refreshedUser = await getUserFromFirestore(user.id);
+      if (refreshedUser) {
+        updateUser(refreshedUser);
+        setResult(
+          providerImportToAnalysisResult(
+            refreshedUser.negativeItems || [],
+            connectForm.provider,
+            refreshedUser.creditScore
+          )
+        );
+      } else if (syncResult?.imported) {
+        setResult(
+          providerImportToAnalysisResult(
+            [],
+            connectForm.provider,
+            {
+              equifax: Math.max(0, Number(syncResult.imported.score || 0) - 8),
+              experian: Number(syncResult.imported.score || 0),
+              transunion: Math.max(0, Number(syncResult.imported.score || 0) - 4),
+            }
+          )
+        );
+      }
+      setError(null);
       setShowConnectModal(false);
       vibrate(HAPTIC.SUCCESS);
     } catch (err: any) {
